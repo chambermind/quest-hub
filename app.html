@@ -1602,15 +1602,20 @@ function renderQuests(){
     const subs = q.subtasks.map(s=>`<div class="subt ${s.done?'done':''}" data-qid="${q.id}" data-sid="${s.id}">
       <div class="sck">${s.done?'✓':''}</div>
       <div class="sn">${escapeHtml(s.name)}</div>
-      <button class="hact" data-act="sub-to-today" title="Добавить эту подзадачу в Сегодня" style="color:var(--green);margin-right:4px">→</button>
+      <button class="hact" data-act="sub-to-today" title="Добавить в Сегодня" style="color:var(--green);margin-right:4px">→</button>
       <button class="hact" data-act="del-sub">✕</button>
     </div>`).join('');
     const isOpen = _openQuests.has(q.id);
+    
+    // Бейдж с вопросами, если заполнено хотя бы одно поле
+    const hasCoaching = (q.cost || q.belief || q.impact || q.possible);
+    const coachingBadge = hasCoaching ? `<span class="coaching-badge" data-qid="${q.id}" style="cursor:pointer; margin-left:8px; background:rgba(212,169,72,0.2); padding:4px 8px; border-radius:20px; font-size:0.7rem; font-weight:bold;">🧠 почему это важно</span>` : '';
+    
     return `<div class="qgrp ${isOpen?'open':''}" data-qid="${q.id}" style="border-left-color:${q.color}">
       <div class="qgrp-head">
         <div class="qgrp-arr">▶</div>
         <div class="qgrp-info">
-          <div class="qgrp-n">${escapeHtml(q.name)}</div>
+          <div class="qgrp-n">${escapeHtml(q.name)} ${coachingBadge}</div>
           ${q.identity?`<div class="qgrp-ident">🦋 <i>${escapeHtml(q.identity)}</i></div>`:''}
           <div class="qgrp-meta">
             <span class="q-color-dot" style="background:${q.color}"></span>
@@ -1629,6 +1634,8 @@ function renderQuests(){
       </div>
     </div>`;
   }).join('');
+
+  // Обработчики для кнопок (существующие)
   c.querySelectorAll('.qgrp').forEach(g=>{
     const qid = g.dataset.qid;
     g.querySelector('.qgrp-head').onclick = (e)=>{
@@ -1655,6 +1662,17 @@ function renderQuests(){
         subtaskToToday(row.dataset.qid, row.dataset.sid);
       };
     });
+  });
+
+  // НОВЫЙ ОБРАБОТЧИК для коучинговых бейджей
+  c.querySelectorAll('.coaching-badge').forEach(badge=>{
+    badge.onclick = (e)=>{
+      e.stopPropagation();
+      const qid = badge.dataset.qid;
+      const q = state.quests.find(x=>x.id===qid);
+      if(!q) return;
+      showCoachingModal(q);
+    };
   });
 }
 
@@ -1987,7 +2005,7 @@ function deleteHabit(kind, hid){
 function openAddQuest(){ openQuestEditor(null); }
 function openEditQuest(qid){ openQuestEditor(qid); }
 function openQuestEditor(qid){
-  const q = qid ? state.quests.find(x=>x.id===qid) : {name:'',description:'',identity:'',sphereId:'',color:QUEST_COLORS[0]};
+  const q = qid ? state.quests.find(x=>x.id===qid) : {name:'', description:'', identity:'', sphereId:'', color:QUEST_COLORS[0], cost:'', belief:5, impact:'', possible:''};
   const sphereOpts = ['<option value="">— без сферы —</option>']
     .concat(state.spheres.map(s=>`<option value="${s.id}"${s.id===q.sphereId?' selected':''}>${escapeHtml(s.name)}</option>`)).join('');
   const colorRow = QUEST_COLORS.map(col=>`<div class="color-it${col===q.color?' on':''}" style="background:${col}" data-col="${col}"></div>`).join('');
@@ -1996,9 +2014,26 @@ function openQuestEditor(qid){
       <input id="m_q_name" type="text" value="${escapeHtml(q.name)}" placeholder="Например: Дописать книгу" autofocus></div>
     <div class="field"><label class="lab">🦋 Кем я стану, когда завершу?</label>
       <div style="font-size:.7rem;color:var(--dim);margin:-2px 0 4px">Одной строкой. Это твой титул после победы.</div>
-      <input id="m_q_ident" type="text" value="${escapeHtml(q.identity||'')}" placeholder="Например: автор книги / женщина с железным прессом / доктор наук"></div>
+      <input id="m_q_ident" type="text" value="${escapeHtml(q.identity||'')}" placeholder="Например: автор книги / стройный / доктор наук"></div>
     <div class="field"><label class="lab">Описание (опц.)</label>
-      <textarea id="m_q_desc" rows="3" placeholder="Краткая суть">${escapeHtml(q.description)}</textarea></div>
+      <textarea id="m_q_desc" rows="2" placeholder="Краткая суть">${escapeHtml(q.description)}</textarea></div>
+    
+    <!-- Коучинговые вопросы -->
+    <div class="field"><label class="lab">❓ Чего никогда не будет в моей жизни, если я этого не достигну?</label>
+      <textarea id="m_q_cost" rows="2" placeholder="Например: чувства гордости, лёгкости, свободы…">${escapeHtml(q.cost||'')}</textarea>
+      <div class="hint">Что ты потеряешь навсегда?</div>
+    </div>
+    <div class="field"><label class="lab">📊 Насколько я верю, что смогу достичь? (1–10)</label>
+      <input id="m_q_belief" type="number" min="1" max="10" step="1" value="${q.belief || 5}">
+      <div class="hint">Оцени свою уверенность прямо сейчас.</div>
+    </div>
+    <div class="field"><label class="lab">👨‍👩‍👧 Как достижение цели повлияет на моё окружение?</label>
+      <textarea id="m_q_impact" rows="2" placeholder="Например: родные будут гордиться, друзья увидят пример…">${escapeHtml(q.impact||'')}</textarea>
+    </div>
+    <div class="field"><label class="lab">🚀 Что станет возможным благодаря этой цели?</label>
+      <textarea id="m_q_possible" rows="2" placeholder="Например: смогу путешествовать, куплю новую технику…">${escapeHtml(q.possible||'')}</textarea>
+    </div>
+
     <div class="field"><label class="lab">Сфера (опц.)</label>
       <select id="m_q_sphere">${sphereOpts}</select></div>
     <div class="field"><label class="lab">Цвет</label>
@@ -2019,11 +2054,23 @@ function confirmQuest(qid){
   const identity=$('#m_q_ident').value.trim();
   const sphereId=$('#m_q_sphere').value||null;
   const color = window._qChosenColor ? window._qChosenColor() : QUEST_COLORS[0];
+  
+  // Коучинговые поля
+  const cost = $('#m_q_cost').value.trim();
+  const belief = Math.min(10, Math.max(1, parseInt($('#m_q_belief').value) || 5));
+  const impact = $('#m_q_impact').value.trim();
+  const possible = $('#m_q_possible').value.trim();
+
   if(qid){
     const q=state.quests.find(x=>x.id===qid); if(!q) return;
     q.name=name; q.description=desc; q.identity=identity; q.sphereId=sphereId; q.color=color;
+    q.cost=cost; q.belief=belief; q.impact=impact; q.possible=possible;
   } else {
-    state.quests.push({id:uid(),name,description:desc,identity,sphereId,color,subtasks:[],created:todayStr()});
+    state.quests.push({
+      id:uid(), name, description:desc, identity, sphereId, color,
+      subtasks:[], created:todayStr(),
+      cost, belief, impact, possible
+    });
   }
   save(); closeModal(); renderQuests(); renderCalendar();
 }
@@ -2179,7 +2226,16 @@ if(!state.onboarded){
   $('#app').style.display='block';
   initApp();
 }
-
+function showCoachingModal(q){
+  let html = `<div style="font-family:'Inter',sans-serif; text-align:left;">`;
+  if(q.cost) html += `<div style="margin-bottom:16px;"><strong style="color:var(--gold);">❓ Чего никогда не будет в моей жизни, если я этого не достигну?</strong><br>${escapeHtml(q.cost)}</div>`;
+  if(q.belief) html += `<div style="margin-bottom:16px;"><strong style="color:var(--gold);">📊 Насколько я верю, что смогу достичь? (1–10)</strong><br>${q.belief} / 10</div>`;
+  if(q.impact) html += `<div style="margin-bottom:16px;"><strong style="color:var(--gold);">👨‍👩‍👧 Как достижение цели повлияет на моё окружение?</strong><br>${escapeHtml(q.impact)}</div>`;
+  if(q.possible) html += `<div style="margin-bottom:16px;"><strong style="color:var(--gold);">🚀 Что станет возможным благодаря этой цели?</strong><br>${escapeHtml(q.possible)}</div>`;
+  if(!q.cost && !q.belief && !q.impact && !q.possible) html = `<div>Нет заполненных коучинговых вопросов. Нажми ✏️, чтобы добавить.</div>`;
+  html += `</div>`;
+  showModal(`🧠 Рефлексия: ${escapeHtml(q.name)}`, html);
+}
 </script>
 </body>
 </html>
