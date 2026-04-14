@@ -171,7 +171,7 @@ h2 .h2-act{background:transparent;border:1px solid var(--border);color:var(--gol
 .mini div{height:100%;transition:width .6s;background:linear-gradient(90deg,var(--gold),var(--gold2))}
 .stat-xp{font-size:.62rem;color:var(--dim);margin-top:3px;text-align:right}
 
-/* ============ HABITS (formerly DAY) ============ */
+/* ============ HABITS ============ */
 .hrow{background:#0a0e1a;border:1px solid var(--border);border-radius:9px;padding:10px 12px;margin-bottom:5px;display:flex;align-items:center;gap:10px}
 .hn{flex:1;font-size:.86rem;font-weight:600}
 .hsphere{font-size:.62rem;color:var(--dim);margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
@@ -179,7 +179,7 @@ h2 .h2-act{background:transparent;border:1px solid var(--border);color:var(--gol
 .hact{background:transparent;border:none;color:var(--dim);padding:4px 8px;font-size:.95rem}
 .hact:hover{color:var(--gold)}
 
-/* ============ CALENDAR ============ */
+/* ============ SIMPLIFIED CALENDAR (only history) ============ */
 .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:6px}
 .cal-nav button{background:var(--panel);border:1px solid var(--border);color:var(--gold);width:36px;height:36px;border-radius:9px;font-size:1.1rem;font-weight:700}
 .cal-month{font-family:'Cinzel',serif;color:var(--gold);font-size:1rem;text-transform:uppercase;letter-spacing:1px;flex:1;text-align:center;font-weight:900}
@@ -191,10 +191,7 @@ h2 .h2-act{background:transparent;border:1px solid var(--border);color:var(--gol
 .day.future{opacity:.55}
 .day-n{font-weight:900;color:var(--gold);font-size:.78rem;font-family:'Cinzel',serif}
 .day-xp{font-size:.55rem;color:var(--green);font-weight:700;margin-bottom:1px}
-.blk{padding:1px 4px;border-radius:3px;font-size:.55rem;color:#fff;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3}
-.blk-more{font-size:.55rem;color:var(--dim);text-align:center}
-.sch-bars{display:flex;flex-direction:column;gap:2px;margin:1px 0}
-.sch-bar{height:3px;border-radius:2px;opacity:.85}
+.hist-badge{background:rgba(74,222,128,0.2);border-radius:3px;padding:1px 2px;font-size:.5rem;margin-top:2px;color:var(--green);text-align:center}
 .legend{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;font-size:.68rem}
 .leg-it{display:flex;align-items:center;gap:5px;background:var(--panel);padding:4px 9px;border-radius:11px;border:1px solid var(--border)}
 .leg-dot{width:10px;height:10px;border-radius:3px}
@@ -310,126 +307,61 @@ h2 .h2-act{background:transparent;border:1px solid var(--border);color:var(--gol
 </head>
 <body>
 
-<!-- ========== ONBOARDING ========== -->
+<!-- ========== ONBOARDING (4 steps) ========== -->
 <div id="onboarding">
   <div class="ob-wrap">
     <div class="ob-progress" id="obProgress"></div>
 
-    <!-- Step 1 -->
+    <!-- Step 1: Hero -->
     <div class="ob-step active" data-step="1">
       <div class="ob-icon">⚔️</div>
       <div class="ob-title">Welcome,<br>hero!</div>
       <div class="ob-sub">This is your personal quest hub. Life as an RPG: tasks give XP, XP gives levels, levels give real rewards.</div>
       <div class="ob-body">
-        <div class="field">
-          <label class="lab">Hero name *</label>
-          <input id="ob_name" type="text" placeholder="e.g. Svetlana / Dmitry / your name">
-        </div>
-        <div class="field">
-          <label class="lab">Hero class</label>
-          <input id="ob_class" type="text" placeholder="Psychologist Warrior / Writer Mage / Artist Wanderer">
-          <div class="hint">Free text. Write whatever you want. You can be "Lazy Genius".</div>
-        </div>
-        <div class="field">
-          <label class="lab">Avatar</label>
-          <div class="av-grid" id="ob_av_grid"></div>
-        </div>
+        <div class="field"><label class="lab">Hero name *</label><input id="ob_name" type="text" placeholder="e.g. Svetlana / Dmitry"></div>
+        <div class="field"><label class="lab">Hero class</label><input id="ob_class" type="text" placeholder="Psychologist Warrior / Writer Mage"><div class="hint">Free text. Be creative!</div></div>
+        <div class="field"><label class="lab">Avatar</label><div class="av-grid" id="ob_av_grid"></div></div>
       </div>
-      <div class="ob-foot">
-        <button class="btn btn-gold" id="ob_next1" disabled onclick="obNext(1)">Next →</button>
-      </div>
+      <div class="ob-foot"><button class="btn btn-gold" id="ob_next1" disabled onclick="obNext(1)">Next →</button></div>
     </div>
 
-    <!-- Step 2 -->
+    <!-- Step 2: Spheres + Levels -->
     <div class="ob-step" data-step="2">
       <div class="ob-icon">📊</div>
-      <div class="ob-title">Life spheres</div>
-      <div class="ob-sub">These are your stats. Choose 4–6 spheres — each will level up separately when you complete related tasks.</div>
+      <div class="ob-title">Life spheres & levels</div>
+      <div class="ob-sub">Choose 4–6 spheres — each levels up separately. Then set your first level rewards.</div>
       <div class="ob-body">
-        <label class="lab">Ready options (tap to select)</label>
-        <div class="chips" id="ob_sphere_chips"></div>
-        <div class="hint" id="ob_sphere_count" style="margin-top:10px"></div>
-        <label class="lab" style="margin-top:18px">Your own spheres</label>
-        <div class="chip-add">
-          <input id="ob_sphere_input" type="text" placeholder="e.g. Hockey, Gardening, Yoga…">
-          <button onclick="obAddSphere()">+ Add</button>
-        </div>
-        <div class="chips" id="ob_sphere_custom" style="margin-top:10px"></div>
+        <label class="lab">Spheres (tap to select)</label><div class="chips" id="ob_sphere_chips"></div><div class="hint" id="ob_sphere_count"></div>
+        <div class="chip-add"><input id="ob_sphere_input" placeholder="Custom sphere"><button onclick="obAddSphere()">+ Add</button></div>
+        <div class="chips" id="ob_sphere_custom"></div>
+        <label class="lab" style="margin-top:16px">Level rewards (first 5)</label>
+        <div id="ob_levels_list"></div>
+        <div class="hint">You can add more levels later in the app.</div>
       </div>
-      <div class="ob-foot">
-        <button class="btn-back" onclick="obPrev(2)">← Back</button>
-        <button class="btn btn-gold" onclick="obNext(2)">Next →</button>
-        <button class="btn-skip" onclick="obSkip(2)">Skip</button>
-      </div>
+      <div class="ob-foot"><button class="btn-back" onclick="obPrev(2)">← Back</button><button class="btn btn-gold" onclick="obNext(2)">Next →</button><button class="btn-skip" onclick="obSkip(2)">Skip</button></div>
     </div>
 
-    <!-- Step 3 -->
+    <!-- Step 3: Habits (daily + weekly) -->
     <div class="ob-step" data-step="3">
       <div class="ob-icon">⭐</div>
-      <div class="ob-title">Sacred<br>minimum</div>
-      <div class="ob-sub">3–7 things you do every day. This is the baseline — did them → you already rock. Period.</div>
-      <div class="ob-body" id="ob_daily_body">
-        <div class="preset-hint">Tap an example to add — you can edit later:</div>
-        <div class="preset-chips" id="ob_daily_presets"></div>
-        <div id="ob_daily_list"></div>
-        <button class="add-it" onclick="obAddDaily()">+ Add your own</button>
+      <div class="ob-title">Habits</div>
+      <div class="ob-sub">Sacred minimum (daily) + Sunday ritual (weekly). Do them → you already win.</div>
+      <div class="ob-body">
+        <label class="lab">Daily habits</label><div class="preset-chips" id="ob_daily_presets"></div><div id="ob_daily_list"></div><button class="add-it" onclick="obAddDaily()">+ Add your own</button>
+        <label class="lab" style="margin-top:16px">Sunday ritual</label><div class="preset-chips" id="ob_weekly_presets"></div><div id="ob_weekly_list"></div><button class="add-it" onclick="obAddWeekly()">+ Add your own</button>
       </div>
-      <div class="ob-foot">
-        <button class="btn-back" onclick="obPrev(3)">← Back</button>
-        <button class="btn btn-gold" onclick="obNext(3)">Next →</button>
-        <button class="btn-skip" onclick="obSkip(3)">Skip</button>
-      </div>
+      <div class="ob-foot"><button class="btn-back" onclick="obPrev(3)">← Back</button><button class="btn btn-gold" onclick="obNext(3)">Next →</button><button class="btn-skip" onclick="obSkip(3)">Skip</button></div>
     </div>
 
-    <!-- Step 4 -->
+    <!-- Step 4: Quests with coaching fields -->
     <div class="ob-step" data-step="4">
-      <div class="ob-icon">🏡</div>
-      <div class="ob-title">Sunday<br>ritual</div>
-      <div class="ob-sub">Same but once a week. Cleaning, planning, long walk — something “weekend style”. You can skip.</div>
-      <div class="ob-body" id="ob_weekly_body">
-        <div class="preset-hint">Or choose from examples:</div>
-        <div class="preset-chips" id="ob_weekly_presets"></div>
-        <div id="ob_weekly_list"></div>
-        <button class="add-it" onclick="obAddWeekly()">+ Add your own</button>
-      </div>
-      <div class="ob-foot">
-        <button class="btn-back" onclick="obPrev(4)">← Back</button>
-        <button class="btn btn-gold" onclick="obNext(4)">Next →</button>
-        <button class="btn-skip" onclick="obSkip(4)">Skip</button>
-      </div>
-    </div>
-
-    <!-- Step 5 (coaching fields added) -->
-    <div class="ob-step" data-step="5">
       <div class="ob-icon">🗺️</div>
       <div class="ob-title">Big quests</div>
-      <div class="ob-sub">Big projects that stretch for weeks (book, renovation, learning). You can have 0 or up to 5. Subtasks can be added later.</div>
-      <div class="ob-body" id="ob_quest_body">
-        <div class="preset-hint">Tap to take a ready quest — you can edit later:</div>
-        <div class="preset-chips" id="ob_quest_presets"></div>
-        <div id="ob_quest_list"></div>
-        <button class="add-it" onclick="obAddQuest()">+ Your own quest</button>
-      </div>
-      <div class="ob-foot">
-        <button class="btn-back" onclick="obPrev(5)">← Back</button>
-        <button class="btn btn-gold" onclick="obNext(5)">Next →</button>
-        <button class="btn-skip" onclick="obSkip(5)">Skip</button>
-      </div>
-    </div>
-
-    <!-- Step 6 -->
-    <div class="ob-step" data-step="6">
-      <div class="ob-icon">🏆</div>
-      <div class="ob-title">Levels & rewards</div>
-      <div class="ob-sub">The main feature. For each level — a real reward for yourself. Fill at least the first 3–5, the rest you can add later.</div>
+      <div class="ob-sub">Long‑term projects. Add a few (or skip). Subtasks can be added later.</div>
       <div class="ob-body">
-        <div id="ob_levels_list"></div>
-        <div class="hint" style="text-align:center;margin-top:10px">Levels 21+ can be added later in the "Levels" section</div>
+        <div class="preset-chips" id="ob_quest_presets"></div><div id="ob_quest_list"></div><button class="add-it" onclick="obAddQuest()">+ Your own quest</button>
       </div>
-      <div class="ob-foot">
-        <button class="btn-back" onclick="obPrev(6)">← Back</button>
-        <button class="btn btn-gold" onclick="obFinish()">⚔️ Start!</button>
-      </div>
+      <div class="ob-foot"><button class="btn-back" onclick="obPrev(4)">← Back</button><button class="btn btn-gold" onclick="obFinish()">⚔️ Start!</button><button class="btn-skip" onclick="obSkip(4)">Skip</button></div>
     </div>
   </div>
 </div>
@@ -437,143 +369,36 @@ h2 .h2-act{background:transparent;border:1px solid var(--border);color:var(--gol
 <!-- ========== APP ========== -->
 <div id="app" style="display:none">
   <div class="container">
-
-    <!-- Header with help button -->
     <div class="app-head">
-      <div>
-        <div class="app-title" id="app_title">Life Quest</div>
-        <div class="app-sub" id="app_subtitle">—</div>
-      </div>
-      <div style="display: flex; gap: 8px;">
-        <button class="head-btn" onclick="openHelp()">❓</button>
-        <button class="head-btn" onclick="openSettings()">⚙️</button>
-      </div>
+      <div><div class="app-title" id="app_title">Life Quest</div><div class="app-sub" id="app_subtitle">—</div></div>
+      <div style="display:flex;gap:8px;"><button class="head-btn" onclick="openHelp()">❓</button><button class="head-btn" onclick="openSettings()">⚙️</button></div>
     </div>
-
-    <!-- Page: TODAY -->
     <div class="pg active" id="pg-today">
       <div id="sundayBanner" style="display:none"></div>
-      <div class="today-hd">
-        <div class="today-date" id="todayDate">—</div>
-        <div class="today-streak" id="todayStreak"></div>
-        <div class="today-xp">Today: <b>+<span id="todayXP">0</span></b> XP out of <span id="todayMax">0</span></div>
-        <div class="today-bar"><div id="todayBar" style="width:0%"></div></div>
-      </div>
-
-      <div class="card">
-        <div class="cat-h">
-          <div class="ct cat-red">🔴 Urgent</div>
-          <button class="cat-add" onclick="openAddTask('red')">+</button>
-        </div>
-        <div id="redList"></div>
-      </div>
-
-      <div class="card">
-        <div class="cat-h">
-          <div class="ct cat-yel">🟡 Important</div>
-          <button class="cat-add" onclick="openAddTask('yellow')">+</button>
-        </div>
-        <div id="yelList"></div>
-      </div>
-
-      <div class="card">
-        <div class="cat-h">
-          <div class="ct cat-grn">🟢 Bonus</div>
-          <button class="cat-add" onclick="openAddTask('green')">+</button>
-        </div>
-        <div id="grnList"></div>
-      </div>
-
-      <div class="finish-card">
-        <div class="ftxt">Finished the day? Click:</div>
-        <button class="finish-btn" onclick="finishDay()">⚔️ Complete day</button>
-        <div style="font-size:.66rem;color:var(--dim);margin-top:6px">Saves to history · Carries over unfinished urgent/important · Bonus resets</div>
-      </div>
+      <div class="today-hd"><div class="today-date" id="todayDate">—</div><div class="today-streak" id="todayStreak"></div><div class="today-xp">Today: <b>+<span id="todayXP">0</span></b> XP out of <span id="todayMax">0</span></div><div class="today-bar"><div id="todayBar" style="width:0%"></div></div></div>
+      <div class="card"><div class="cat-h"><div class="ct cat-red">🔴 Urgent</div><button class="cat-add" onclick="openAddTask('red')">+</button></div><div id="redList"></div></div>
+      <div class="card"><div class="cat-h"><div class="ct cat-yel">🟡 Important</div><button class="cat-add" onclick="openAddTask('yellow')">+</button></div><div id="yelList"></div></div>
+      <div class="card"><div class="cat-h"><div class="ct cat-grn">🟢 Bonus</div><button class="cat-add" onclick="openAddTask('green')">+</button></div><div id="grnList"></div></div>
+      <div class="finish-card"><div class="ftxt">Finished the day? Click:</div><button class="finish-btn" onclick="finishDay()">⚔️ Complete day</button><div style="font-size:.66rem;color:var(--dim);margin-top:6px">Saves history · Carries over unfinished urgent/important · Bonus resets</div></div>
     </div>
-
-    <!-- Page: ME -->
     <div class="pg" id="pg-char">
-      <div class="char-card">
-        <button class="char-edit" onclick="openEditProfile()">✏️</button>
-        <div class="char-top">
-          <div class="char-av" id="meAv">⚔️</div>
-          <div class="char-info">
-            <div class="char-name" id="meName">—</div>
-            <div class="char-class" id="meClass">—</div>
-          </div>
-        </div>
-        <div class="char-lvl">
-          <div class="lvl-badge"><div class="lvl-num" id="meLvN">1</div><div class="lvl-lbl">Level</div></div>
-          <div class="xp-block">
-            <div class="xp-txt" style="margin-bottom:3px"><b id="meLvTitle" style="color:var(--gold);font-family:'Cinzel',serif;letter-spacing:.5px">—</b></div>
-            <div class="xp-txt"><span>Until level <span id="meNextLvN">2</span></span><span id="meXpT">0 / 100</span></div>
-            <div class="bar"><div class="bar-fill" id="meXpB" style="width:0%"></div></div>
-            <div class="xp-txt" style="margin-top:5px"><span>Total XP</span><span id="meTotalXp">0</span></div>
-          </div>
-        </div>
-        <div class="next-rew" id="meNextRew" style="display:none">
-          <b>🎁 Reward for next level</b>
-          <span id="meNextRewT">—</span>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>📊 Life spheres</h2>
-        <div class="stats-grid" id="meSphereGrid"></div>
-      </div>
+      <div class="char-card"><button class="char-edit" onclick="openEditProfile()">✏️</button><div class="char-top"><div class="char-av" id="meAv">⚔️</div><div class="char-info"><div class="char-name" id="meName">—</div><div class="char-class" id="meClass">—</div></div></div>
+      <div class="char-lvl"><div class="lvl-badge"><div class="lvl-num" id="meLvN">1</div><div class="lvl-lbl">Level</div></div><div class="xp-block"><div class="xp-txt" style="margin-bottom:3px"><b id="meLvTitle" style="color:var(--gold)">—</b></div><div class="xp-txt"><span>Until level <span id="meNextLvN">2</span></span><span id="meXpT">0 / 100</span></div><div class="bar"><div class="bar-fill" id="meXpB" style="width:0%"></div></div><div class="xp-txt" style="margin-top:5px"><span>Total XP</span><span id="meTotalXp">0</span></div></div></div>
+      <div class="next-rew" id="meNextRew" style="display:none"><b>🎁 Reward for next level</b><span id="meNextRewT">—</span></div></div>
+      <div class="card"><h2>📊 Life spheres</h2><div class="stats-grid" id="meSphereGrid"></div></div>
     </div>
-
-    <!-- Page: HABITS (formerly DAY) -->
     <div class="pg" id="pg-habits">
-      <div class="card">
-        <h2>⭐ Sacred minimum <button class="h2-act" onclick="openAddDailyHabit()">+</button></h2>
-        <div id="dailyList"></div>
-        <div style="text-align:center;font-size:.7rem;color:var(--dim);margin-top:8px;font-style:italic">Did them all → you already rock. Period.</div>
-      </div>
-      <div class="card">
-        <h2>🏡 Sunday ritual <button class="h2-act" onclick="openAddWeeklyHabit()">+</button></h2>
-        <div id="weeklyList"></div>
-      </div>
+      <div class="card"><h2>⭐ Sacred minimum <button class="h2-act" onclick="openAddDailyHabit()">+</button></h2><div id="dailyList"></div><div style="text-align:center;font-size:.7rem;color:var(--dim);margin-top:8px;font-style:italic">Did them all → you already rock. Period.</div></div>
+      <div class="card"><h2>🏡 Sunday ritual <button class="h2-act" onclick="openAddWeeklyHabit()">+</button></h2><div id="weeklyList"></div></div>
     </div>
-
-    <!-- Page: CALENDAR -->
     <div class="pg" id="pg-cal">
-      <div class="cal-nav">
-        <button onclick="calPrev()">‹</button>
-        <div class="cal-month" id="calMonth">—</div>
-        <button onclick="calNext()">›</button>
-      </div>
-      <div class="legend" id="calLegend"></div>
-      <div class="week" id="calDow"></div>
-      <div class="week" id="calGrid" style="grid-auto-rows:minmax(74px,auto)"></div>
+      <div class="cal-nav"><button onclick="calPrev()">‹</button><div class="cal-month" id="calMonth">—</div><button onclick="calNext()">›</button></div>
+      <div class="legend" id="calLegend"></div><div class="week" id="calDow"></div><div class="week" id="calGrid" style="grid-auto-rows:minmax(74px,auto)"></div>
     </div>
-
-    <!-- Page: QUESTS -->
-    <div class="pg" id="pg-quest">
-      <div style="margin-bottom:11px">
-        <button class="add-it" onclick="openAddQuest()">+ New quest</button>
-      </div>
-      <div id="questsList"></div>
-    </div>
-
-    <!-- Page: LEVELS -->
-    <div class="pg" id="pg-lvl">
-      <div id="levelsList"></div>
-      <button class="add-lvls" onclick="addMoreLevels()">+ Add 5 more levels</button>
-    </div>
-
-    <!-- Page: HISTORY -->
-    <div class="pg" id="pg-hist">
-      <div class="hist-stats">
-        <div class="hst"><div class="hst-v" id="histDays">0</div><div class="hst-l">Days</div></div>
-        <div class="hst"><div class="hst-v" id="histTasks">0</div><div class="hst-l">Tasks</div></div>
-        <div class="hst"><div class="hst-v" id="histXp">0</div><div class="hst-l">Total XP</div></div>
-      </div>
-      <div id="histList"></div>
-    </div>
+    <div class="pg" id="pg-quest"><div style="margin-bottom:11px"><button class="add-it" onclick="openAddQuest()">+ New quest</button></div><div id="questsList"></div></div>
+    <div class="pg" id="pg-lvl"><div id="levelsList"></div><button class="add-lvls" onclick="addMoreLevels()">+ Add 5 more levels</button></div>
+    <div class="pg" id="pg-hist"><div class="hist-stats"><div class="hst"><div class="hst-v" id="histDays">0</div><div class="hst-l">Days</div></div><div class="hst"><div class="hst-v" id="histTasks">0</div><div class="hst-l">Tasks</div></div><div class="hst"><div class="hst-v" id="histXp">0</div><div class="hst-l">Total XP</div></div></div><div id="histList"></div></div>
   </div>
-
-  <!-- Bottom tabs (renamed "Rituals" → "Habits") -->
   <div class="tabs-b">
     <button class="tab-b active" data-tab="today" onclick="goTab('today')"><div class="ti">🎯</div>Today</button>
     <button class="tab-b" data-tab="char" onclick="goTab('char')"><div class="ti">⚔️</div>Me</button>
@@ -585,39 +410,12 @@ h2 .h2-act{background:transparent;border:1px solid var(--border);color:var(--gol
   </div>
 </div>
 
-<!-- Generic Modal -->
-<div class="modal" id="modal">
-  <div class="modal-in">
-    <div class="modal-h">
-      <div class="modal-t" id="modalTitle">—</div>
-      <button class="close" onclick="closeModal()">✕</button>
-    </div>
-    <div id="modalBody"></div>
-  </div>
-</div>
-
-<!-- Level Up screen (added reward note) -->
-<div class="levelup" id="levelup">
-  <div class="lu-glow"></div>
-  <div class="lu-icon">🏆</div>
-  <div class="lu-title">LEVEL UP!</div>
-  <div class="lu-num" id="luNum">2</div>
-  <div id="luTitle" style="font-family:'Cinzel',serif;color:var(--gold);font-size:1.1rem;letter-spacing:1px;margin-top:-6px;margin-bottom:10px;text-align:center">—</div>
-  <div class="lu-rew" id="luRew" style="display:none">
-    <div class="lu-rew-l">🎁 Your reward</div>
-    <div class="lu-rew-t" id="luRewT">—</div>
-    <div id="luRewNote" class="lu-rew-note"></div>
-  </div>
-  <button class="lu-btn" onclick="closeLevelUp()">Accept →</button>
-</div>
-
-<!-- Toast -->
+<div class="modal" id="modal"><div class="modal-in"><div class="modal-h"><div class="modal-t" id="modalTitle">—</div><button class="close" onclick="closeModal()">✕</button></div><div id="modalBody"></div></div></div>
+<div class="levelup" id="levelup"><div class="lu-glow"></div><div class="lu-icon">🏆</div><div class="lu-title">LEVEL UP!</div><div class="lu-num" id="luNum">2</div><div id="luTitle" style="font-family:'Cinzel',serif;color:var(--gold);font-size:1.1rem;letter-spacing:1px;margin-top:-6px;margin-bottom:10px;text-align:center">—</div><div class="lu-rew" id="luRew" style="display:none"><div class="lu-rew-l">🎁 Your reward</div><div class="lu-rew-t" id="luRewT">—</div><div id="luRewNote" class="lu-rew-note"></div></div><button class="lu-btn" onclick="closeLevelUp()">Accept →</button></div>
 <div class="toast" id="toast"></div>
 
 <script>
 'use strict';
-
-/* ================= CONSTANTS ================= */
 const STORAGE_KEY = 'questhub_v1';
 const APP_VERSION = '1.0.0';
 const PRESET_SPHERES = ['Health','Work','Creativity','Relationships','Finances','Home','Learning','Spirituality'];
@@ -629,1263 +427,173 @@ const DOW_EN = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const DOW_EN_FULL = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
 const MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-/* ================= STATE ================= */
-let state = null;
-let saveTimer = null;
+let state = null, saveTimer = null;
+let obStep = 1, obData = null;
+let _openQuests = new Set();
+let tutorialCompleted = false;
 
 function defaultState(){
-  return {
-    version: 1,
-    onboarded: false,
-    hero: { name:'', class:'', avatar:'⚔️' },
-    spheres: [],
-    daily: [],
-    weekly: [],
-    quests: [],
-    levels: generateLevels(20),
-    today: freshToday(),
-    totalXp: 0,
-    history: [],
-    streak: 0,
-    lastFinishedDate: null,
-    calendar: {},
-    calMonth: null,
-    schedule: {},
-    weeklyTemplate: {0:[],1:[],2:[],3:[],4:[],5:[],6:[]}
-  };
+  return { version:1, onboarded:false, hero:{name:'',class:'',avatar:'⚔️'}, spheres:[], daily:[], weekly:[], quests:[], levels:generateLevels(20), today:freshToday(), totalXp:0, history:[], streak:0, lastFinishedDate:null, calendar:{}, calMonth:null };
 }
-
-function freshToday(){
-  return {
-    date: todayStr(),
-    tasks: [],
-    earnedXp: 0
-  };
-}
-
-function defaultTitleFor(L){
-  if(L===1) return 'Start';
-  return LEVEL_TITLES_DEFAULT[(L-2) % LEVEL_TITLES_DEFAULT.length] || ('Level '+L);
-}
-function generateLevels(n, startFrom=1){
-  const arr=[];
-  let cum=0;
-  for(let L=1;L<=n;L++){
-    if(L===1){ arr.push({level:1,xpRequired:0,reward:'',title:defaultTitleFor(1)}); continue; }
-    const inc = 100 + (L-2)*150;
-    cum += inc;
-    arr.push({level:L,xpRequired:cum,reward:'',title:defaultTitleFor(L)});
-  }
-  return arr;
-}
-function extendLevels(currentLevels, addCount){
-  const last = currentLevels[currentLevels.length-1];
-  let cum = last.xpRequired;
-  let nextL = last.level+1;
-  const out=[...currentLevels];
-  for(let i=0;i<addCount;i++){
-    const inc = 100 + (nextL-2)*150;
-    cum += inc;
-    out.push({level:nextL, xpRequired:cum, reward:'', title:defaultTitleFor(nextL)});
-    nextL++;
-  }
-  return out;
-}
-
-function loadState(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(!raw) return defaultState();
-    const parsed = JSON.parse(raw);
-    const def = defaultState();
-    const merged = Object.assign(def, parsed, {
-      hero: Object.assign(def.hero, parsed.hero||{}),
-      today: Object.assign(def.today, parsed.today||{}),
-    });
-    if(Array.isArray(merged.levels)){
-      merged.levels.forEach(L=>{ if(!L.title) L.title = defaultTitleFor(L.level); });
-    }
-    if(!merged.schedule) merged.schedule = {};
-    if(!merged.weeklyTemplate) merged.weeklyTemplate = {0:[],1:[],2:[],3:[],4:[],5:[],6:[]};
-    return merged;
-  }catch(e){
-    console.error('Load failed', e);
-    return defaultState();
-  }
-}
-function save(){
-  if(saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(()=>{
-    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-    catch(e){ console.error('Save failed', e); toast('⚠️ Failed to save'); }
-  }, 250);
-}
-function saveNow(){
-  if(saveTimer){ clearTimeout(saveTimer); saveTimer=null; }
-  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
-}
-
+function freshToday(){ return { date:todayStr(), tasks:[], earnedXp:0 }; }
+function defaultTitleFor(L){ if(L===1) return 'Start'; return LEVEL_TITLES_DEFAULT[(L-2)%LEVEL_TITLES_DEFAULT.length] || ('Level '+L); }
+function generateLevels(n){ let arr=[], cum=0; for(let L=1;L<=n;L++){ if(L===1){ arr.push({level:1,xpRequired:0,reward:'',title:defaultTitleFor(1)}); continue; } let inc=100+(L-2)*150; cum+=inc; arr.push({level:L,xpRequired:cum,reward:'',title:defaultTitleFor(L)}); } return arr; }
+function extendLevels(cur,add){ let last=cur[cur.length-1], cum=last.xpRequired, nextL=last.level+1, out=[...cur]; for(let i=0;i<add;i++){ let inc=100+(nextL-2)*150; cum+=inc; out.push({level:nextL,xpRequired:cum,reward:'',title:defaultTitleFor(nextL)}); nextL++; } return out; }
+function loadState(){ try{ let raw=localStorage.getItem(STORAGE_KEY); if(!raw) return defaultState(); let parsed=JSON.parse(raw); let def=defaultState(); let merged=Object.assign(def,parsed,{hero:Object.assign(def.hero,parsed.hero||{}),today:Object.assign(def.today,parsed.today||{})}); if(Array.isArray(merged.levels)) merged.levels.forEach(L=>{ if(!L.title) L.title=defaultTitleFor(L.level); }); if(!merged.calendar) merged.calendar={}; return merged; }catch(e){ return defaultState(); } }
+function save(){ if(saveTimer) clearTimeout(saveTimer); saveTimer=setTimeout(()=>{ try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); }catch(e){ toast('⚠️ Failed to save. Try refreshing.'); } },250); }
+function saveNow(){ if(saveTimer){ clearTimeout(saveTimer); saveTimer=null; } try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); }catch(e){} }
 function uid(){ return Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4); }
-function todayStr(){
-  const d=new Date(); const m=String(d.getMonth()+1).padStart(2,'0'); const day=String(d.getDate()).padStart(2,'0');
-  return `${d.getFullYear()}-${m}-${day}`;
-}
-function fmtDateHuman(s){
-  const [y,m,d]=s.split('-').map(Number);
-  const dt=new Date(y,m-1,d);
-  return `${d} ${MONTHS_EN[m-1]} ${y}, ${DOW_EN[(dt.getDay()+6)%7]}`;
-}
+function todayStr(){ let d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function fmtDateHuman(s){ let [y,m,d]=s.split('-').map(Number); let dt=new Date(y,m-1,d); return `${d} ${MONTHS_EN[m-1]} ${y}, ${DOW_EN[(dt.getDay()+6)%7]}`; }
 function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function $(sel){ return document.querySelector(sel); }
 function $$(sel){ return document.querySelectorAll(sel); }
+function toast(msg){ let t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),1800); }
+function xpFloat(amount,x,y){ let el=document.createElement('div'); el.className='xp-float'; el.textContent=(amount>=0?'+':'')+amount+' XP'; if(amount<0) el.style.color='var(--red)'; el.style.left=(x-30)+'px'; el.style.top=(y-20)+'px'; document.body.appendChild(el); setTimeout(()=>el.remove(),1500); }
+function currentLevel(){ let lv=1; for(let L of state.levels){ if(state.totalXp>=L.xpRequired) lv=L.level; else break; } return lv; }
+function levelObj(N){ return state.levels.find(l=>l.level===N)||null; }
+function nextLevelObj(){ let cur=currentLevel(); return state.levels.find(l=>l.level===cur+1)||null; }
+function xpProgressInLevel(){ let cur=currentLevel(); let here=levelObj(cur)?.xpRequired??0; let next=levelObj(cur+1); if(!next) return {got:state.totalXp-here,need:0,pct:100,capped:true}; let got=state.totalXp-here, need=next.xpRequired-here; return {got,need,pct:need?Math.min(100,Math.round(got/need*100)):100,capped:false}; }
+function computeLevelFor(xp){ let lv=1; for(let L of state.levels){ if(xp>=L.xpRequired) lv=L.level; else break; } return lv; }
 
-function toast(msg){
-  const t=$('#toast'); t.textContent=msg; t.classList.add('show');
-  clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),1800);
-}
-function xpFloat(amount, x, y){
-  const el=document.createElement('div');
-  el.className='xp-float';
-  el.textContent=(amount>=0?'+':'')+amount+' XP';
-  if(amount<0) el.style.color='var(--red)';
-  el.style.left=(x-30)+'px'; el.style.top=(y-20)+'px';
-  document.body.appendChild(el);
-  setTimeout(()=>el.remove(),1500);
-}
-
-function currentLevel(){
-  let lv=1;
-  for(const L of state.levels){ if(state.totalXp >= L.xpRequired) lv=L.level; else break; }
-  return lv;
-}
-function levelObj(N){ return state.levels.find(l=>l.level===N) || null; }
-function nextLevelObj(){
-  const cur=currentLevel();
-  return state.levels.find(l=>l.level===cur+1) || null;
-}
-function xpProgressInLevel(){
-  const cur=currentLevel();
-  const here=levelObj(cur)?.xpRequired ?? 0;
-  const next=levelObj(cur+1);
-  if(!next) return {got:state.totalXp-here, need:0, pct:100, capped:true};
-  const got = state.totalXp - here;
-  const need = next.xpRequired - here;
-  return {got, need, pct: need? Math.min(100,Math.round(got/need*100)) : 100, capped:false};
-}
-
-/* ================= ONBOARDING ================= */
-let obStep = 1;
-let obData = null;
-
+// ========== ONBOARDING (4 steps, saved progress) ==========
 function startOnboarding(){
-  obData = {
-    name:'', cls:'', avatar:'⚔️',
-    spheres:[],
-    customSphereSet: new Set(),
-    daily:[],
-    weekly:[],
-    quests:[],
-    levels:[]
-  };
-  obData.levels = generateLevels(20);
+  let saved = localStorage.getItem('onboarding_progress');
+  if(saved){ try{ let p=JSON.parse(saved); obData=p; obStep=p.step||1; }catch(e){} }
+  if(!obData) obData = { step:1, name:'', cls:'', avatar:'⚔️', spheres:[], customSphereSet:[], daily:[], weekly:[], quests:[], levels:generateLevels(20) };
+  obData.levels = obData.levels || generateLevels(20);
   $('#onboarding').classList.add('active');
   $('#app').style.display='none';
   obRenderProgress();
-  const avg=$('#ob_av_grid'); avg.innerHTML='';
-  AVATARS.forEach(a=>{
-    const el=document.createElement('div');
-    el.className='av-it'+(a===obData.avatar?' on':'');
-    el.textContent=a;
-    el.onclick=()=>{ obData.avatar=a; avg.querySelectorAll('.av-it').forEach(x=>x.classList.remove('on')); el.classList.add('on'); };
-    avg.appendChild(el);
-  });
-  const ch=$('#ob_sphere_chips'); ch.innerHTML='';
-  PRESET_SPHERES.forEach(sp=>{
-    const c=document.createElement('div'); c.className='chip'; c.textContent=sp;
-    c.onclick=()=>{ toggleObSphere(sp,c); };
-    ch.appendChild(c);
-  });
+  let avg=$('#ob_av_grid'); avg.innerHTML='';
+  AVATARS.forEach(a=>{ let el=document.createElement('div'); el.className='av-it'+(a===obData.avatar?' on':''); el.textContent=a; el.onclick=()=>{ obData.avatar=a; avg.querySelectorAll('.av-it').forEach(x=>x.classList.remove('on')); el.classList.add('on'); }; avg.appendChild(el); });
+  let ch=$('#ob_sphere_chips'); ch.innerHTML='';
+  PRESET_SPHERES.forEach(sp=>{ let c=document.createElement('div'); c.className='chip'; c.textContent=sp; c.onclick=()=>toggleObSphere(sp,c); ch.appendChild(c); });
   obRenderSphereCount();
-  $('#ob_name').oninput = (e)=>{ obData.name=e.target.value.trim(); $('#ob_next1').disabled = !obData.name; };
-  $('#ob_class').oninput = (e)=>{ obData.cls=e.target.value.trim(); };
-  obRenderDaily();
-  obRenderWeekly();
-  obRenderQuests();
-  obRenderPresetChips();
-  obRenderLevels();
-  obShowStep(1);
+  $('#ob_name').oninput=e=>{ obData.name=e.target.value.trim(); $('#ob_next1').disabled=!obData.name; saveOnboarding(); };
+  $('#ob_class').oninput=e=>{ obData.cls=e.target.value.trim(); saveOnboarding(); };
+  obRenderDaily(); obRenderWeekly(); obRenderQuests(); obRenderPresetChips(); obRenderLevels();
+  obShowStep(obData.step);
 }
-
-function obRenderProgress(){
-  const p=$('#obProgress'); p.innerHTML='';
-  for(let i=1;i<=6;i++){
-    const d=document.createElement('div');
-    d.className='ob-dot'+(i<obStep?' done':i===obStep?' cur':'');
-    p.appendChild(d);
-  }
-}
-function obShowStep(n){
-  obStep=n;
-  $$('#onboarding .ob-step').forEach(el=>el.classList.toggle('active', +el.dataset.step===n));
-  obRenderProgress();
-  window.scrollTo(0,0);
-  document.getElementById('onboarding').scrollTo?.(0,0);
-}
-function obNext(from){
-  if(from===1){ if(!obData.name){ toast('Give your hero a name 🙂'); return; } }
-  obShowStep(from+1);
-}
+function saveOnboarding(){ obData.step=obStep; localStorage.setItem('onboarding_progress',JSON.stringify(obData)); }
+function obRenderProgress(){ let p=$('#obProgress'); p.innerHTML=''; for(let i=1;i<=4;i++){ let d=document.createElement('div'); d.className='ob-dot'+(i<obStep?' done':i===obStep?' cur':''); p.appendChild(d); } }
+function obShowStep(n){ obStep=n; $$('#onboarding .ob-step').forEach(el=>el.classList.toggle('active',+el.dataset.step===n)); obRenderProgress(); window.scrollTo(0,0); saveOnboarding(); }
+function obNext(from){ if(from===1&&!obData.name){ toast('Give your hero a name 🙂'); return; } obShowStep(from+1); }
 function obPrev(from){ obShowStep(from-1); }
 function obSkip(from){ obShowStep(from+1); }
+function toggleObSphere(name,chipEl){ let idx=obData.spheres.findIndex(s=>s.name===name); if(idx>=0){ obData.spheres.splice(idx,1); chipEl?.classList.remove('on'); }else{ obData.spheres.push({name}); chipEl?.classList.add('on'); } obRenderSphereCount(); saveOnboarding(); }
+function obAddSphere(){ let inp=$('#ob_sphere_input'), v=inp.value.trim(); if(!v) return; if(obData.spheres.some(s=>s.name.toLowerCase()===v.toLowerCase())){ toast('Already exists'); return; } obData.spheres.push({name:v}); obData.customSphereSet.push(v); inp.value=''; let c=$('#ob_sphere_custom'); c.innerHTML=''; obData.customSphereSet.forEach(name=>{ let el=document.createElement('div'); el.className='chip on'; el.textContent=name+' ✕'; el.onclick=()=>{ obData.spheres=obData.spheres.filter(s=>s.name!==name); obData.customSphereSet=obData.customSphereSet.filter(n=>n!==name); el.remove(); obRenderSphereCount(); saveOnboarding(); }; c.appendChild(el); }); obRenderSphereCount(); saveOnboarding(); }
+function obRenderSphereCount(){ let n=obData.spheres.length; let txt=n===0?'Selected: 0 (recommended 4–6)':`Selected: ${n}`+(n>=4&&n<=6?' ✓':n<4?' (you can add more)':' (a bit many, but OK)'); $('#ob_sphere_count').textContent=txt; }
+function obAddDaily(){ obData.daily.push({name:'',xp:10,sphereName:''}); obRenderDaily(); saveOnboarding(); }
+function obAddWeekly(){ obData.weekly.push({name:'',xp:20,sphereName:''}); obRenderWeekly(); saveOnboarding(); }
+function obRenderDaily(){ obRenderHabitList('#ob_daily_list',obData.daily,obRenderDaily,'daily'); }
+function obRenderWeekly(){ obRenderHabitList('#ob_weekly_list',obData.weekly,obRenderWeekly,'weekly'); }
+function obAddQuest(){ let defaultColor=QUEST_COLORS[obData.quests.length%QUEST_COLORS.length]; obData.quests.push({name:'',desc:'',identity:'',sphereName:'',color:defaultColor,cost:'',belief:5,impact:'',possible:''}); obRenderQuests(); saveOnboarding(); }
+function obRenderQuests(){ let c=$('#ob_quest_list'); c.innerHTML=''; if(obData.quests.length===0){ c.innerHTML='<div style="text-align:center;color:var(--dim);font-size:.78rem;padding:14px 4px;font-style:italic">You can skip — add later from "Quests"</div>'; return; } obData.quests.forEach((q,i)=>{ let sphereOpts=['<option value="">— no sphere —</option>'].concat(obData.spheres.map(s=>`<option value="${escapeHtml(s.name)}"${s.name===q.sphereName?' selected':''}>${escapeHtml(s.name)}</option>`)).join(''); let colorOpts=QUEST_COLORS.map(col=>`<div class="color-it${col===q.color?' on':''}" style="background:${col}" data-i="${i}" data-col="${col}"></div>`).join(''); let div=document.createElement('div'); div.className='iitem'; div.innerHTML=`<div class="iitem-row"><input type="text" placeholder="Quest name" value="${escapeHtml(q.name)}" data-i="${i}" data-k="name"><button class="delx" data-i="${i}" data-act="del">✕</button></div><div style="margin-top:6px"><input type="text" placeholder="🦋 Who will I become?" value="${escapeHtml(q.identity||'')}" data-i="${i}" data-k="identity"></div><div style="margin-top:6px"><textarea placeholder="Short description" rows="2" data-i="${i}" data-k="desc">${escapeHtml(q.desc)}</textarea></div><div style="margin-top:6px"><textarea placeholder="❓ What will I never have if I don't achieve this?" rows="2" data-i="${i}" data-k="cost">${escapeHtml(q.cost||'')}</textarea></div><div style="margin-top:6px"><input type="number" min="1" max="10" placeholder="📊 Belief (1–10)" value="${q.belief||5}" data-i="${i}" data-k="belief"></div><div style="margin-top:6px"><textarea placeholder="👨‍👩‍👧 How will it affect my loved ones?" rows="2" data-i="${i}" data-k="impact">${escapeHtml(q.impact||'')}</textarea></div><div style="margin-top:6px"><textarea placeholder="🚀 What becomes possible?" rows="2" data-i="${i}" data-k="possible">${escapeHtml(q.possible||'')}</textarea></div><div style="margin-top:6px"><select data-i="${i}" data-k="sphereName">${sphereOpts}</select></div><div style="margin-top:6px"><div class="lab" style="font-size:.65rem;margin-bottom:4px">Color</div><div class="color-row">${colorOpts}</div></div>`; c.appendChild(div); }); attachOnboardingInputs(c); }
+function attachOnboardingInputs(container){ container.querySelectorAll('input,textarea,select').forEach(el=>{ el.oninput=el.onchange=()=>{ let i=+el.dataset.i, k=el.dataset.k; if(k==='belief') obData.quests[i][k]=Math.min(10,Math.max(1,parseInt(el.value)||5)); else obData.quests[i][k]=el.value; saveOnboarding(); }; }); container.querySelectorAll('button[data-act="del"]').forEach(b=>b.onclick=()=>{ obData.quests.splice(+b.dataset.i,1); obRenderQuests(); saveOnboarding(); }); container.querySelectorAll('.color-it').forEach(el=>el.onclick=()=>{ let i=+el.dataset.i; obData.quests[i].color=el.dataset.col; obRenderQuests(); saveOnboarding(); }); }
+function obRenderHabitList(sel,list,rerender,kind){ let c=$(sel); c.innerHTML=''; if(list.length===0){ c.innerHTML='<div style="text-align:center;color:var(--dim);font-size:.78rem;padding:14px 4px;font-style:italic">Empty. Add at least one ↓</div>'; return; } list.forEach((it,i)=>{ let sphereOpts=['<option value="">— no sphere —</option>'].concat(obData.spheres.map(s=>`<option value="${escapeHtml(s.name)}"${s.name===it.sphereName?' selected':''}>${escapeHtml(s.name)}</option>`)).join(''); let div=document.createElement('div'); div.className='iitem'; div.innerHTML=`<div class="iitem-row"><input type="text" placeholder="e.g. water 1.5L / exercise" value="${escapeHtml(it.name)}" data-i="${i}" data-k="name"><input type="number" class="xpin" min="1" max="500" value="${it.xp}" data-i="${i}" data-k="xp"><button class="delx" data-i="${i}" data-act="del">✕</button></div><div style="margin-top:6px"><select data-i="${i}" data-k="sphereName">${sphereOpts}</select></div>`; c.appendChild(div); }); attachHabitInputs(c,list,rerender,kind); }
+function attachHabitInputs(container,list,rerender,kind){ container.querySelectorAll('input,select').forEach(el=>{ el.oninput=el.onchange=()=>{ let i=+el.dataset.i, k=el.dataset.k; list[i][k]=(k==='xp')?Math.max(1,parseInt(el.value)||10):el.value; saveOnboarding(); if(rerender) rerender(); }; }); container.querySelectorAll('button[data-act="del"]').forEach(b=>b.onclick=()=>{ list.splice(+b.dataset.i,1); rerender(); saveOnboarding(); }); }
+function obRenderPresetChips(){ let dc=document.getElementById('ob_daily_presets'); if(dc){ let presets=[{name:'💧 1.5L water',xp:10,sphereName:'Health'},{name:'🧘 5 min meditation',xp:15,sphereName:'Spirituality'},{name:'🚶 20 min walk',xp:15,sphereName:'Health'},{name:'📖 15 min reading',xp:10,sphereName:'Learning'},{name:'💪 Exercise',xp:15,sphereName:'Health'}]; dc.innerHTML=presets.map((p,i)=>`<div class="prchip" data-type="daily" data-i="${i}">${escapeHtml(p.name)} <span class="pr-xp">+${p.xp}</span></div>`).join(''); dc.querySelectorAll('.prchip').forEach(el=>{ el.onclick=()=>{ let i=+el.dataset.i, p=presets[i]; let idx=obData.daily.findIndex(d=>d.name===p.name); if(idx>=0) obData.daily.splice(idx,1); else obData.daily.push({...p}); obRenderDaily(); saveOnboarding(); }; }); } let wc=document.getElementById('ob_weekly_presets'); if(wc){ let presets=[{name:'🧹 Deep cleaning',xp:40,sphereName:'Home'},{name:'📝 Weekly plan',xp:30,sphereName:''},{name:'🌲 Nature walk',xp:35,sphereName:'Health'}]; wc.innerHTML=presets.map((p,i)=>`<div class="prchip" data-type="weekly" data-i="${i}">${escapeHtml(p.name)} <span class="pr-xp">+${p.xp}</span></div>`).join(''); wc.querySelectorAll('.prchip').forEach(el=>{ el.onclick=()=>{ let i=+el.dataset.i, p=presets[i]; let idx=obData.weekly.findIndex(d=>d.name===p.name); if(idx>=0) obData.weekly.splice(idx,1); else obData.weekly.push({...p}); obRenderWeekly(); saveOnboarding(); }; }); } let qc=document.getElementById('ob_quest_presets'); if(qc){ let presets=[{name:'Write a book',identity:'published author',desc:'',sphereName:'Creativity',color:QUEST_COLORS[0]},{name:'Improve physical shape',identity:'best version of myself',desc:'',sphereName:'Health',color:QUEST_COLORS[1]},{name:'Learn a language to B2',identity:'bilingual',desc:'',sphereName:'Learning',color:QUEST_COLORS[2]}]; qc.innerHTML=presets.map((p,i)=>`<div class="prchip" data-type="quest" data-i="${i}">${escapeHtml(p.name)}</div>`).join(''); qc.querySelectorAll('.prchip').forEach(el=>{ el.onclick=()=>{ let i=+el.dataset.i, p=presets[i]; let idx=obData.quests.findIndex(q=>q.name===p.name); if(idx>=0) obData.quests.splice(idx,1); else obData.quests.push({...p,cost:'',belief:5,impact:'',possible:''}); obRenderQuests(); saveOnboarding(); }; }); } }
+function obRenderLevels(){ let c=$('#ob_levels_list'); c.innerHTML=''; obData.levels.forEach((L,i)=>{ if(L.level===1) return; let ph=REWARD_HINTS[(i-1)%REWARD_HINTS.length]; let div=document.createElement('div'); div.className='lvinp'; div.innerHTML=`<div class="lv-pill"><div>${L.level}</div><div class="lp-x">LVL</div></div><div class="lv-info"><div class="lv-xp">${L.xpRequired} XP</div><input type="text" placeholder="Title: ${escapeHtml(L.title||defaultTitleFor(L.level))}" value="${escapeHtml(L.title||'')}" data-i="${i}" data-k="title" style="margin-bottom:4px"><input type="text" placeholder="🎁 e.g. ${ph}" value="${escapeHtml(L.reward)}" data-i="${i}" data-k="reward"></div>`; c.appendChild(div); }); c.querySelectorAll('input').forEach(el=>{ el.oninput=()=>{ obData.levels[+el.dataset.i][el.dataset.k]=el.value; saveOnboarding(); }; }); }
+function obFinish(){ state=defaultState(); state.onboarded=true; state.hero={name:obData.name||'Hero',class:obData.cls||'',avatar:obData.avatar}; state.spheres=obData.spheres.map(s=>({id:uid(),name:s.name,xp:0,level:1})); let sphereByName=n=>state.spheres.find(s=>s.name===n)?.id||null; state.daily=obData.daily.filter(d=>d.name.trim()).map(d=>({id:uid(),name:d.name.trim(),xp:+d.xp||10,sphereId:sphereByName(d.sphereName)})); state.weekly=obData.weekly.filter(d=>d.name.trim()).map(d=>({id:uid(),name:d.name.trim(),xp:+d.xp||20,sphereId:sphereByName(d.sphereName)})); state.quests=obData.quests.filter(q=>q.name.trim()).map(q=>({id:uid(),name:q.name.trim(),description:q.desc.trim(),identity:(q.identity||'').trim(),sphereId:sphereByName(q.sphereName),color:q.color||QUEST_COLORS[0],subtasks:[],created:todayStr(),cost:q.cost||'',belief:parseInt(q.belief)||5,impact:q.impact||'',possible:q.possible||''})); state.levels=obData.levels.map(L=>({...L})); state.today=freshToday(); state.daily.forEach(d=>{ state.today.tasks.push({id:uid(),name:d.name,cat:'red',xp:d.xp,sphereId:d.sphereId,sourceDailyId:d.id,done:false}); }); if(new Date().getDay()===0){ state.weekly.forEach(w=>{ state.today.tasks.push({id:uid(),name:w.name,cat:'yellow',xp:w.xp,sphereId:w.sphereId,sourceWeeklyId:w.id,done:false}); }); } saveNow(); localStorage.removeItem('onboarding_progress'); $('#onboarding').classList.remove('active'); $('#app').style.display='block'; initApp(); toast('🎉 Done! Go, '+state.hero.name+'!'); }
 
-function toggleObSphere(name, chipEl){
-  const idx = obData.spheres.findIndex(s=>s.name===name);
-  if(idx>=0){ obData.spheres.splice(idx,1); chipEl?.classList.remove('on'); }
-  else { obData.spheres.push({name}); chipEl?.classList.add('on'); }
-  obRenderSphereCount();
-}
-function obAddSphere(){
-  const inp=$('#ob_sphere_input'); const v=inp.value.trim();
-  if(!v) return;
-  if(obData.spheres.some(s=>s.name.toLowerCase()===v.toLowerCase())){ toast('Already exists'); return; }
-  obData.spheres.push({name:v});
-  obData.customSphereSet.add(v);
-  inp.value='';
-  const c=$('#ob_sphere_custom'); c.innerHTML='';
-  obData.customSphereSet.forEach(name=>{
-    const el=document.createElement('div'); el.className='chip on'; el.textContent=name+' ✕';
-    el.onclick=()=>{
-      obData.spheres = obData.spheres.filter(s=>s.name!==name);
-      obData.customSphereSet.delete(name);
-      el.remove(); obRenderSphereCount();
-    };
-    c.appendChild(el);
-  });
-  obRenderSphereCount();
-}
-function obRenderSphereCount(){
-  const n=obData.spheres.length;
-  const txt = n===0 ? 'Selected: 0 (recommended 4–6)' : `Selected: ${n}` + (n>=4&&n<=6?' ✓':n<4?' (you can add more)':' (a bit many, but OK)');
-  $('#ob_sphere_count').textContent = txt;
-}
-
-function obAddDaily(){ obData.daily.push({name:'',xp:10,sphereName:''}); obRenderDaily(); }
-function obAddWeekly(){ obData.weekly.push({name:'',xp:20,sphereName:''}); obRenderWeekly(); }
-function obRenderDaily(){ obRenderHabitList('#ob_daily_list', obData.daily, obRenderDaily); }
-function obRenderWeekly(){ obRenderHabitList('#ob_weekly_list', obData.weekly, obRenderWeekly); }
-
-const PRESET_DAILY = [
-  {name:'💧 1.5L water', xp:10, sphereName:'Health'},
-  {name:'🧘 5 min meditation', xp:15, sphereName:'Spirituality'},
-  {name:'🚶 20 min walk', xp:15, sphereName:'Health'},
-  {name:'📖 15 min reading', xp:10, sphereName:'Learning'},
-  {name:'✍️ Morning pages', xp:15, sphereName:'Spirituality'},
-  {name:'💪 Exercise', xp:15, sphereName:'Health'},
-  {name:'🛌 Sleep by 11 pm', xp:15, sphereName:'Health'},
-  {name:'📵 1 hour no phone', xp:20, sphereName:'Spirituality'},
-  {name:'🙏 Gratitude (3 things)', xp:10, sphereName:'Spirituality'},
-  {name:'🌱 Step toward main quest', xp:25, sphereName:''},
-];
-const PRESET_WEEKLY = [
-  {name:'🧹 Deep cleaning', xp:40, sphereName:'Home'},
-  {name:'📞 Call parents/friend', xp:30, sphereName:'Relationships'},
-  {name:'📝 Weekly plan', xp:30, sphereName:''},
-  {name:'🛁 Long candle bath', xp:25, sphereName:'Spirituality'},
-  {name:'🌲 Nature walk', xp:35, sphereName:'Health'},
-  {name:'🍲 Weekly meal prep', xp:35, sphereName:'Home'},
-  {name:'💰 Review finances', xp:30, sphereName:'Finances'},
-  {name:'📚 Deep reading 1 hour', xp:30, sphereName:'Learning'},
-  {name:'🎨 Free creative time', xp:35, sphereName:'Creativity'},
-];
-const PRESET_QUESTS = [
-  {name:'Write a book', identity:'published author', desc:'', sphereName:'Creativity'},
-  {name:'Improve physical shape', identity:'best version of myself', desc:'Regular training + nutrition', sphereName:'Health'},
-  {name:'Learn a language to solid B2', identity:'bilingual', desc:'', sphereName:'Learning'},
-  {name:'PhD dissertation', identity:'doctor of science', desc:'', sphereName:'Work'},
-  {name:'Article in a scientific journal', identity:'published author', desc:'', sphereName:'Work'},
-  {name:'Financial cushion (6 months)', identity:'financially free', desc:'', sphereName:'Finances'},
-  {name:'100 days of meditation practice', identity:'centered self', desc:'', sphereName:'Spirituality'},
-  {name:'Move / renovate home', identity:'owner of a cozy home', desc:'', sphereName:'Home'},
-  {name:'Reach a new career level', identity:'expert in my field', desc:'', sphereName:'Work'},
-  {name:'Launch my own product', identity:'creator with an audience', desc:'', sphereName:'Work'},
-];
-
-function obRenderPresetChips(){
-  const dc = document.getElementById('ob_daily_presets');
-  if(dc){
-    dc.innerHTML = PRESET_DAILY.map((p,i)=>{
-      const picked = obData.daily.some(d=>d.name===p.name);
-      return `<div class="prchip ${picked?'on':''}" data-type="daily" data-i="${i}">${escapeHtml(p.name)} <span class="pr-xp">+${p.xp}</span></div>`;
-    }).join('');
-    dc.querySelectorAll('.prchip').forEach(el=>{
-      el.onclick = ()=>{
-        const i=+el.dataset.i; const p=PRESET_DAILY[i];
-        const idx = obData.daily.findIndex(d=>d.name===p.name);
-        if(idx>=0) obData.daily.splice(idx,1); else obData.daily.push({...p});
-        obRenderDaily(); obRenderPresetChips();
-      };
-    });
-  }
-  const wc = document.getElementById('ob_weekly_presets');
-  if(wc){
-    wc.innerHTML = PRESET_WEEKLY.map((p,i)=>{
-      const picked = obData.weekly.some(d=>d.name===p.name);
-      return `<div class="prchip ${picked?'on':''}" data-type="weekly" data-i="${i}">${escapeHtml(p.name)} <span class="pr-xp">+${p.xp}</span></div>`;
-    }).join('');
-    wc.querySelectorAll('.prchip').forEach(el=>{
-      el.onclick = ()=>{
-        const i=+el.dataset.i; const p=PRESET_WEEKLY[i];
-        const idx = obData.weekly.findIndex(d=>d.name===p.name);
-        if(idx>=0) obData.weekly.splice(idx,1); else obData.weekly.push({...p});
-        obRenderWeekly(); obRenderPresetChips();
-      };
-    });
-  }
-  const qc = document.getElementById('ob_quest_presets');
-  if(qc){
-    qc.innerHTML = PRESET_QUESTS.map((p,i)=>{
-      const picked = obData.quests.some(q=>q.name===p.name);
-      return `<div class="prchip ${picked?'on':''}" data-type="quest" data-i="${i}">${escapeHtml(p.name)}</div>`;
-    }).join('');
-    qc.querySelectorAll('.prchip').forEach(el=>{
-      el.onclick = ()=>{
-        const i=+el.dataset.i; const p=PRESET_QUESTS[i];
-        const idx = obData.quests.findIndex(q=>q.name===p.name);
-        if(idx>=0) obData.quests.splice(idx,1);
-        else {
-          const defaultColor = QUEST_COLORS[obData.quests.length % QUEST_COLORS.length];
-          obData.quests.push({...p, color:defaultColor});
-        }
-        obRenderQuests(); obRenderPresetChips();
-      };
-    });
-  }
-}
-function obRenderHabitList(sel, list, rerender){
-  const c=$(sel); c.innerHTML='';
-  if(list.length===0){
-    c.innerHTML='<div style="text-align:center;color:var(--dim);font-size:.78rem;padding:14px 4px;font-style:italic">Empty for now. Add at least one ↓</div>';
-    return;
-  }
-  list.forEach((it,i)=>{
-    const sphereOpts = ['<option value="">— no sphere —</option>']
-      .concat(obData.spheres.map(s=>`<option value="${escapeHtml(s.name)}"${s.name===it.sphereName?' selected':''}>${escapeHtml(s.name)}</option>`)).join('');
-    const div=document.createElement('div'); div.className='iitem';
-    div.innerHTML = `
-      <div class="iitem-row">
-        <input type="text" placeholder="e.g. water 1.5L / exercise / meditation" value="${escapeHtml(it.name)}" data-i="${i}" data-k="name">
-        <input type="number" class="xpin" min="1" max="500" value="${it.xp}" data-i="${i}" data-k="xp">
-        <button class="delx" data-i="${i}" data-act="del">✕</button>
-      </div>
-      <div style="margin-top:6px"><select data-i="${i}" data-k="sphereName">${sphereOpts}</select></div>`;
-    c.appendChild(div);
-  });
-  c.querySelectorAll('input,select').forEach(el=>{
-    el.oninput = el.onchange = (e)=>{
-      const i=+el.dataset.i, k=el.dataset.k;
-      list[i][k] = (k==='xp') ? Math.max(1,parseInt(el.value)||10) : el.value;
-    };
-  });
-  c.querySelectorAll('button[data-act="del"]').forEach(b=>b.onclick=()=>{ list.splice(+b.dataset.i,1); rerender(); });
-}
-
-function obAddQuest(){
-  const defaultColor = QUEST_COLORS[obData.quests.length % QUEST_COLORS.length];
-  obData.quests.push({
-    name:'', desc:'', identity:'', sphereName:'', color:defaultColor,
-    cost:'', belief:5, impact:'', possible:''
-  });
-  obRenderQuests();
-}
-function obRenderQuests(){
-  const c=$('#ob_quest_list'); c.innerHTML='';
-  if(obData.quests.length===0){
-    c.innerHTML='<div style="text-align:center;color:var(--dim);font-size:.78rem;padding:14px 4px;font-style:italic">You can skip — add later from "Quests"</div>';
-    return;
-  }
-  obData.quests.forEach((q,i)=>{
-    const sphereOpts = ['<option value="">— no sphere —</option>']
-      .concat(obData.spheres.map(s=>`<option value="${escapeHtml(s.name)}"${s.name===q.sphereName?' selected':''}>${escapeHtml(s.name)}</option>`)).join('');
-    const colorOpts = QUEST_COLORS.map(col=>`<div class="color-it${col===q.color?' on':''}" style="background:${col}" data-i="${i}" data-col="${col}"></div>`).join('');
-    const div=document.createElement('div'); div.className='iitem';
-    div.innerHTML = `
-      <div class="iitem-row">
-        <input type="text" placeholder="Quest name" value="${escapeHtml(q.name)}" data-i="${i}" data-k="name">
-        <button class="delx" data-i="${i}" data-act="del">✕</button>
-      </div>
-      <div style="margin-top:6px"><input type="text" placeholder="🦋 Who will I become when I finish?" value="${escapeHtml(q.identity||'')}" data-i="${i}" data-k="identity"></div>
-      <div style="margin-top:6px"><textarea placeholder="Short description (optional)" rows="2" data-i="${i}" data-k="desc">${escapeHtml(q.desc)}</textarea></div>
-      
-      <!-- Coaching fields in onboarding -->
-      <div style="margin-top:6px"><textarea placeholder="❓ What will I never have in my life if I don't achieve this?" rows="2" data-i="${i}" data-k="cost">${escapeHtml(q.cost||'')}</textarea></div>
-      <div style="margin-top:6px"><input type="number" min="1" max="10" placeholder="📊 How much do I believe I can do it? (1–10)" value="${q.belief || 5}" data-i="${i}" data-k="belief"></div>
-      <div style="margin-top:6px"><textarea placeholder="👨‍👩‍👧 How will achieving this affect my loved ones?" rows="2" data-i="${i}" data-k="impact">${escapeHtml(q.impact||'')}</textarea></div>
-      <div style="margin-top:6px"><textarea placeholder="🚀 What becomes possible because of this goal?" rows="2" data-i="${i}" data-k="possible">${escapeHtml(q.possible||'')}</textarea></div>
-      
-      <div style="margin-top:6px"><select data-i="${i}" data-k="sphereName">${sphereOpts}</select></div>
-      <div style="margin-top:6px"><div class="lab" style="font-size:.65rem;margin-bottom:4px">Color</div><div class="color-row">${colorOpts}</div></div>`;
-    c.appendChild(div);
-  });
-  c.querySelectorAll('input,textarea,select').forEach(el=>{
-    el.oninput = el.onchange = (e)=>{
-      const i=+el.dataset.i, k=el.dataset.k;
-      if(k==='belief') obData.quests[i][k] = Math.min(10, Math.max(1, parseInt(el.value)||5));
-      else obData.quests[i][k] = el.value;
-    };
-  });
-  c.querySelectorAll('button[data-act="del"]').forEach(b=>b.onclick=()=>{ obData.quests.splice(+b.dataset.i,1); obRenderQuests(); });
-  c.querySelectorAll('.color-it').forEach(el=>el.onclick=()=>{
-    const i=+el.dataset.i; obData.quests[i].color = el.dataset.col; obRenderQuests();
-  });
-}
-
-function obRenderLevels(){
-  const c=$('#ob_levels_list'); c.innerHTML='';
-  obData.levels.forEach((L,i)=>{
-    if(L.level===1) return;
-    const ph = REWARD_HINTS[(i-1)%REWARD_HINTS.length];
-    const div=document.createElement('div'); div.className='lvinp';
-    div.innerHTML = `
-      <div class="lv-pill"><div>${L.level}</div><div class="lp-x">LVL</div></div>
-      <div class="lv-info">
-        <div class="lv-xp">${L.xpRequired} XP</div>
-        <input type="text" placeholder="Title: ${escapeHtml(L.title||defaultTitleFor(L.level))}" value="${escapeHtml(L.title||'')}" data-i="${i}" data-k="title" style="margin-bottom:4px">
-        <input type="text" placeholder="🎁 e.g. ${ph}" value="${escapeHtml(L.reward)}" data-i="${i}" data-k="reward">
-      </div>`;
-    c.appendChild(div);
-  });
-  c.querySelectorAll('input').forEach(el=>{ el.oninput=()=>{ obData.levels[+el.dataset.i][el.dataset.k] = el.value; }; });
-}
-
-function obFinish(){
-  state = defaultState();
-  state.onboarded = true;
-  state.hero = { name: obData.name||'Hero', class: obData.cls||'', avatar: obData.avatar };
-  state.spheres = obData.spheres.map(s=>({ id:uid(), name:s.name, xp:0, level:1 }));
-  const sphereByName = (n)=> state.spheres.find(s=>s.name===n)?.id || null;
-  state.daily = obData.daily.filter(d=>d.name.trim()).map(d=>({ id:uid(), name:d.name.trim(), xp:+d.xp||10, sphereId:sphereByName(d.sphereName) }));
-  state.weekly = obData.weekly.filter(d=>d.name.trim()).map(d=>({ id:uid(), name:d.name.trim(), xp:+d.xp||20, sphereId:sphereByName(d.sphereName) }));
-  state.quests = obData.quests.filter(q=>q.name.trim()).map(q=>({
-    id:uid(), name:q.name.trim(), description:q.desc.trim(), identity:(q.identity||'').trim(), sphereId:sphereByName(q.sphereName),
-    color:q.color || QUEST_COLORS[0], subtasks:[], created: todayStr(),
-    cost: q.cost || '', belief: parseInt(q.belief) || 5, impact: q.impact || '', possible: q.possible || ''
-  }));
-  state.levels = obData.levels.map(L=>({...L}));
-  state.today = freshToday();
-  state.daily.forEach(d=>{
-    state.today.tasks.push({ id:uid(), name:d.name, cat:'red', xp:d.xp, sphereId:d.sphereId, sourceDailyId:d.id, done:false });
-  });
-  if(new Date().getDay()===0){
-    state.weekly.forEach(w=>{
-      state.today.tasks.push({ id:uid(), name:w.name, cat:'yellow', xp:w.xp, sphereId:w.sphereId, sourceWeeklyId:w.id, done:false });
-    });
-  }
-  saveNow();
-  $('#onboarding').classList.remove('active');
-  $('#app').style.display='block';
-  initApp();
-  toast('🎉 Done! Go, '+state.hero.name+'!');
-}
-
+// ========== APP INIT & TUTORIAL ==========
 function initApp(){
-  $('#app_title').textContent = state.hero.name + (state.hero.class? ' · '+state.hero.class : '');
-  $('#app_subtitle').textContent = `Lvl ${currentLevel()} · ${state.totalXp} XP`;
+  $('#app_title').textContent=state.hero.name+(state.hero.class?' · '+state.hero.class:'');
+  $('#app_subtitle').textContent=`Lvl ${currentLevel()} · ${state.totalXp} XP`;
   rolloverIfNeeded();
   renderAll();
-}
-function renderAll(){
-  renderToday();
-  renderMe();
-  renderHabits();
-  renderCalendar();
-  renderQuests();
-  renderLevels();
-  renderHistory();
-}
-
-function rolloverIfNeeded(){
-  const td = todayStr();
-  if(state.today.date !== td){
-    const carry = state.today.tasks.filter(t=>!t.done && t.cat!=='green' && !t.sourceDailyId && !t.sourceWeeklyId);
-    state.today = freshToday();
-    state.daily.forEach(d=>{
-      state.today.tasks.push({ id:uid(), name:d.name, cat:'red', xp:d.xp, sphereId:d.sphereId, sourceDailyId:d.id, done:false });
-    });
-    if(new Date().getDay()===0){
-      state.weekly.forEach(w=>{
-        state.today.tasks.push({ id:uid(), name:w.name, cat:'yellow', xp:w.xp, sphereId:w.sphereId, sourceWeeklyId:w.id, done:false });
-      });
-    }
-    carry.forEach(t=>{ t.id=uid(); t.done=false; state.today.tasks.push(t); });
-    save();
+  if(!tutorialCompleted && state.onboarded && !localStorage.getItem('tutorial_done')){
+    setTimeout(()=>startTutorial(),500);
   }
 }
+function startTutorial(){
+  let steps=[{title:'🎯 Today',text:'Add one‑time tasks here. Red = urgent, yellow = important, green = bonus. Tap to complete.'},{title:'📋 Habits',text:'Your sacred minimum (daily) and Sunday ritual. Do them → you already win.'},{title:'🗺️ Quests',text:'Big projects with coaching questions. Tap 🧠 to see your answers.'}];
+  let i=0;
+  function showStep(){ if(i>=steps.length){ localStorage.setItem('tutorial_done','true'); return; } let s=steps[i]; let html=`<h2 style="text-align:center;">${s.title}</h2><p style="margin:12px 0;">${s.text}</p><div style="display:flex;gap:8px;"><button class="btn btn-gold" style="flex:1" onclick="closeModal(); i++; showStep();">Next</button><button class="btn btn-outline" style="flex:1" onclick="closeModal(); localStorage.setItem('tutorial_done','true');">Skip</button></div>`; showModal('Tutorial',html); } showStep();
+}
+function rolloverIfNeeded(){ let td=todayStr(); if(state.today.date!==td){ let carry=state.today.tasks.filter(t=>!t.done && t.cat!=='green' && !t.sourceDailyId && !t.sourceWeeklyId); state.today=freshToday(); state.daily.forEach(d=>{ state.today.tasks.push({id:uid(),name:d.name,cat:'red',xp:d.xp,sphereId:d.sphereId,sourceDailyId:d.id,done:false}); }); if(new Date().getDay()===0){ state.weekly.forEach(w=>{ state.today.tasks.push({id:uid(),name:w.name,cat:'yellow',xp:w.xp,sphereId:w.sphereId,sourceWeeklyId:w.id,done:false}); }); } carry.forEach(t=>{ t.id=uid(); t.done=false; state.today.tasks.push(t); }); save(); } }
+function goTab(name){ $$('.pg').forEach(p=>p.classList.remove('active')); $('#pg-'+name).classList.add('active'); $$('.tab-b').forEach(b=>b.classList.toggle('active',b.dataset.tab===name)); window.scrollTo(0,0); }
+function renderAll(){ renderToday(); renderMe(); renderHabits(); renderCalendar(); renderQuests(); renderLevels(); renderHistory(); }
 
-function goTab(name){
-  $$('.pg').forEach(p=>p.classList.remove('active'));
-  $('#pg-'+name).classList.add('active');
-  $$('.tab-b').forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
-  window.scrollTo(0,0);
-}
-
-function renderSundayBanner(){
-  const el = document.getElementById('sundayBanner');
-  if(!el) return;
-  const d = new Date();
-  const isSunday = d.getDay()===0;
-  const todayKey = todayStr();
-  const dismissed = state.sundayDismissed === todayKey;
-  if(!isSunday || dismissed){ el.style.display='none'; el.innerHTML=''; return; }
-  const msgs = [
-    {t:'🎲 CAPTAIN\'S BRIEFING', d:'Sunday, hero. Spend 5 minutes on strategy — open 📅 Calendar and place your time blocks for the week. Start with an easy win on Monday.'},
-    {t:'🗺️ EXPEDITION PLAN', d:'New week — new raid. In Calendar, load the Sunday template or drag blocks — then battle from Monday.'},
-    {t:'⚔️ PRE‑BATTLE BRIEFING', d:'Sunday evening is perfect to look at the Calendar and lay out the week in blocks. The game starts on Monday.'},
-  ];
-  const pick = msgs[d.getDate() % msgs.length];
-  el.className = 'sun-banner';
-  el.style.display='block';
-  el.innerHTML = `
-    <button class="sun-banner-x" onclick="event.stopPropagation(); dismissSunday()">✕</button>
-    <div class="sun-banner-t">${pick.t}</div>
-    <div class="sun-banner-d">${pick.d}</div>`;
-  el.onclick = ()=>{ goTab('cal'); };
-}
-function dismissSunday(){
-  state.sundayDismissed = todayStr();
-  save();
-  renderSundayBanner();
-}
-
-function renderToday(){
-  $('#todayDate').textContent = fmtDateHuman(state.today.date);
-  const streak = state.streak||0;
-  $('#todayStreak').textContent = streak>0 ? `🔥 Streak: ${streak} ${plural(streak,'day','days','days')}` : '';
-  renderSundayBanner();
-  const tasks = state.today.tasks;
-  const earned = tasks.filter(t=>t.done).reduce((s,t)=>s+t.xp,0);
-  const max = tasks.reduce((s,t)=>s+t.xp,0);
-  state.today.earnedXp = earned;
-  $('#todayXP').textContent = earned;
-  $('#todayMax').textContent = max;
-  $('#todayBar').style.width = (max? Math.round(earned/max*100):0)+'%';
-  ['red','yellow','green'].forEach(cat=>{
-    const el = $('#'+(cat==='red'?'redList':cat==='yellow'?'yelList':'grnList'));
-    const list = tasks.filter(t=>t.cat===cat);
-    if(list.length===0){
-      el.innerHTML = '<div class="empty-cat">Empty. Tap + to add</div>';
-      return;
-    }
-    el.innerHTML = list.map(t=>renderTaskRow(t)).join('');
-    list.forEach(t=>{
-      const row = el.querySelector(`[data-tid="${t.id}"]`);
-      if(!row) return;
-      row.onclick = (e)=>{
-        if(e.target.closest('.tdel')) return;
-        toggleTask(t.id, e);
-      };
-      row.querySelector('.tdel').onclick = (e)=>{ e.stopPropagation(); deleteTask(t.id); };
-    });
-  });
-  $('#app_title').textContent = state.hero.name + (state.hero.class? ' · '+state.hero.class : '');
-  $('#app_subtitle').textContent = `Lvl ${currentLevel()} · ${state.totalXp} XP`;
-}
-
-function renderTaskRow(t){
-  let badge='';
-  if(t.sourceDailyId) badge=`<span class="tag" style="background:var(--gold)">⭐ daily</span>`;
-  if(t.sourceWeeklyId) badge=`<span class="tag" style="background:var(--cyan)">🏡 weekly</span>`;
-  if(t.questId){
-    const q=state.quests.find(q=>q.id===t.questId);
-    if(q) badge=`<span class="tag" style="background:${q.color}">🗺️ ${escapeHtml(q.name)}</span>`;
-  }
-  return `<div class="task ${t.done?'done':''}" data-tid="${t.id}">
-    <div class="tck">${t.done?'✓':''}</div>
-    <div class="tn">${escapeHtml(t.name)} ${badge}</div>
-    <div class="tx">${t.done?'+':''}${t.xp}</div>
-    <button class="tdel" title="delete">✕</button>
-  </div>`;
-}
-
-function plural(n,a,b,c){
-  const m=Math.abs(n)%100, m1=m%10;
-  if(m>=11&&m<=14) return c;
-  if(m1===1) return a;
-  if(m1>=2&&m1<=4) return b;
-  return c;
-}
-
-function toggleTask(tid, ev){
-  const t = state.today.tasks.find(x=>x.id===tid);
-  if(!t) return;
-  const wasDone = t.done;
-  t.done = !t.done;
-  const sign = t.done? +1 : -1;
-  const delta = sign * t.xp;
-  state.totalXp = Math.max(0, state.totalXp + delta);
-  if(t.sphereId){
-    const s = state.spheres.find(x=>x.id===t.sphereId);
-    if(s){ s.xp = Math.max(0, s.xp + delta); s.level = Math.max(1, 1+Math.floor(s.xp/100)); }
-  }
-  if(ev){
-    const x=ev.clientX||ev.touches?.[0]?.clientX||window.innerWidth/2;
-    const y=ev.clientY||ev.touches?.[0]?.clientY||window.innerHeight/2;
-    xpFloat(delta,x,y);
-  }
-  if(!wasDone && t.questId){
-    const q=state.quests.find(q=>q.id===t.questId);
-    if(q){
-      const arr = state.calendar[state.today.date] || (state.calendar[state.today.date]=[]);
-      if(!arr.some(c=>c.questId===q.id)) arr.push({questId:q.id, color:q.color, name:q.name});
-    }
-  }
-  if(t.questId && t.questSubId){
-    const q = state.quests.find(x=>x.id===t.questId);
-    if(q){
-      const s = q.subtasks.find(x=>x.id===t.questSubId);
-      if(s) s.done = t.done;
-    }
-  }
-  const newLv = currentLevel();
-  save();
-  renderToday(); renderMe();
-  if(!wasDone){
-    const prevLv = computeLevelFor(state.totalXp - delta);
-    if(newLv > prevLv){ showLevelUp(newLv); }
-  }
-}
-function computeLevelFor(xp){
-  let lv=1;
-  for(const L of state.levels){ if(xp>=L.xpRequired) lv=L.level; else break; }
-  return lv;
-}
-function levelDiffFromBecoming(delta, totalAfter){
-  return computeLevelFor(totalAfter) - computeLevelFor(totalAfter-delta);
-}
-
-function deleteTask(tid){
-  const t = state.today.tasks.find(x=>x.id===tid);
-  if(!t) return;
-  if(!confirm(`Delete "${t.name}"?`)) return;
-  if(t.done){
-    state.totalXp = Math.max(0, state.totalXp - t.xp);
-    if(t.sphereId){
-      const s=state.spheres.find(x=>x.id===t.sphereId);
-      if(s){ s.xp=Math.max(0,s.xp-t.xp); s.level=Math.max(1,1+Math.floor(s.xp/100)); }
-    }
-  }
-  state.today.tasks = state.today.tasks.filter(x=>x.id!==tid);
-  save(); renderToday(); renderMe();
-}
-
-function showLevelUp(N){
-  const lv = $('#levelup'); $('#luNum').textContent = N;
-  const L = levelObj(N);
-  $('#luTitle').textContent = (L && L.title) ? L.title : defaultTitleFor(N);
-  if(L && L.reward){ 
-    $('#luRew').style.display='block'; 
-    $('#luRewT').textContent = L.reward;
-    $('#luRewNote').innerHTML = `✨ You promised yourself: ${escapeHtml(L.reward)} ✨`;
-  } else { 
-    $('#luRew').style.display='none'; 
-  }
-  lv.classList.add('show');
-  save();
-}
+// ========== TODAY ==========
+function renderSundayBanner(){ let el=document.getElementById('sundayBanner'); if(!el) return; let d=new Date(); if(d.getDay()!==0 || state.sundayDismissed===todayStr()){ el.style.display='none'; return; } let msgs=[{t:'🎲 CAPTAIN\'S BRIEFING',d:'Sunday, hero. Open Calendar to see your week. Plan a few blocks if you like.'},{t:'🗺️ EXPEDITION PLAN',d:'New week — new raid. Take a moment to reflect on your quests.'}]; let pick=msgs[d.getDate()%msgs.length]; el.className='sun-banner'; el.style.display='block'; el.innerHTML=`<button class="sun-banner-x" onclick="event.stopPropagation(); dismissSunday()">✕</button><div class="sun-banner-t">${pick.t}</div><div class="sun-banner-d">${pick.d}</div>`; el.onclick=()=>goTab('cal'); }
+function dismissSunday(){ state.sundayDismissed=todayStr(); save(); renderSundayBanner(); }
+function renderToday(){ $('#todayDate').textContent=fmtDateHuman(state.today.date); let streak=state.streak||0; $('#todayStreak').textContent=streak>0?`🔥 Streak: ${streak} ${streak===1?'day':'days'}`:''; renderSundayBanner(); let tasks=state.today.tasks, earned=tasks.filter(t=>t.done).reduce((s,t)=>s+t.xp,0), max=tasks.reduce((s,t)=>s+t.xp,0); state.today.earnedXp=earned; $('#todayXP').textContent=earned; $('#todayMax').textContent=max; $('#todayBar').style.width=(max?Math.round(earned/max*100):0)+'%'; ['red','yellow','green'].forEach(cat=>{ let el=$('#'+(cat==='red'?'redList':cat==='yellow'?'yelList':'grnList')); let list=tasks.filter(t=>t.cat===cat); if(list.length===0){ el.innerHTML='<div class="empty-cat">Empty. Tap + to add</div>'; return; } el.innerHTML=list.map(t=>renderTaskRow(t)).join(''); list.forEach(t=>{ let row=el.querySelector(`[data-tid="${t.id}"]`); if(!row) return; row.onclick=e=>{ if(e.target.closest('.tdel')) return; toggleTask(t.id,e); }; row.querySelector('.tdel').onclick=e=>{ e.stopPropagation(); deleteTask(t.id); }; }); }); $('#app_title').textContent=state.hero.name+(state.hero.class?' · '+state.hero.class:''); $('#app_subtitle').textContent=`Lvl ${currentLevel()} · ${state.totalXp} XP`; }
+function renderTaskRow(t){ let badge=''; if(t.sourceDailyId) badge=`<span class="tag" style="background:var(--gold)">⭐ daily</span>`; if(t.sourceWeeklyId) badge=`<span class="tag" style="background:var(--cyan)">🏡 weekly</span>`; if(t.questId){ let q=state.quests.find(q=>q.id===t.questId); if(q) badge=`<span class="tag" style="background:${q.color}">🗺️ ${escapeHtml(q.name)}</span>`; } return `<div class="task ${t.done?'done':''}" data-tid="${t.id}"><div class="tck">${t.done?'✓':''}</div><div class="tn">${escapeHtml(t.name)} ${badge}</div><div class="tx">${t.done?'+':''}${t.xp}</div><button class="tdel" title="delete">✕</button></div>`; }
+function toggleTask(tid,ev){ let t=state.today.tasks.find(x=>x.id===tid); if(!t) return; let wasDone=t.done; t.done=!t.done; let delta=(t.done?1:-1)*t.xp; state.totalXp=Math.max(0,state.totalXp+delta); if(t.sphereId){ let s=state.spheres.find(x=>x.id===t.sphereId); if(s){ s.xp=Math.max(0,s.xp+delta); s.level=Math.max(1,1+Math.floor(s.xp/100)); } } if(ev){ let x=ev.clientX||ev.touches?.[0]?.clientX||window.innerWidth/2, y=ev.clientY||ev.touches?.[0]?.clientY||window.innerHeight/2; xpFloat(delta,x,y); } if(!wasDone && t.questId){ let q=state.quests.find(q=>q.id===t.questId); if(q){ let arr=state.calendar[state.today.date]||(state.calendar[state.today.date]=[]); if(!arr.some(c=>c.questId===q.id)) arr.push({questId:q.id,color:q.color,name:q.name}); } } if(t.questId && t.questSubId){ let q=state.quests.find(x=>x.id===t.questId); if(q){ let s=q.subtasks.find(x=>x.id===t.questSubId); if(s) s.done=t.done; } } let prevLv=computeLevelFor(state.totalXp-delta); let newLv=currentLevel(); save(); renderToday(); renderMe(); if(!wasDone && newLv>prevLv) showLevelUp(newLv); }
+function deleteTask(tid){ let t=state.today.tasks.find(x=>x.id===tid); if(!t) return; if(!confirm(`Delete "${t.name}"?`)) return; if(t.done){ state.totalXp=Math.max(0,state.totalXp-t.xp); if(t.sphereId){ let s=state.spheres.find(x=>x.id===t.sphereId); if(s){ s.xp=Math.max(0,s.xp-t.xp); s.level=Math.max(1,1+Math.floor(s.xp/100)); } } } state.today.tasks=state.today.tasks.filter(x=>x.id!==tid); save(); renderToday(); renderMe(); }
+function showLevelUp(N){ let lv=$('#levelup'); $('#luNum').textContent=N; let L=levelObj(N); $('#luTitle').textContent=(L&&L.title)?L.title:defaultTitleFor(N); if(L&&L.reward){ $('#luRew').style.display='block'; $('#luRewT').textContent=L.reward; $('#luRewNote').innerHTML=`✨ You promised yourself: ${escapeHtml(L.reward)} ✨`; }else{ $('#luRew').style.display='none'; } lv.classList.add('show'); save(); }
 function closeLevelUp(){ $('#levelup').classList.remove('show'); }
 
-function renderMe(){
-  $('#meAv').textContent = state.hero.avatar || '⚔️';
-  $('#meName').textContent = state.hero.name || '—';
-  $('#meClass').textContent = state.hero.class || 'no class';
-  const lv = currentLevel();
-  $('#meLvN').textContent = lv;
-  const lvObj = state.levels.find(L=>L.level===lv);
-  $('#meLvTitle').textContent = (lvObj && lvObj.title) ? lvObj.title : defaultTitleFor(lv);
-  $('#meNextLvN').textContent = lv+1;
-  const p = xpProgressInLevel();
-  $('#meXpT').textContent = p.capped ? `${p.got} XP` : `${p.got} / ${p.need}`;
-  $('#meXpB').style.width = p.pct+'%';
-  $('#meTotalXp').textContent = state.totalXp;
-  const next = nextLevelObj();
-  if(next && next.reward){
-    $('#meNextRew').style.display='block';
-    $('#meNextRewT').textContent = next.reward;
-  } else if(next){
-    $('#meNextRew').style.display='block';
-    $('#meNextRewT').textContent = '— reward not set. Open 🏆 section and add it.';
-  } else {
-    $('#meNextRew').style.display='none';
-  }
-  const grid = $('#meSphereGrid');
-  if(state.spheres.length===0){
-    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="es-i">🌱</div><div class="es-t">No spheres yet</div><div class="es-d">Add in settings or start over</div></div>`;
-    return;
-  }
-  grid.innerHTML = state.spheres.map(s=>{
-    const pct = (s.xp%100);
-    return `<div class="stat">
-      <div class="stat-top"><div class="stat-n">${escapeHtml(s.name)}</div><div class="stat-v">Lv ${s.level}</div></div>
-      <div class="mini"><div style="width:${pct}%"></div></div>
-      <div class="stat-xp">${s.xp} XP · to Lv ${s.level+1}: ${100-pct}</div>
-    </div>`;
-  }).join('');
-}
+// ========== ME ==========
+function renderMe(){ $('#meAv').textContent=state.hero.avatar||'⚔️'; $('#meName').textContent=state.hero.name||'—'; $('#meClass').textContent=state.hero.class||'no class'; let lv=currentLevel(); $('#meLvN').textContent=lv; let lvObj=state.levels.find(L=>L.level===lv); $('#meLvTitle').textContent=(lvObj&&lvObj.title)?lvObj.title:defaultTitleFor(lv); $('#meNextLvN').textContent=lv+1; let p=xpProgressInLevel(); $('#meXpT').textContent=p.capped?`${p.got} XP`:`${p.got} / ${p.need}`; $('#meXpB').style.width=p.pct+'%'; $('#meTotalXp').textContent=state.totalXp; let next=nextLevelObj(); if(next&&next.reward){ $('#meNextRew').style.display='block'; $('#meNextRewT').textContent=next.reward; }else if(next){ $('#meNextRew').style.display='block'; $('#meNextRewT').textContent='— reward not set. Open 🏆 section and add it.'; }else{ $('#meNextRew').style.display='none'; } let grid=$('#meSphereGrid'); if(state.spheres.length===0){ grid.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="es-i">🌱</div><div class="es-t">No spheres yet</div><div class="es-d">Add in settings or start over</div></div>'; return; } grid.innerHTML=state.spheres.map(s=>{ let pct=s.xp%100; return `<div class="stat"><div class="stat-top"><div class="stat-n">${escapeHtml(s.name)}</div><div class="stat-v">Lv ${s.level}</div></div><div class="mini"><div style="width:${pct}%"></div></div><div class="stat-xp">${s.xp} XP · to Lv ${s.level+1}: ${100-pct}</div></div>`; }).join(''); }
 
-function renderHabits(){
-  renderHabitList('#dailyList', state.daily, 'daily');
-  renderHabitList('#weeklyList', state.weekly, 'weekly');
-}
-function renderHabitList(sel, list, kind){
-  const c=$(sel);
-  if(list.length===0){
-    c.innerHTML = `<div class="empty-cat">Empty. Tap + to add</div>`;
-    return;
-  }
-  c.innerHTML = list.map(h=>{
-    const sphere = h.sphereId ? state.spheres.find(s=>s.id===h.sphereId)?.name : '';
-    return `<div class="hrow" data-hid="${h.id}">
-      <div class="hn">${escapeHtml(h.name)}${sphere?`<div class="hsphere">${escapeHtml(sphere)}</div>`:''}</div>
-      <div class="hx">+${h.xp} XP</div>
-      <button class="hact" data-act="edit" title="edit">✏️</button>
-      <button class="hact" data-act="del" title="delete">✕</button>
-    </div>`;
-  }).join('');
-  c.querySelectorAll('.hrow').forEach(row=>{
-    const hid=row.dataset.hid;
-    row.querySelector('[data-act="edit"]').onclick=()=>openEditHabit(kind,hid);
-    row.querySelector('[data-act="del"]').onclick=()=>deleteHabit(kind,hid);
-  });
-}
+// ========== HABITS ==========
+function renderHabits(){ renderHabitList('#dailyList',state.daily,'daily'); renderHabitList('#weeklyList',state.weekly,'weekly'); }
+function renderHabitList(sel,list,kind){ let c=$(sel); if(list.length===0){ c.innerHTML='<div class="empty-cat">Empty. Tap + to add</div>'; return; } c.innerHTML=list.map(h=>{ let sphere=h.sphereId?state.spheres.find(s=>s.id===h.sphereId)?.name:''; return `<div class="hrow" data-hid="${h.id}"><div class="hn">${escapeHtml(h.name)}${sphere?`<div class="hsphere">${escapeHtml(sphere)}</div>`:''}</div><div class="hx">+${h.xp} XP</div><button class="hact" data-act="edit">✏️</button><button class="hact" data-act="del">✕</button></div>`; }).join(''); c.querySelectorAll('.hrow').forEach(row=>{ let hid=row.dataset.hid; row.querySelector('[data-act="edit"]').onclick=()=>openEditHabit(kind,hid); row.querySelector('[data-act="del"]').onclick=()=>deleteHabit(kind,hid); }); }
+function openAddDailyHabit(){ openHabitEditor('daily',null); }
+function openAddWeeklyHabit(){ openHabitEditor('weekly',null); }
+function openEditHabit(kind,hid){ openHabitEditor(kind,hid); }
+function openHabitEditor(kind,hid){ let list=kind==='daily'?state.daily:state.weekly; let h=hid?list.find(x=>x.id===hid):{name:'',xp:kind==='daily'?10:20,sphereId:''}; let sphereOpts=['<option value="">— no sphere —</option>'].concat(state.spheres.map(s=>`<option value="${s.id}"${s.id===h.sphereId?' selected':''}>${escapeHtml(s.name)}</option>`)).join(''); let html=`<div class="field"><label class="lab">Name</label><input id="m_h_name" type="text" value="${escapeHtml(h.name)}" placeholder="${kind==='daily'?'water 1.5L / meditation':'cleaning / weekly plan'}" autofocus></div><div class="field"><label class="lab">XP</label><input id="m_h_xp" type="number" min="1" value="${h.xp}"></div><div class="field"><label class="lab">Sphere (opt.)</label><select id="m_h_sphere">${sphereOpts}</select></div><button class="btn btn-gold" onclick="confirmHabit('${kind}','${hid||''}')">${hid?'Save':'Add'}</button>`; showModal((kind==='daily'?'⭐ Daily':'🏡 Sunday')+(hid?' — edit':' — new'),html); }
+function confirmHabit(kind,hid){ let list=kind==='daily'?state.daily:state.weekly; let name=$('#m_h_name').value.trim(); if(!name){ toast('Empty'); return; } let xp=Math.max(1,parseInt($('#m_h_xp').value)||10); let sphereId=$('#m_h_sphere').value||null; if(hid){ let h=list.find(x=>x.id===hid); if(!h) return; h.name=name; h.xp=xp; h.sphereId=sphereId; state.today.tasks.filter(t=>kind==='daily'?t.sourceDailyId===hid:t.sourceWeeklyId===hid).forEach(t=>{ if(!t.done){ t.name=name; t.xp=xp; t.sphereId=sphereId; } }); }else{ let h={id:uid(),name,xp,sphereId}; list.push(h); if(kind==='daily'){ state.today.tasks.push({id:uid(),name,cat:'red',xp,sphereId,sourceDailyId:h.id,done:false}); }else if(kind==='weekly' && new Date().getDay()===0){ state.today.tasks.push({id:uid(),name,cat:'yellow',xp,sphereId,sourceWeeklyId:h.id,done:false}); } } save(); closeModal(); renderHabits(); renderToday(); }
+function deleteHabit(kind,hid){ let list=kind==='daily'?state.daily:state.weekly; let h=list.find(x=>x.id===hid); if(!h) return; if(!confirm(`Delete "${h.name}"?`)) return; if(kind==='daily') state.daily=state.daily.filter(x=>x.id!==hid); else state.weekly=state.weekly.filter(x=>x.id!==hid); state.today.tasks=state.today.tasks.filter(t=>{ let fromThis=(kind==='daily'?t.sourceDailyId:t.sourceWeeklyId)===hid; return !(fromThis && !t.done); }); save(); renderHabits(); renderToday(); }
 
-function renderCalendar(){
-  if(!state.calMonth){ const d=new Date(); state.calMonth={y:d.getFullYear(), m:d.getMonth()}; }
-  const {y,m} = state.calMonth;
-  $('#calMonth').textContent = `${MONTHS_EN[m]} ${y}`;
-  const lg=$('#calLegend');
-  const parts = [];
-  if(state.quests.length>0){
-    parts.push('<div style="font-size:.7rem;color:var(--dim);margin-bottom:3px">Quests:</div>');
-    parts.push(state.quests.map(q=>`<div class="leg-it"><div class="leg-dot" style="background:${q.color}"></div>${escapeHtml(q.name)}</div>`).join(''));
-  }
-  if(state.quests.length===0){
-    parts.push('<div style="color:var(--dim);font-size:.72rem">Tap a day → plan blocks or view history.</div>');
-  }
-  lg.innerHTML = parts.join('');
-  $('#calDow').innerHTML = DOW_EN.map(d=>`<div class="dow">${d}</div>`).join('');
-  const first = new Date(y,m,1);
-  const offset = (first.getDay()+6)%7;
-  const daysIn = new Date(y,m+1,0).getDate();
-  const cells = [];
-  for(let i=0;i<offset;i++) cells.push({empty:true});
-  const tdy = todayStr();
-  for(let d=1; d<=daysIn; d++){
-    const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const blocks = state.calendar[ds] || [];
-    const scheduled = (state.schedule && state.schedule[ds]) || [];
-    const hist = state.history.find(h=>h.date===ds);
-    cells.push({d,ds,blocks,scheduled,today:ds===tdy,future: ds>tdy, hist});
-  }
-  const grid=$('#calGrid');
-  grid.innerHTML = cells.map(c=>{
-    if(c.empty) return `<div class="day empty"></div>`;
-    const schHtml = c.scheduled.slice(0,4).map(b=>`<div class="sch-bar" style="background:${b.color||'#5a8dff'};" title="${escapeHtml(b.from||'')}–${escapeHtml(b.to||'')} ${escapeHtml(b.label||'')}"></div>`).join('');
-    const blkHtml = c.blocks.slice(0,2).map(b=>`<div class="blk" style="background:${b.color}">${escapeHtml(b.name)}</div>`).join('');
-    const more = (c.blocks.length+c.scheduled.length)>6 ? `<div class="blk-more">+${c.blocks.length+c.scheduled.length-6}</div>` : '';
-    const xp = c.hist? `<div class="day-xp">+${c.hist.earnedXp}</div>` : '';
-    return `<div class="day ${c.today?'today':''} ${c.future?'future':''}" data-ds="${c.ds}">
-      <div class="day-n">${c.d}</div>${xp}${schHtml?`<div class="sch-bars">${schHtml}</div>`:''}${blkHtml}${more}
-    </div>`;
-  }).join('');
-  grid.querySelectorAll('.day[data-ds]').forEach(el=>{
-    el.onclick = ()=> openCalDay(el.dataset.ds);
-  });
-}
-
-function dsWeekday(ds){
-  const [y,m,d]=ds.split('-').map(Number);
-  return (new Date(y,m-1,d).getDay()+6)%7;
-}
+// ========== SIMPLIFIED CALENDAR (no time blocks) ==========
+function renderCalendar(){ if(!state.calMonth){ let d=new Date(); state.calMonth={y:d.getFullYear(),m:d.getMonth()}; } let {y,m}=state.calMonth; $('#calMonth').textContent=`${MONTHS_EN[m]} ${y}`; let lg=$('#calLegend'); lg.innerHTML='<div style="color:var(--dim);font-size:.72rem">Tap a day to see details.</div>'; $('#calDow').innerHTML=DOW_EN.map(d=>`<div class="dow">${d}</div>`).join(''); let first=new Date(y,m,1), offset=(first.getDay()+6)%7, daysIn=new Date(y,m+1,0).getDate(); let cells=[]; for(let i=0;i<offset;i++) cells.push({empty:true}); let tdy=todayStr(); for(let d=1;d<=daysIn;d++){ let ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; let blocks=state.calendar[ds]||[]; let hist=state.history.find(h=>h.date===ds); cells.push({d,ds,blocks,hist,today:ds===tdy,future:ds>tdy}); } let grid=$('#calGrid'); grid.innerHTML=cells.map(c=>{ if(c.empty) return `<div class="day empty"></div>`; let blkHtml=c.blocks.slice(0,2).map(b=>`<div class="blk" style="background:${b.color}">${escapeHtml(b.name)}</div>`).join(''); let more=c.blocks.length>2?`<div class="blk-more">+${c.blocks.length-2}</div>`:''; let xp=c.hist?`<div class="day-xp">+${c.hist.earnedXp}</div>`:''; return `<div class="day ${c.today?'today':''} ${c.future?'future':''}" data-ds="${c.ds}"><div class="day-n">${c.d}</div>${xp}${blkHtml}${more}</div>`; }).join(''); grid.querySelectorAll('.day[data-ds]').forEach(el=>{ el.onclick=()=>openCalDay(el.dataset.ds); }); }
+function openCalDay(ds){ let blocks=state.calendar[ds]||[]; let hist=state.history.find(h=>h.date===ds); let html=`<div style="font-size:.85rem;color:var(--text);margin-bottom:10px">${fmtDateHuman(ds)}</div>`; if(hist){ html+=`<div style="padding:10px;background:rgba(74,222,128,0.1);border-radius:12px;"><div style="font-weight:700;">📜 Day summary: +${hist.earnedXp} XP · ${hist.tasks.filter(t=>t.done).length} of ${hist.tasks.length}</div>${hist.leveledUpTo?`<div class="hd-up">🏆 Level Up to ${hist.leveledUpTo}!</div>`:''}<div class="hd-tasks">`+hist.tasks.map(t=>`<div>${t.done?'✓':'·'} ${escapeHtml(t.name)} <span style="color:var(--gold)">${t.done?'+':''}${t.xp}</span></div>`).join('')+`</div></div>`; }else if(blocks.length){ html+=`<div style="padding:10px;background:rgba(212,169,72,0.1);border-radius:12px;"><strong>Quests worked on:</strong><br>${blocks.map(b=>`<div class="blk" style="background:${b.color};display:inline-block;margin:2px">${escapeHtml(b.name)}</div>`).join('')}</div>`; }else{ html+=`<div style="color:var(--dim);padding:12px;">No activity recorded. Complete tasks to see progress.</div>`; } showModal('📅 Day details',html); }
 function calPrev(){ state.calMonth.m--; if(state.calMonth.m<0){state.calMonth.m=11; state.calMonth.y--;} save(); renderCalendar(); }
 function calNext(){ state.calMonth.m++; if(state.calMonth.m>11){state.calMonth.m=0; state.calMonth.y++;} save(); renderCalendar(); }
 
-function openCalDay(ds){
-  const blocks = state.calendar[ds]||[];
-  const hist = state.history.find(h=>h.date===ds);
-  const wd = dsWeekday(ds);
-  const wdName = DOW_EN_FULL[wd];
-  if(!state.schedule) state.schedule = {};
-  if(!state.schedule[ds]) state.schedule[ds] = [];
-  const scheduled = state.schedule[ds];
-  const tplBlocks = (state.weeklyTemplate && state.weeklyTemplate[wd]) || [];
-  let html = `<div style="font-size:.85rem;color:var(--text);margin-bottom:10px">${fmtDateHuman(ds)}</div>`;
-  html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-    <div style="font-size:.8rem;color:var(--gold);font-weight:700">🕐 Plan for the day (blocks)</div>
-    <button class="btn-s" onclick="calAddBlock('${ds}')" style="padding:4px 10px;font-size:.72rem;background:var(--gold);color:#111;border:none;border-radius:6px;cursor:pointer">+ block</button>
-  </div>`;
-  if(scheduled.length===0){
-    html += `<div style="color:var(--dim);font-size:.74rem;padding:8px;border:1px dashed #2a3147;border-radius:8px;text-align:center;margin-bottom:10px">Empty. Add a block ↑ or load a template below.</div>`;
-  } else {
-    html += `<div id="m_sch_list" style="margin-bottom:10px">`;
-    html += scheduled.map((b,i)=>`
-      <div class="sch-row" style="display:flex;align-items:center;gap:6px;padding:6px 8px;background:#0e1322;border-left:4px solid ${b.color||'#5a8dff'};border-radius:6px;margin-bottom:4px;font-size:.78rem">
-        <div style="min-width:92px;color:var(--gold);font-family:monospace;font-size:.76rem">${escapeHtml(b.from||'—')} – ${escapeHtml(b.to||'—')}</div>
-        <div style="flex:1">${escapeHtml(b.label||'')}</div>
-        <button onclick="calEditBlock('${ds}',${i})" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:.9rem">✏️</button>
-        <button onclick="calDelBlock('${ds}',${i})" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:.9rem">✕</button>
-      </div>`).join('');
-    html += `</div>`;
-  }
-  html += `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;padding-top:8px;border-top:1px solid #1a2036">
-    <button onclick="calLoadTemplate('${ds}')" style="flex:1;min-width:120px;padding:6px 10px;font-size:.72rem;background:#1a2036;color:var(--text);border:1px solid #2a3147;border-radius:6px;cursor:pointer">⬇ ${wdName} template ${tplBlocks.length?`(${tplBlocks.length})`:'(empty)'}</button>
-    <button onclick="calSaveTemplate('${ds}')" style="flex:1;min-width:120px;padding:6px 10px;font-size:.72rem;background:#1a2036;color:var(--gold);border:1px solid var(--gold);border-radius:6px;cursor:pointer">💾 Save as template</button>
-  </div>`;
-  if(hist){
-    html += `<div style="padding-top:10px;border-top:1px solid #1a2036">
-      <div style="font-size:.78rem;color:var(--green);font-weight:700;margin-bottom:6px">📜 Day summary: +${hist.earnedXp} XP · ${hist.tasks.filter(t=>t.done).length} of ${hist.tasks.length}</div>`;
-    if(hist.leveledUpTo) html += `<div class="hd-up">🏆 Level Up to ${hist.leveledUpTo}!</div>`;
-    html += `<div class="hd-tasks">`+hist.tasks.map(t=>`<div>${t.done?'✓':'·'} ${escapeHtml(t.name)} <span style="color:var(--gold)">${t.done?'+':''}${t.xp}</span></div>`).join('')+`</div></div>`;
-  } else if(blocks.length){
-    html += `<div style="padding-top:10px;border-top:1px solid #1a2036">
-      <div style="font-size:.74rem;color:var(--dim);margin-bottom:6px">Quest work done:</div>`+
-      blocks.map(b=>`<div class="blk" style="background:${b.color};display:inline-block;margin:2px 3px 2px 0">${escapeHtml(b.name)}</div>`).join('')+`</div>`;
-  }
-  showModal('📅 ' + fmtDateHuman(ds).split(',')[0], html);
-}
+// ========== QUESTS ==========
+function renderQuests(){ let c=$('#questsList'); if(state.quests.length===0){ c.innerHTML='<div class="empty-state"><div class="es-i">🗺️</div><div class="es-t">No quests yet</div><div class="es-d">Big projects that stretch for weeks</div></div>'; return; } c.innerHTML=state.quests.map(q=>{ let total=q.subtasks.length, done=q.subtasks.filter(s=>s.done).length, pct=total?Math.round(done/total*100):0; let sphereName=q.sphereId?state.spheres.find(s=>s.id===q.sphereId)?.name:''; let subs=q.subtasks.map(s=>`<div class="subt ${s.done?'done':''}" data-qid="${q.id}" data-sid="${s.id}"><div class="sck">${s.done?'✓':''}</div><div class="sn">${escapeHtml(s.name)}</div><button class="hact" data-act="sub-to-today" style="color:var(--green);margin-right:4px">→</button><button class="hact" data-act="del-sub">✕</button></div>`).join(''); let isOpen=_openQuests.has(q.id); let hasCoaching=(q.cost||q.belief||q.impact||q.possible); let coachingBadge=hasCoaching?`<span class="coaching-badge" data-qid="${q.id}" style="cursor:pointer;margin-left:8px;background:rgba(212,169,72,0.2);padding:4px 8px;border-radius:20px;font-size:0.7rem;font-weight:bold;">🧠 why this matters</span>`:''; return `<div class="qgrp ${isOpen?'open':''}" data-qid="${q.id}" style="border-left-color:${q.color}"><div class="qgrp-head"><div class="qgrp-arr">▶</div><div class="qgrp-info"><div class="qgrp-n">${escapeHtml(q.name)} ${coachingBadge}</div>${q.identity?`<div class="qgrp-ident">🦋 <i>${escapeHtml(q.identity)}</i></div>`:''}<div class="qgrp-meta"><span class="q-color-dot" style="background:${q.color}"></span>${sphereName?`<span>${escapeHtml(sphereName)}</span>`:''}${q.description?`<span style="color:var(--text)">${escapeHtml(q.description)}</span>`:''}</div></div><div class="qgrp-prog">${done}/${total} · ${pct}%</div><button class="qgrp-act" data-act="edit-q">✏️</button><button class="qgrp-act" data-act="del-q">✕</button></div><div class="qgrp-subs">${subs}<button class="sub-add" data-act="add-sub">+ Subtask</button><button class="sub-add" data-act="to-today" style="margin-top:4px;">+ New task in "Today"</button></div></div>`; }).join(''); attachQuestHandlers(c); }
+function attachQuestHandlers(container){ container.querySelectorAll('.qgrp').forEach(g=>{ let qid=g.dataset.qid; g.querySelector('.qgrp-head').onclick=e=>{ if(e.target.closest('.qgrp-act')) return; if(_openQuests.has(qid)) _openQuests.delete(qid); else _openQuests.add(qid); g.classList.toggle('open'); }; g.querySelector('[data-act="edit-q"]').onclick=e=>{ e.stopPropagation(); openEditQuest(qid); }; g.querySelector('[data-act="del-q"]').onclick=e=>{ e.stopPropagation(); deleteQuest(qid); }; g.querySelector('[data-act="add-sub"]').onclick=()=>addSubtask(qid); g.querySelector('[data-act="to-today"]').onclick=()=>questToToday(qid); g.querySelectorAll('.subt').forEach(row=>{ row.onclick=e=>{ if(e.target.closest('[data-act="del-sub"]')) return; if(e.target.closest('[data-act="sub-to-today"]')) return; toggleSubtask(row.dataset.qid,row.dataset.sid,row); }; row.querySelector('[data-act="del-sub"]').onclick=e=>{ e.stopPropagation(); deleteSubtask(row.dataset.qid,row.dataset.sid); }; row.querySelector('[data-act="sub-to-today"]').onclick=e=>{ e.stopPropagation(); subtaskToToday(row.dataset.qid,row.dataset.sid); }; }); }); container.querySelectorAll('.coaching-badge').forEach(b=>{ b.onclick=e=>{ e.stopPropagation(); let q=state.quests.find(x=>x.id===b.dataset.qid); if(q) showCoachingModal(q); }; }); }
+function showCoachingModal(q){ let html=`<div style="font-family:'Inter',sans-serif; text-align:left;">`; if(q.cost) html+=`<div style="margin-bottom:16px;"><strong style="color:var(--gold);">❓ What will I never have in my life if I don't achieve this?</strong><br>${escapeHtml(q.cost)}</div>`; if(q.belief) html+=`<div style="margin-bottom:16px;"><strong style="color:var(--gold);">📊 How much do I believe I can do it? (1–10)</strong><br>${q.belief} / 10</div>`; if(q.impact) html+=`<div style="margin-bottom:16px;"><strong style="color:var(--gold);">👨‍👩‍👧 How will achieving this affect my loved ones?</strong><br>${escapeHtml(q.impact)}</div>`; if(q.possible) html+=`<div style="margin-bottom:16px;"><strong style="color:var(--gold);">🚀 What becomes possible because of this goal?</strong><br>${escapeHtml(q.possible)}</div>`; if(!q.cost && !q.belief && !q.impact && !q.possible) html=`<div>No coaching answers yet. Tap ✏️ to add.</div>`; html+=`</div>`; showModal(`🧠 Reflection: ${escapeHtml(q.name)}`,html); }
+function toggleSubtask(qid,sid,rowEl){ let q=state.quests.find(x=>x.id===qid); if(!q) return; let s=q.subtasks.find(x=>x.id===sid); if(!s) return; s.done=!s.done; if(s.done){ let arr=state.calendar[todayStr()]||(state.calendar[todayStr()]=[]); if(!arr.some(c=>c.questId===q.id)) arr.push({questId:q.id,color:q.color,name:q.name}); } save(); if(rowEl){ rowEl.classList.toggle('done',s.done); rowEl.querySelector('.sck').textContent=s.done?'✓':''; let grp=rowEl.closest('.qgrp'); if(grp){ let total=q.subtasks.length, done=q.subtasks.filter(x=>x.done).length, pct=total?Math.round(done/total*100):0; let pEl=grp.querySelector('.qgrp-prog'); if(pEl) pEl.textContent=`${done}/${total} · ${pct}%`; } } else { renderQuests(); } renderCalendar(); }
+function subtaskToToday(qid,sid){ let q=state.quests.find(x=>x.id===qid); if(!q) return; let s=q.subtasks.find(x=>x.id===sid); if(!s) return; let html=`<div class="field"><label class="lab">Task for today</label><input id="m_qt_name" type="text" value="${escapeHtml(s.name)}" autofocus></div><div class="field"><label class="lab">Category</label><select id="m_qt_cat"><option value="red">🔴 Urgent</option><option value="yellow" selected>🟡 Important</option><option value="green">🟢 Bonus</option></select></div><div class="field"><label class="lab">XP</label><input id="m_qt_xp" type="number" min="1" value="20"></div><div style="font-size:.72rem;color:var(--dim);margin-bottom:10px">Complete it in "Today" → subtask auto‑checks.</div><button class="btn btn-gold" onclick="confirmSubtaskToToday('${qid}','${sid}')">Add</button>`; showModal('→ To today',html); }
+function confirmSubtaskToToday(qid,sid){ let q=state.quests.find(x=>x.id===qid); if(!q) return; let s=q.subtasks.find(x=>x.id===sid); if(!s) return; let name=$('#m_qt_name').value.trim(); if(!name){ toast('Empty'); return; } let cat=$('#m_qt_cat').value; let xp=Math.max(1,+$('#m_qt_xp').value||20); state.today.tasks.push({id:uid(),name,cat,xp,sphereId:q.sphereId,questId:q.id,questSubId:s.id,done:false}); save(); closeModal(); renderToday(); goTab('today'); toast('✓ Added'); }
+function deleteSubtask(qid,sid){ let q=state.quests.find(x=>x.id===qid); if(!q) return; q.subtasks=q.subtasks.filter(s=>s.id!==sid); save(); renderQuests(); }
+function addSubtask(qid){ let q=state.quests.find(x=>x.id===qid); if(!q) return; let html=`<div class="field"><label class="lab">Subtask name</label><input id="m_subname" type="text" placeholder="e.g. write chapter 3" autofocus></div><button class="btn btn-gold" onclick="confirmAddSubtask('${qid}')">Add</button>`; showModal('➕ Subtask',html); }
+function confirmAddSubtask(qid){ let v=$('#m_subname').value.trim(); if(!v){ toast('Empty'); return; } let q=state.quests.find(x=>x.id===qid); if(!q) return; q.subtasks.push({id:uid(),name:v,done:false}); save(); closeModal(); renderQuests(); }
+function questToToday(qid){ let q=state.quests.find(x=>x.id===qid); if(!q) return; let html=`<div class="field"><label class="lab">What will you do today for "${escapeHtml(q.name)}"?</label><input id="m_qt_name" type="text" placeholder="e.g. 1 hour on chapter 3" autofocus></div><div class="field"><label class="lab">XP</label><input id="m_qt_xp" type="number" min="1" value="20"></div><div class="field"><label class="lab">Category</label><select id="m_qt_cat"><option value="red">🔴 Urgent</option><option value="yellow" selected>🟡 Important</option><option value="green">🟢 Bonus</option></select></div><button class="btn btn-gold" onclick="confirmQuestToToday('${qid}')">Add</button>`; showModal('🗺️ → 🎯',html); }
+function confirmQuestToToday(qid){ let q=state.quests.find(x=>x.id===qid); if(!q) return; let name=$('#m_qt_name').value.trim(); if(!name){ toast('Empty'); return; } let xp=Math.max(1,parseInt($('#m_qt_xp').value)||20); let cat=$('#m_qt_cat').value; state.today.tasks.push({id:uid(),name,cat,xp,sphereId:q.sphereId,questId:q.id,done:false}); save(); closeModal(); renderToday(); goTab('today'); toast('Added'); }
+function openAddQuest(){ openQuestEditor(null); }
+function openEditQuest(qid){ openQuestEditor(qid); }
+function openQuestEditor(qid){ let q=qid?state.quests.find(x=>x.id===qid):{name:'',description:'',identity:'',sphereId:'',color:QUEST_COLORS[0],cost:'',belief:5,impact:'',possible:''}; let sphereOpts=['<option value="">— no sphere —</option>'].concat(state.spheres.map(s=>`<option value="${s.id}"${s.id===q.sphereId?' selected':''}>${escapeHtml(s.name)}</option>`)).join(''); let colorRow=QUEST_COLORS.map(col=>`<div class="color-it${col===q.color?' on':''}" style="background:${col}" data-col="${col}"></div>`).join(''); let html=`<div class="field"><label class="lab">Quest name</label><input id="m_q_name" type="text" value="${escapeHtml(q.name)}" placeholder="e.g. Write a book" autofocus></div><div class="field"><label class="lab">🦋 Who will I become?</label><input id="m_q_ident" type="text" value="${escapeHtml(q.identity||'')}" placeholder="e.g. published author"></div><div class="field"><label class="lab">Description (opt.)</label><textarea id="m_q_desc" rows="2">${escapeHtml(q.description)}</textarea></div><div class="field"><label class="lab">❓ What will I never have if I don't achieve this?</label><textarea id="m_q_cost" rows="2">${escapeHtml(q.cost||'')}</textarea></div><div class="field"><label class="lab">📊 Belief (1–10)</label><input id="m_q_belief" type="number" min="1" max="10" value="${q.belief||5}"></div><div class="field"><label class="lab">👨‍👩‍👧 How will it affect my loved ones?</label><textarea id="m_q_impact" rows="2">${escapeHtml(q.impact||'')}</textarea></div><div class="field"><label class="lab">🚀 What becomes possible?</label><textarea id="m_q_possible" rows="2">${escapeHtml(q.possible||'')}</textarea></div><div class="field"><label class="lab">Sphere (opt.)</label><select id="m_q_sphere">${sphereOpts}</select></div><div class="field"><label class="lab">Color</label><div class="color-row" id="m_q_colors">${colorRow}</div></div><button class="btn btn-gold" onclick="confirmQuest('${qid||''}')">${qid?'Save':'Create'}</button>`; showModal('🗺️ Quest'+(qid?' — edit':' — new'),html); let chosen=q.color; setTimeout(()=>{ document.querySelectorAll('#m_q_colors .color-it').forEach(el=>{ el.onclick=()=>{ chosen=el.dataset.col; document.querySelectorAll('#m_q_colors .color-it').forEach(x=>x.classList.remove('on')); el.classList.add('on'); }; }); },20); window._qChosenColor=()=>chosen; }
+function confirmQuest(qid){ let name=$('#m_q_name').value.trim(); if(!name){ toast('Quest name required'); return; } let desc=$('#m_q_desc').value.trim(); let identity=$('#m_q_ident').value.trim(); let sphereId=$('#m_q_sphere').value||null; let color=window._qChosenColor?window._qChosenColor():QUEST_COLORS[0]; let cost=$('#m_q_cost').value.trim(); let belief=Math.min(10,Math.max(1,parseInt($('#m_q_belief').value)||5)); let impact=$('#m_q_impact').value.trim(); let possible=$('#m_q_possible').value.trim(); if(qid){ let q=state.quests.find(x=>x.id===qid); if(!q) return; q.name=name; q.description=desc; q.identity=identity; q.sphereId=sphereId; q.color=color; q.cost=cost; q.belief=belief; q.impact=impact; q.possible=possible; }else{ state.quests.push({id:uid(),name,description:desc,identity,sphereId,color,subtasks:[],created:todayStr(),cost,belief,impact,possible}); } save(); closeModal(); renderQuests(); renderCalendar(); }
+function deleteQuest(qid){ let q=state.quests.find(x=>x.id===qid); if(!q) return; if(!confirm(`Delete quest "${q.name}" and all subtasks?`)) return; state.quests=state.quests.filter(x=>x.id!==qid); state.today.tasks.forEach(t=>{ if(t.questId===qid) t.questId=null; }); Object.keys(state.calendar).forEach(d=>{ state.calendar[d]=state.calendar[d].filter(c=>c.questId!==qid); if(state.calendar[d].length===0) delete state.calendar[d]; }); save(); renderQuests(); renderCalendar(); renderToday(); }
 
-function calAddBlock(ds, idx){
-  if(!state.schedule[ds]) state.schedule[ds]=[];
-  const editing = (typeof idx==='number');
-  const b = editing ? state.schedule[ds][idx] : {from:'09:00', to:'10:00', label:'', color:'#5a8dff', sphereId:null};
-  const sphereOpts = '<option value="">— no sphere —</option>' + state.spheres.map(s=>`<option value="${s.id}" ${b.sphereId===s.id?'selected':''}>${escapeHtml(s.name)}</option>`).join('');
-  const palette = ['#5a8dff','#d4a948','#e74c3c','#27ae60','#9b59b6','#16a085','#f39c12','#e056fd','#546E7A','#00bcd4'];
-  const colorPicker = palette.map(c=>`<div class="color-it ${b.color===c?'sel':''}" data-col="${c}" style="background:${c};width:28px;height:28px;border-radius:50%;cursor:pointer;display:inline-block;margin-right:6px;border:2px solid ${b.color===c?'#fff':'transparent'}"></div>`).join('');
-  const html = `
-    <div style="display:flex;gap:8px;margin-bottom:8px">
-      <div class="field" style="flex:1;margin:0"><label class="lab">From</label>
-        <input id="m_b_from" type="time" value="${b.from}"></div>
-      <div class="field" style="flex:1;margin:0"><label class="lab">To</label>
-        <input id="m_b_to" type="time" value="${b.to}"></div>
-    </div>
-    <div class="field"><label class="lab">Block name</label>
-      <input id="m_b_label" type="text" placeholder="e.g. Deep work, Workout, Dinner" value="${escapeHtml(b.label||'')}" autofocus></div>
-    <div class="field"><label class="lab">Sphere (optional)</label>
-      <select id="m_b_sphere">${sphereOpts}</select></div>
-    <div class="field"><label class="lab">Color</label>
-      <div id="m_b_colors" style="padding:4px 0">${colorPicker}</div></div>
-    <div style="display:flex;gap:6px">
-      <button class="btn btn-gold" style="flex:1" onclick="calSaveBlock('${ds}',${editing?idx:-1})">Save</button>
-      <button class="btn" style="background:#2a3147;color:var(--text);border:none" onclick="openCalDay('${ds}')">Cancel</button>
-    </div>`;
-  showModal(editing?'✏️ Block':'+ New block', html);
-  let chosenColor = b.color;
-  document.querySelectorAll('#m_b_colors .color-it').forEach(el=>{
-    el.onclick = ()=>{
-      chosenColor = el.dataset.col;
-      document.querySelectorAll('#m_b_colors .color-it').forEach(x=>{
-        x.classList.toggle('sel', x.dataset.col===chosenColor);
-        x.style.border = '2px solid '+(x.dataset.col===chosenColor?'#fff':'transparent');
-      });
-    };
-  });
-  window._calBlockColor = ()=>chosenColor;
-}
-function calEditBlock(ds, idx){ calAddBlock(ds, idx); }
-function calSaveBlock(ds, idx){
-  const from = $('#m_b_from').value;
-  const to = $('#m_b_to').value;
-  const label = $('#m_b_label').value.trim();
-  const sphereId = $('#m_b_sphere').value || null;
-  const color = (typeof window._calBlockColor==='function' ? window._calBlockColor() : '#5a8dff');
-  if(!label){ toast('Name is empty'); return; }
-  if(!state.schedule[ds]) state.schedule[ds]=[];
-  const block = {id: (idx>=0 && state.schedule[ds][idx]?.id) || uid(), from, to, label, color, sphereId};
-  if(idx>=0) state.schedule[ds][idx] = block;
-  else state.schedule[ds].push(block);
-  state.schedule[ds].sort((a,b)=>(a.from||'').localeCompare(b.from||''));
-  save(); closeModal(); renderCalendar(); openCalDay(ds);
-}
-function calDelBlock(ds, idx){
-  if(!confirm('Delete block?')) return;
-  state.schedule[ds].splice(idx,1);
-  save(); closeModal(); renderCalendar(); openCalDay(ds);
-}
-function calSaveTemplate(ds){
-  const wd = dsWeekday(ds);
-  const blocks = state.schedule[ds] || [];
-  if(blocks.length===0){ toast('Nothing to save'); return; }
-  if(!state.weeklyTemplate) state.weeklyTemplate={0:[],1:[],2:[],3:[],4:[],5:[],6:[]};
-  state.weeklyTemplate[wd] = blocks.map(b=>({...b, id:uid()}));
-  save(); toast(`💾 ${DOW_EN_FULL[wd]} template saved`);
-}
-function calLoadTemplate(ds){
-  const wd = dsWeekday(ds);
-  const tpl = (state.weeklyTemplate && state.weeklyTemplate[wd]) || [];
-  if(tpl.length===0){ toast('Template is empty'); return; }
-  const existing = state.schedule[ds] || [];
-  if(existing.length>0 && !confirm(`Replace ${existing.length} block(s) with ${DOW_EN_FULL[wd]} template (${tpl.length})?`)) return;
-  state.schedule[ds] = tpl.map(b=>({...b, id:uid()}));
-  save(); closeModal(); renderCalendar(); openCalDay(ds);
-  toast('Template loaded');
-}
+// ========== LEVELS ==========
+function renderLevels(){ let cur=currentLevel(); let c=$('#levelsList'); c.innerHTML=state.levels.map(L=>{ let status=L.level<cur?'done':L.level===cur?'cur':(state.totalXp>=L.xpRequired?'cur':'locked'); let cls=status==='done'?'done':status==='cur'?'cur':'locked'; let rew=L.reward?escapeHtml(L.reward):'<span class="lvrew empty">— reward not set. Tap ✏️ and add.</span>'; let title=escapeHtml(L.title||defaultTitleFor(L.level)); return `<div class="lvcard ${cls}"><div class="lvtop"><div class="lvtop-badge">${L.level}</div><div class="lvtop-info"><div class="lvtop-t">${title}</div><div class="lvtop-x">${L.xpRequired===0?'your starting point':L.xpRequired+' XP · '+(status==='done'?'achieved':status==='cur'?'current':'need '+(L.xpRequired-state.totalXp)+' more')}</div></div><button class="lvtop-edit" onclick="openEditLevel(${L.level})">✏️</button></div>${L.level>1?`<div class="lvrew ${L.reward?'':'empty'}">${L.reward?'🎁 '+rew:rew}</div>`:''}</div>`; }).join(''); }
+function addMoreLevels(){ state.levels=extendLevels(state.levels,5); save(); renderLevels(); toast('+5 levels added'); }
+function openEditLevel(N){ let L=levelObj(N); if(!L) return; let html=`<div class="field"><label class="lab">Level ${N}</label><div style="font-size:.75rem;color:var(--dim);margin-bottom:8px">XP needed: ${L.xpRequired}</div><label class="lab">Title</label><input id="m_title" type="text" placeholder="e.g. High Mage" value="${escapeHtml(L.title||defaultTitleFor(N))}"><label class="lab">🎁 Reward</label><textarea id="m_rew" rows="2" placeholder="What will you gift yourself?">${escapeHtml(L.reward)}</textarea></div><button class="btn btn-gold" onclick="saveLevelReward(${N})">Save</button>`; showModal('🏆 '+(L.title||'Level '+N),html); }
+function saveLevelReward(N){ let L=levelObj(N); if(!L) return; L.reward=$('#m_rew').value.trim(); let newTitle=$('#m_title').value.trim(); L.title=newTitle||defaultTitleFor(N); save(); closeModal(); renderLevels(); renderMe(); toast('✓ Saved'); }
 
-let _openQuests = new Set();
+// ========== HISTORY ==========
+function renderHistory(){ let totalDays=state.history.length, totalTasks=state.history.reduce((s,h)=>s+h.tasks.filter(t=>t.done).length,0), totalXp=state.totalXp; $('#histDays').textContent=totalDays; $('#histTasks').textContent=totalTasks; $('#histXp').textContent=totalXp; let c=$('#histList'); if(state.history.length===0){ c.innerHTML='<div class="empty-state"><div class="es-i">📜</div><div class="es-t">History empty</div><div class="es-d">Complete a day with the "⚔️ Complete day" button</div></div>'; return; } let sorted=[...state.history].sort((a,b)=>a.date<b.date?1:-1); c.innerHTML=sorted.map(h=>{ let doneCount=h.tasks.filter(t=>t.done).length; return `<div class="hist-day ${h.leveledUpTo?'up':''}"><div class="hd-top"><div class="hd-date">${fmtDateHuman(h.date)}</div><div class="hd-xp">+${h.earnedXp} XP</div></div><div class="hd-meta">${doneCount} of ${h.tasks.length} tasks</div>${h.leveledUpTo?`<div class="hd-up">🏆 Level Up to ${h.leveledUpTo}!</div>`:''}<div class="hd-tasks">${h.tasks.map(t=>`<div>${t.done?'✓':'·'} ${escapeHtml(t.name)} <span style="color:var(--gold)">${t.done?'+':''}${t.xp}</span></div>`).join('')}</div></div>`; }).join(''); }
 
-function renderQuests(){
-  const c=$('#questsList');
-  if(state.quests.length===0){
-    c.innerHTML = `<div class="empty-state"><div class="es-i">🗺️</div><div class="es-t">No quests yet</div><div class="es-d">Big projects that stretch for weeks</div></div>`;
-    return;
-  }
-  c.innerHTML = state.quests.map(q=>{
-    const total=q.subtasks.length;
-    const done=q.subtasks.filter(s=>s.done).length;
-    const pct = total? Math.round(done/total*100) : 0;
-    const sphereName = q.sphereId? state.spheres.find(s=>s.id===q.sphereId)?.name : '';
-    const subs = q.subtasks.map(s=>`<div class="subt ${s.done?'done':''}" data-qid="${q.id}" data-sid="${s.id}">
-      <div class="sck">${s.done?'✓':''}</div>
-      <div class="sn">${escapeHtml(s.name)}</div>
-      <button class="hact" data-act="sub-to-today" title="Add to Today" style="color:var(--green);margin-right:4px">→</button>
-      <button class="hact" data-act="del-sub">✕</button>
-    </div>`).join('');
-    const isOpen = _openQuests.has(q.id);
-    const hasCoaching = (q.cost || q.belief || q.impact || q.possible);
-    const coachingBadge = hasCoaching ? `<span class="coaching-badge" data-qid="${q.id}" style="cursor:pointer; margin-left:8px; background:rgba(212,169,72,0.2); padding:4px 8px; border-radius:20px; font-size:0.7rem; font-weight:bold;">🧠 why this matters</span>` : '';
-    return `<div class="qgrp ${isOpen?'open':''}" data-qid="${q.id}" style="border-left-color:${q.color}">
-      <div class="qgrp-head">
-        <div class="qgrp-arr">▶</div>
-        <div class="qgrp-info">
-          <div class="qgrp-n">${escapeHtml(q.name)} ${coachingBadge}</div>
-          ${q.identity?`<div class="qgrp-ident">🦋 <i>${escapeHtml(q.identity)}</i></div>`:''}
-          <div class="qgrp-meta">
-            <span class="q-color-dot" style="background:${q.color}"></span>
-            ${sphereName?`<span>${escapeHtml(sphereName)}</span>`:''}
-            ${q.description?`<span style="color:var(--text)">${escapeHtml(q.description)}</span>`:''}
-          </div>
-        </div>
-        <div class="qgrp-prog">${done}/${total} · ${pct}%</div>
-        <button class="qgrp-act" data-act="edit-q">✏️</button>
-        <button class="qgrp-act" data-act="del-q">✕</button>
-      </div>
-      <div class="qgrp-subs">
-        ${subs}
-        <button class="sub-add" data-act="add-sub">+ Subtask</button>
-        <button class="sub-add" data-act="to-today" style="margin-top:4px;color:var(--gold);border-color:var(--gold)">+ New task in "Today"</button>
-      </div>
-    </div>`;
-  }).join('');
-  c.querySelectorAll('.qgrp').forEach(g=>{
-    const qid = g.dataset.qid;
-    g.querySelector('.qgrp-head').onclick = (e)=>{
-      if(e.target.closest('.qgrp-act')) return;
-      if(_openQuests.has(qid)) _openQuests.delete(qid); else _openQuests.add(qid);
-      g.classList.toggle('open');
-    };
-    g.querySelector('[data-act="edit-q"]').onclick = (e)=>{ e.stopPropagation(); openEditQuest(qid); };
-    g.querySelector('[data-act="del-q"]').onclick = (e)=>{ e.stopPropagation(); deleteQuest(qid); };
-    g.querySelector('[data-act="add-sub"]').onclick = ()=>addSubtask(qid);
-    g.querySelector('[data-act="to-today"]').onclick = ()=>questToToday(qid);
-    g.querySelectorAll('.subt').forEach(row=>{
-      row.onclick = (e)=>{
-        if(e.target.closest('[data-act="del-sub"]')) return;
-        if(e.target.closest('[data-act="sub-to-today"]')) return;
-        toggleSubtask(row.dataset.qid, row.dataset.sid, row);
-      };
-      row.querySelector('[data-act="del-sub"]').onclick = (e)=>{
-        e.stopPropagation();
-        deleteSubtask(row.dataset.qid, row.dataset.sid);
-      };
-      row.querySelector('[data-act="sub-to-today"]').onclick = (e)=>{
-        e.stopPropagation();
-        subtaskToToday(row.dataset.qid, row.dataset.sid);
-      };
-    });
-  });
-  c.querySelectorAll('.coaching-badge').forEach(badge=>{
-    badge.onclick = (e)=>{
-      e.stopPropagation();
-      const qid = badge.dataset.qid;
-      const q = state.quests.find(x=>x.id===qid);
-      if(!q) return;
-      showCoachingModal(q);
-    };
-  });
-}
+// ========== FINISH DAY ==========
+function finishDay(){ let tasks=state.today.tasks; if(tasks.length===0){ toast('Today is empty'); return; } let earned=tasks.filter(t=>t.done).reduce((s,t)=>s+t.xp,0); let lvNow=currentLevel(); let startLv=computeLevelFor(state.totalXp-earned); let leveledUpTo=lvNow>startLv?lvNow:null; let yesterday=(()=>{ let d=new Date(state.today.date); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10); })(); if(state.lastFinishedDate===yesterday) state.streak=(state.streak||0)+1; else if(state.lastFinishedDate!==state.today.date) state.streak=1; state.lastFinishedDate=state.today.date; state.history.push({date:state.today.date,earnedXp:earned,tasks:tasks.map(t=>({name:t.name,xp:t.xp,done:t.done,cat:t.cat})),leveledUpTo,afterLevel:lvNow}); let carry=tasks.filter(t=>!t.done && t.cat!=='green' && !t.sourceDailyId && !t.sourceWeeklyId).map(t=>({...t,id:uid(),done:false})); let d=new Date(state.today.date); d.setDate(d.getDate()+1); state.today={date:d.toISOString().slice(0,10),tasks:[],earnedXp:0}; state.daily.forEach(h=>{ state.today.tasks.push({id:uid(),name:h.name,cat:'red',xp:h.xp,sphereId:h.sphereId,sourceDailyId:h.id,done:false}); }); if(d.getDay()===0){ state.weekly.forEach(w=>{ state.today.tasks.push({id:uid(),name:w.name,cat:'yellow',xp:w.xp,sphereId:w.sphereId,sourceWeeklyId:w.id,done:false}); }); } carry.forEach(t=>state.today.tasks.push(t)); saveNow(); renderAll(); goTab('hist'); toast(`🌙 Turn made! +${earned} XP${leveledUpTo?` · Lvl ${leveledUpTo}!`:''}`); }
 
-function toggleSubtask(qid, sid, rowEl){
-  const q = state.quests.find(x=>x.id===qid); if(!q) return;
-  const s = q.subtasks.find(x=>x.id===sid); if(!s) return;
-  s.done = !s.done;
-  if(s.done){
-    const arr = state.calendar[todayStr()] || (state.calendar[todayStr()]=[]);
-    if(!arr.some(c=>c.questId===q.id)) arr.push({questId:q.id, color:q.color, name:q.name});
-  }
-  save();
-  if(rowEl){
-    rowEl.classList.toggle('done', s.done);
-    rowEl.querySelector('.sck').textContent = s.done ? '✓' : '';
-    const grp = rowEl.closest('.qgrp');
-    if(grp){
-      const total=q.subtasks.length;
-      const done=q.subtasks.filter(x=>x.done).length;
-      const pct = total? Math.round(done/total*100) : 0;
-      const pEl = grp.querySelector('.qgrp-prog');
-      if(pEl) pEl.textContent = `${done}/${total} · ${pct}%`;
-    }
-  } else {
-    renderQuests();
-  }
-  renderCalendar();
-}
-
-function subtaskToToday(qid, sid){
-  const q = state.quests.find(x=>x.id===qid); if(!q) return;
-  const s = q.subtasks.find(x=>x.id===sid); if(!s) return;
-  const html = `
-    <div class="field"><label class="lab">Task for today</label>
-      <input id="m_qt_name" type="text" value="${escapeHtml(s.name)}" autofocus></div>
-    <div class="field"><label class="lab">Category</label>
-      <select id="m_qt_cat">
-        <option value="red">🔴 Urgent</option>
-        <option value="yellow" selected>🟡 Important</option>
-        <option value="green">🟢 Bonus</option>
-      </select></div>
-    <div class="field"><label class="lab">XP for completion</label>
-      <input id="m_qt_xp" type="number" min="1" value="20"></div>
-    <div style="font-size:.72rem;color:var(--dim);margin-bottom:10px">Complete it in "Today" → the subtask will auto‑check.</div>
-    <button class="btn btn-gold" onclick="confirmSubtaskToToday('${qid}','${sid}')">Add to today</button>`;
-  showModal('→ To today', html);
-}
-function confirmSubtaskToToday(qid, sid){
-  const q = state.quests.find(x=>x.id===qid); if(!q) return;
-  const s = q.subtasks.find(x=>x.id===sid); if(!s) return;
-  const name = $('#m_qt_name').value.trim(); if(!name){ toast('Empty'); return; }
-  const cat = $('#m_qt_cat').value;
-  const xp = Math.max(1, +$('#m_qt_xp').value||20);
-  state.today.tasks.push({
-    id:uid(), name, cat, xp, sphereId:q.sphereId,
-    questId:q.id, questSubId:s.id, done:false
-  });
-  save(); closeModal(); renderToday(); goTab('today'); toast('✓ Added to today');
-}
-function deleteSubtask(qid, sid){
-  const q=state.quests.find(x=>x.id===qid); if(!q) return;
-  q.subtasks = q.subtasks.filter(s=>s.id!==sid);
-  save(); renderQuests();
-}
-function addSubtask(qid){
-  const q=state.quests.find(x=>x.id===qid); if(!q) return;
-  const html = `
-    <div class="field"><label class="lab">Subtask name</label>
-      <input id="m_subname" type="text" placeholder="e.g. write chapter 3" autofocus></div>
-    <button class="btn btn-gold" onclick="confirmAddSubtask('${qid}')">Add</button>`;
-  showModal('➕ Subtask', html);
-}
-function confirmAddSubtask(qid){
-  const v=$('#m_subname').value.trim(); if(!v){ toast('Empty'); return; }
-  const q=state.quests.find(x=>x.id===qid); if(!q) return;
-  q.subtasks.push({id:uid(), name:v, done:false});
-  save(); closeModal(); renderQuests();
-}
-function questToToday(qid){
-  const q=state.quests.find(x=>x.id===qid); if(!q) return;
-  const html = `
-    <div class="field"><label class="lab">What will you do today for "${escapeHtml(q.name)}"?</label>
-      <input id="m_qt_name" type="text" placeholder="e.g. 1 hour on chapter 3" autofocus></div>
-    <div class="field"><label class="lab">XP</label>
-      <input id="m_qt_xp" type="number" min="1" value="20"></div>
-    <div class="field"><label class="lab">Category</label>
-      <select id="m_qt_cat"><option value="red">🔴 Urgent</option><option value="yellow" selected>🟡 Important</option><option value="green">🟢 Bonus</option></select></div>
-    <button class="btn btn-gold" onclick="confirmQuestToToday('${qid}')">Add to today</button>`;
-  showModal('🗺️ → 🎯', html);
-}
-function confirmQuestToToday(qid){
-  const q=state.quests.find(x=>x.id===qid); if(!q) return;
-  const name=$('#m_qt_name').value.trim(); if(!name){ toast('Empty'); return; }
-  const xp=Math.max(1,parseInt($('#m_qt_xp').value)||20);
-  const cat=$('#m_qt_cat').value;
-  state.today.tasks.push({id:uid(),name,cat,xp,sphereId:q.sphereId,questId:q.id,done:false});
-  save(); closeModal(); renderToday(); goTab('today'); toast('Added to today');
-}
-
-function renderLevels(){
-  const cur = currentLevel();
-  const c = $('#levelsList');
-  c.innerHTML = state.levels.map(L=>{
-    const status = L.level<cur ? 'done' : L.level===cur ? 'cur' : (state.totalXp>=L.xpRequired?'cur':'locked');
-    const cls = status==='done'?'done':status==='cur'?'cur':'locked';
-    const rew = L.reward ? escapeHtml(L.reward) : `<span class="lvrew empty">— reward not set. Tap ✏️ and add.</span>`;
-    const title = escapeHtml(L.title || defaultTitleFor(L.level));
-    return `<div class="lvcard ${cls}">
-      <div class="lvtop">
-        <div class="lvtop-badge">${L.level}</div>
-        <div class="lvtop-info">
-          <div class="lvtop-t">${title}</div>
-          <div class="lvtop-x">${L.xpRequired===0?'your starting point':L.xpRequired+' XP · '+(status==='done'?'achieved':status==='cur'?'current':'need '+(L.xpRequired-state.totalXp)+' more')}</div>
-        </div>
-        <button class="lvtop-edit" onclick="openEditLevel(${L.level})">✏️</button>
-      </div>
-      ${L.level>1?`<div class="lvrew ${L.reward?'':'empty'}">${L.reward?'🎁 '+rew:rew}</div>`:''}
-    </div>`;
-  }).join('');
-}
-function addMoreLevels(){
-  state.levels = extendLevels(state.levels, 5);
-  save(); renderLevels(); toast('+5 levels');
-}
-function openEditLevel(N){
-  const L = levelObj(N);
-  if(!L) return;
-  const html = `
-    <div class="field"><label class="lab">Level ${N}</label>
-      <div style="font-size:.75rem;color:var(--dim);margin-bottom:8px">XP needed: ${L.xpRequired}</div>
-      <label class="lab">Title</label>
-      <input id="m_title" type="text" placeholder="e.g. High Mage" value="${escapeHtml(L.title||defaultTitleFor(N))}">
-    </div>
-    <div class="field">
-      <label class="lab">🎁 Reward</label>
-      <textarea id="m_rew" placeholder="What will you gift yourself for this level?" rows="3">${escapeHtml(L.reward)}</textarea>
-    </div>
-    <button class="btn btn-gold" onclick="saveLevelReward(${N})">Save</button>`;
-  showModal('🏆 '+(L.title||'Level '+N), html);
-}
-function saveLevelReward(N){
-  const L = levelObj(N); if(!L) return;
-  L.reward = $('#m_rew').value.trim();
-  const newTitle = $('#m_title').value.trim();
-  L.title = newTitle || defaultTitleFor(N);
-  save(); closeModal(); renderLevels(); renderMe(); toast('✓ Saved to scroll');
-}
-
-function renderHistory(){
-  const totalDays = state.history.length;
-  const totalTasks = state.history.reduce((s,h)=>s+h.tasks.filter(t=>t.done).length,0);
-  const totalXp = state.totalXp;
-  $('#histDays').textContent = totalDays;
-  $('#histTasks').textContent = totalTasks;
-  $('#histXp').textContent = totalXp;
-  const c=$('#histList');
-  if(state.history.length===0){
-    c.innerHTML = `<div class="empty-state"><div class="es-i">📜</div><div class="es-t">History is empty</div><div class="es-d">Finish a day with the "⚔️ Complete day" button</div></div>`;
-    return;
-  }
-  const sorted = [...state.history].sort((a,b)=> a.date<b.date?1:-1);
-  c.innerHTML = sorted.map(h=>{
-    const doneCount = h.tasks.filter(t=>t.done).length;
-    return `<div class="hist-day ${h.leveledUpTo?'up':''}">
-      <div class="hd-top">
-        <div class="hd-date">${fmtDateHuman(h.date)}</div>
-        <div class="hd-xp">+${h.earnedXp} XP</div>
-      </div>
-      <div class="hd-meta">${doneCount} of ${h.tasks.length} tasks</div>
-      ${h.leveledUpTo?`<div class="hd-up">🏆 Level Up to ${h.leveledUpTo}!</div>`:''}
-      <div class="hd-tasks">${h.tasks.map(t=>`<div>${t.done?'✓':'·'} ${escapeHtml(t.name)} <span style="color:var(--gold)">${t.done?'+':''}${t.xp}</span></div>`).join('')}</div>
-    </div>`;
-  }).join('');
-}
-
-function finishDay(){
-  const tasks = state.today.tasks;
-  if(tasks.length===0){ toast('Today is empty'); return; }
-  const earned = tasks.filter(t=>t.done).reduce((s,t)=>s+t.xp,0);
-  const lvNow = currentLevel();
-  const startLv = computeLevelFor(state.totalXp - earned);
-  const leveledUpTo = lvNow > startLv ? lvNow : null;
-  const yesterday = (()=>{ const d=new Date(state.today.date); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10); })();
-  if(state.lastFinishedDate === yesterday) state.streak = (state.streak||0)+1;
-  else if(state.lastFinishedDate === state.today.date){}
-  else state.streak = 1;
-  state.lastFinishedDate = state.today.date;
-  state.history.push({
-    date: state.today.date,
-    earnedXp: earned,
-    tasks: tasks.map(t=>({name:t.name, xp:t.xp, done:t.done, cat:t.cat})),
-    leveledUpTo,
-    afterLevel: lvNow
-  });
-  const carry = tasks.filter(t=>!t.done && t.cat!=='green' && !t.sourceDailyId && !t.sourceWeeklyId)
-                     .map(t=>({...t,id:uid(),done:false}));
-  const d=new Date(state.today.date); d.setDate(d.getDate()+1);
-  const newDate = d.toISOString().slice(0,10);
-  state.today = { date:newDate, tasks:[], earnedXp:0 };
-  state.daily.forEach(h=>{
-    state.today.tasks.push({id:uid(),name:h.name,cat:'red',xp:h.xp,sphereId:h.sphereId,sourceDailyId:h.id,done:false});
-  });
-  if(d.getDay()===0){
-    state.weekly.forEach(w=>{
-      state.today.tasks.push({id:uid(),name:w.name,cat:'yellow',xp:w.xp,sphereId:w.sphereId,sourceWeeklyId:w.id,done:false});
-    });
-  }
-  carry.forEach(t=>state.today.tasks.push(t));
-  saveNow();
-  renderAll();
-  goTab('hist');
-  toast(`🌙 Turn made! +${earned} XP${leveledUpTo?` · Lvl ${leveledUpTo}!`:''}`);
-}
-
-function showModal(title, bodyHtml){
-  $('#modalTitle').textContent = title;
-  $('#modalBody').innerHTML = bodyHtml;
-  $('#modal').classList.add('open');
-}
+// ========== MODALS, HELP, ADD TASK, SETTINGS, PROFILE ==========
+function showModal(title,bodyHtml){ $('#modalTitle').textContent=title; $('#modalBody').innerHTML=bodyHtml; $('#modal').classList.add('open'); }
 function closeModal(){ $('#modal').classList.remove('open'); }
 $('#modal').addEventListener('click',(e)=>{ if(e.target.id==='modal') closeModal(); });
-
-function openHelp() {
-    const html = `
-        <h2 style="text-align:center;">📖 How to use LifeQuest</h2>
-        <div style="text-align:left;">
-            <p><strong>🎯 Today</strong><br>Add one‑time tasks. Red = urgent, yellow = important, green = bonus. You can also add tasks from quests.</p>
-            <p><strong>⭐ Habits</strong><br>Things you do every day (Sacred minimum) or only on Sundays (Sunday ritual).</p>
-            <p><strong>🗺️ Quests</strong><br>Big projects. Add subtasks, answer coaching questions (Who will I become? What will I miss? How will it affect my loved ones?).</p>
-            <p><strong>🏆 Levels</strong><br>Earn XP by completing tasks. Level up and set your own rewards.</p>
-            <p><strong>📅 Calendar</strong><br>See your history and planned blocks. (Blocks are optional — you can ignore them.)</p>
-            <p><strong>⚙️ Settings</strong><br>Export/import data, manage life spheres, reset everything.</p>
-        </div>
-        <button class="btn btn-gold" onclick="closeModal()" style="margin-top:16px;">Got it</button>
-    `;
-    showModal('📖 Guide', html);
-}
-
-function openAddTask(cat){
-  const sphereOpts = ['<option value="">— no sphere —</option>']
-    .concat(state.spheres.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`)).join('');
-  const questOpts = ['<option value="">— not linked —</option>']
-    .concat(state.quests.map(q=>`<option value="${q.id}">${escapeHtml(q.name)}</option>`)).join('');
-  const html = `
-    <div class="field"><label class="lab">Name</label>
-      <input id="m_t_name" type="text" placeholder="What to do?" autofocus></div>
-    <div class="field"><label class="lab">XP</label>
-      <input id="m_t_xp" type="number" min="1" value="${cat==='red'?15:cat==='yellow'?10:5}"></div>
-    <div class="field"><label class="lab">Sphere (opt.)</label>
-      <select id="m_t_sphere">${sphereOpts}</select></div>
-    <div class="field"><label class="lab">Link to quest (opt.)</label>
-      <select id="m_t_quest">${questOpts}</select></div>
-    <button class="btn btn-gold" onclick="confirmAddTask('${cat}')">Add</button>`;
-  showModal((cat==='red'?'🔴 Urgent':cat==='yellow'?'🟡 Important':'🟢 Bonus')+' — new task', html);
-  setTimeout(()=>$('#m_t_name')?.focus(),50);
-}
-function confirmAddTask(cat){
-  const name = $('#m_t_name').value.trim(); if(!name){ toast('Empty'); return; }
-  const xp = Math.max(1, parseInt($('#m_t_xp').value)||10);
-  const sphereId = $('#m_t_sphere').value || null;
-  const questId = $('#m_t_quest').value || null;
-  state.today.tasks.push({id:uid(),name,cat,xp,sphereId,questId,done:false});
-  save(); closeModal(); renderToday();
-}
-
-function openAddDailyHabit(){ openHabitEditor('daily', null); }
-function openAddWeeklyHabit(){ openHabitEditor('weekly', null); }
-function openEditHabit(kind, hid){ openHabitEditor(kind, hid); }
-function openHabitEditor(kind, hid){
-  const list = kind==='daily'? state.daily : state.weekly;
-  const h = hid ? list.find(x=>x.id===hid) : {name:'',xp:kind==='daily'?10:20,sphereId:''};
-  const sphereOpts = ['<option value="">— no sphere —</option>']
-    .concat(state.spheres.map(s=>`<option value="${s.id}"${s.id===h.sphereId?' selected':''}>${escapeHtml(s.name)}</option>`)).join('');
-  const html = `
-    <div class="field"><label class="lab">Name</label>
-      <input id="m_h_name" type="text" value="${escapeHtml(h.name)}" placeholder="${kind==='daily'?'water 1.5L / 10min meditation':'cleaning / weekly plan'}" autofocus></div>
-    <div class="field"><label class="lab">XP</label>
-      <input id="m_h_xp" type="number" min="1" value="${h.xp}"></div>
-    <div class="field"><label class="lab">Sphere (opt.)</label>
-      <select id="m_h_sphere">${sphereOpts}</select></div>
-    <button class="btn btn-gold" onclick="confirmHabit('${kind}','${hid||''}')">${hid?'Save':'Add'}</button
+function openHelp(){ let html=`<h2 style="text-align:center;">📖 How to use LifeQuest</h2><div style="text-align:left;"><p><strong>🎯 Today</strong><br>Add one‑time tasks. Red = urgent, yellow = important, green = bonus. You can also add tasks from quests.</p><p><strong>⭐ Habits</strong><br>Things you do every day (Sacred minimum) or only on Sundays (Sunday ritual).</p><p><strong>🗺️ Quests</strong><br>Big projects. Add subtasks, answer coaching questions.</p><p><strong>🏆 Levels</strong><br>Earn XP, level up, set your own rewards.</p><p><strong>📅 Calendar</strong><br>See your history and quest activity. (No complex planning.)</p><p><strong>⚙️ Settings</strong><br>Export/import data, manage spheres, reset everything.</p></div><button class="btn btn-gold" onclick="closeModal()" style="margin-top:16px;">Got it</button>`; showModal('📖 Guide',html); }
+function openAddTask(cat){ let sphereOpts=['<option value="">— no sphere —</option>'].concat(state.spheres.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`)).join(''); let questOpts=['<option value="">— not linked —</option>'].concat(state.quests.map(q=>`<option value="${q.id}">${escapeHtml(q.name)}</option>`)).join(''); let html=`<div class="field"><label class="lab">Name</label><input id="m_t_name" type="text" placeholder="What to do?" autofocus></div><div class="field"><label class="lab">XP</label><input id="m_t_xp" type="number" min="1" value="${cat==='red'?15:cat==='yellow'?10:5}"></div><div class="field"><label class="lab">Sphere (opt.)</label><select id="m_t_sphere">${sphereOpts}</select></div><div class="field"><label class="lab">Link to quest (opt.)</label><select id="m_t_quest">${questOpts}</select></div><button class="btn btn-gold" onclick="confirmAddTask('${cat}')">Add</button>`; showModal((cat==='red'?'🔴 Urgent':cat==='yellow'?'🟡 Important':'🟢 Bonus')+' — new task',html); setTimeout(()=>$('#m_t_name')?.focus(),50); }
+function confirmAddTask(cat){ let name=$('#m_t_name').value.trim(); if(!name){ toast('Empty'); return; } let xp=Math.max(1,parseInt($('#m_t_xp').value)||10); let sphereId=$('#m_t_sphere').value||null; let questId=$('#m_t_quest').value||null; state.today.tasks.push({id:uid(),name,cat,xp,sphereId,questId,done:false}); save(); closeModal(); renderToday(); }
+function openEditProfile(){ let avGrid=AVATARS.map(a=>`<div class="av-it${a===state.hero.avatar?' on':''}" data-a="${a}">${a}</div>`).join(''); let html=`<div class="field"><label class="lab">Name</label><input id="m_p_name" type="text" value="${escapeHtml(state.hero.name)}"></div><div class="field"><label class="lab">Class</label><input id="m_p_class" type="text" value="${escapeHtml(state.hero.class)}" placeholder="e.g. Psychologist Warrior"></div><div class="field"><label class="lab">Avatar</label><div class="av-grid" id="m_p_av">${avGrid}</div></div><button class="btn btn-gold" onclick="saveProfile()">Save</button>`; showModal('✏️ Profile',html); let chosen=state.hero.avatar; setTimeout(()=>{ document.querySelectorAll('#m_p_av .av-it').forEach(el=>{ el.onclick=()=>{ chosen=el.dataset.a; document.querySelectorAll('#m_p_av .av-it').forEach(x=>x.classList.remove('on')); el.classList.add('on'); }; }); },20); window._pChosenAv=()=>chosen; }
+function saveProfile(){ let name=$('#m_p_name').value.trim()||'Hero'; let cls=$('#m_p_class').value.trim(); let av=window._pChosenAv?window._pChosenAv():state.hero.avatar; state.hero={name,class:cls,avatar:av}; save(); closeModal(); renderMe(); renderToday(); toast('✓ Saved'); }
+function openSettings(){ let html=`<div class="field"><button class="btn btn-ghost" onclick="exportData()">📤 Export (JSON)</button></div><div class="field"><button class="btn btn-ghost" onclick="document.getElementById('m_imp_file').click()">📥 Import (JSON)</button><input id="m_imp_file" type="file" accept="application/json" style="display:none" onchange="importData(this)"><div class="hint">Replaces all data. Make an export first.</div></div><div class="field"><button class="btn btn-ghost" onclick="addManualSphere()">➕ Add sphere</button></div><div class="field"><button class="btn btn-ghost" onclick="manageSpheres()">📊 Manage spheres</button></div><div class="field" style="margin-top:24px"><button class="btn" style="background:var(--red);color:#fff" onclick="resetAll()">⚠️ Reset everything</button></div><div style="text-align:center;font-size:.7rem;color:var(--dim);margin-top:14px">Life Quest v${APP_VERSION}</div>`; showModal('⚙️ Settings',html); }
+function exportData(){ let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); let url=URL.createObjectURL(blob); let a=document.createElement('a'); a.href=url; a.download=`questhub-${todayStr()}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),500); toast('File downloaded'); }
+function importData(input){ let file=input.files?.[0]; if(!file) return; let r=new FileReader(); r.onload=()=>{ try{ let obj=JSON.parse(r.result); if(!obj||typeof obj!=='object') throw new Error(); if(!confirm('Import will replace ALL current data. Continue?')) return; state=Object.assign(defaultState(),obj); saveNow(); closeModal(); initApp(); toast('Imported'); }catch(e){ toast('⚠️ Corrupted file'); } }; r.readAsText(file); }
+function resetAll(){ if(!confirm('Delete ALL data and start over?')) return; if(!confirm('Really? This cannot be undone.')) return; localStorage.removeItem(STORAGE_KEY); closeModal(); state=defaultState(); startOnboarding(); }
+function addManualSphere(){ let html=`<div class="field"><label class="lab">Sphere name</label><input id="m_ns_name" type="text" placeholder="e.g. Sports" autofocus></div><button class="btn btn-gold" onclick="confirmAddSphere()">Add</button>`; showModal('📊 New sphere',html); }
+function confirmAddSphere(){ let v=$('#m_ns_name').value.trim(); if(!v){ toast('Empty'); return; } state.spheres.push({id:uid(),name:v,xp:0,level:1}); save(); closeModal(); renderMe(); toast('Added'); }
+function manageSpheres(){ if(state.spheres.length===0){ openSettings(); toast('No spheres'); return; } let html=state.spheres.map(s=>`<div class="iitem"><div class="iitem-row"><input type="text" value="${escapeHtml(s.name)}" data-sid="${s.id}" data-k="name"><button class="delx" data-sid="${s.id}" data-act="del">✕</button></div><div class="iitem-meta">Lv ${s.level} · ${s.xp} XP</div></div>`).join('')+'<button class="btn btn-gold" onclick="closeModal();openSettings()" style="margin-top:10px">← Back</button>'; showModal('📊 Spheres',html); document.querySelectorAll('#modalBody input[data-k]').forEach(el=>{ el.oninput=()=>{ let s=state.spheres.find(x=>x.id===el.dataset.sid); if(!s) return; s.name=el.value.trim()||s.name; save(); }; }); document.querySelectorAll('#modalBody button[data-act="del"]').forEach(b=>{ b.onclick=()=>{ let s=state.spheres.find(x=>x.id===b.dataset.sid); if(!s) return; if(!confirm(`Delete sphere "${s.name}"? XP attached remains in total.`)) return; state.spheres=state.spheres.filter(x=>x.id!==b.dataset.sid); state.daily.forEach(d=>{ if(d.sphereId===b.dataset.sid) d.sphereId=null; }); state.weekly.forEach(d=>{ if(d.sphereId===b.dataset.sid) d.sphereId=null; }); state.quests.forEach(q=>{ if(q.sphereId===b.dataset.sid) q.sphereId=null; }); state.today.tasks.forEach(t=>{ if(t.sphereId===b.dataset.sid) t.sphereId=null; }); save(); manageSpheres(); renderMe(); }; }); }
+if('serviceWorker' in navigator){ window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(e=>console.warn('SW failed',e)); }); }
+state=loadState();
+if(!state.onboarded){ startOnboarding(); } else { $('#app').style.display='block'; initApp(); }
+</script>
+</body>
+</html>
