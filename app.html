@@ -399,14 +399,8 @@ h2 .h2-act{background:transparent;border:1px solid var(--border);color:var(--gol
     <div class="pg" id="pg-lvl"><div id="levelsList"></div><button class="add-lvls" onclick="addMoreLevels()">+ Add 5 more levels</button></div>
     <div class="pg" id="pg-hist"><div class="hist-stats"><div class="hst"><div class="hst-v" id="histDays">0</div><div class="hst-l">Days</div></div><div class="hst"><div class="hst-v" id="histTasks">0</div><div class="hst-l">Tasks</div></div><div class="hst"><div class="hst-v" id="histXp">0</div><div class="hst-l">Total XP</div></div></div><div id="histList"></div></div>
   </div>
-  <div class="tabs-b">
-    <button class="tab-b active" data-tab="today" onclick="goTab('today')"><div class="ti">🎯</div>Today</button>
-    <button class="tab-b" data-tab="char" onclick="goTab('char')"><div class="ti">⚔️</div>Me</button>
-    <button class="tab-b" data-tab="habits" onclick="goTab('habits')"><div class="ti">📋</div>Habits</button>
-    <button class="tab-b" data-tab="cal" onclick="goTab('cal')"><div class="ti">📅</div>Calendar</button>
-    <button class="tab-b" data-tab="quest" onclick="goTab('quest')"><div class="ti">🗺️</div>Quests</button>
-    <button class="tab-b" data-tab="lvl" onclick="goTab('lvl')"><div class="ti">🏆</div>Levels</button>
-    <button class="tab-b" data-tab="hist" onclick="goTab('hist')"><div class="ti">📜</div>History</button>
+  <div class="tabs-b" id="bottom-tabs-container">
+    <!-- tabs will be generated dynamically -->
   </div>
 </div>
 
@@ -432,14 +426,131 @@ let obStep = 1, obData = null;
 let _openQuests = new Set();
 let tutorialCompleted = false;
 
+// Tab visibility settings (stored in localStorage)
+let tabVisibility = {
+  char: true,
+  habits: true,
+  cal: true,
+  quest: true,
+  lvl: true,
+  hist: true
+};
+
+function loadTabVisibility() {
+  const saved = localStorage.getItem('tab_visibility');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      Object.assign(tabVisibility, parsed);
+    } catch(e) {}
+  }
+}
+function saveTabVisibility() {
+  localStorage.setItem('tab_visibility', JSON.stringify(tabVisibility));
+}
+
+function renderBottomTabs() {
+  const container = document.getElementById('bottom-tabs-container');
+  if (!container) return;
+  const tabs = [
+    { id: 'today', icon: '🎯', label: 'Today', required: true },
+    { id: 'char', icon: '⚔️', label: 'Me', required: false },
+    { id: 'habits', icon: '📋', label: 'Habits', required: false },
+    { id: 'cal', icon: '📅', label: 'Calendar', required: false },
+    { id: 'quest', icon: '🗺️', label: 'Quests', required: false },
+    { id: 'lvl', icon: '🏆', label: 'Levels', required: false },
+    { id: 'hist', icon: '📜', label: 'History', required: false }
+  ];
+  let html = '';
+  for (let tab of tabs) {
+    if (tab.required || tabVisibility[tab.id] !== false) {
+      html += `<button class="tab-b ${state && state.activeTab === tab.id ? 'active' : ''}" data-tab="${tab.id}" onclick="goTab('${tab.id}')"><div class="ti">${tab.icon}</div>${tab.label}</button>`;
+    }
+  }
+  container.innerHTML = html;
+  // Re-attach active class after render
+  const activeTab = state ? (state.activeTab || 'today') : 'today';
+  container.querySelectorAll('.tab-b').forEach(btn => {
+    if (btn.dataset.tab === activeTab) btn.classList.add('active');
+    else btn.classList.remove('active');
+  });
+}
+
+function goTab(name) {
+  if (state) state.activeTab = name;
+  $$('.pg').forEach(p => p.classList.remove('active'));
+  $('#pg-'+name).classList.add('active');
+  $$('.tab-b').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  window.scrollTo(0,0);
+  save();
+}
+
+function applyTabVisibility() {
+  renderBottomTabs();
+  // If current active tab is hidden, switch to today
+  const currentTab = state?.activeTab || 'today';
+  if (currentTab !== 'today' && tabVisibility[currentTab] === false) {
+    goTab('today');
+  }
+}
+
+// Override openSettings to include tab customization
+const originalOpenSettings = window.openSettings;
+function openSettingsWithTabs() {
+  let sphereHtml = '';
+  if (state.spheres.length === 0) {
+    sphereHtml = '<div class="empty-state" style="padding:10px">No spheres yet</div>';
+  } else {
+    sphereHtml = state.spheres.map(s => `<div class="iitem"><div class="iitem-row"><input type="text" value="${escapeHtml(s.name)}" data-sid="${s.id}" data-k="name"><button class="delx" data-sid="${s.id}" data-act="del">✕</button></div><div class="iitem-meta">Lv ${s.level} · ${s.xp} XP</div></div>`).join('');
+  }
+  const tabsHtml = `
+    <div class="field"><label class="lab">Customize visible tabs</label>
+      <div style="margin-top:6px; display:flex; flex-wrap:wrap; gap:10px;">
+        <label><input type="checkbox" id="tab-char" ${tabVisibility.char !== false ? 'checked' : ''}> ⚔️ Me</label>
+        <label><input type="checkbox" id="tab-habits" ${tabVisibility.habits !== false ? 'checked' : ''}> 📋 Habits</label>
+        <label><input type="checkbox" id="tab-cal" ${tabVisibility.cal !== false ? 'checked' : ''}> 📅 Calendar</label>
+        <label><input type="checkbox" id="tab-quest" ${tabVisibility.quest !== false ? 'checked' : ''}> 🗺️ Quests</label>
+        <label><input type="checkbox" id="tab-lvl" ${tabVisibility.lvl !== false ? 'checked' : ''}> 🏆 Levels</label>
+        <label><input type="checkbox" id="tab-hist" ${tabVisibility.hist !== false ? 'checked' : ''}> 📜 History</label>
+      </div>
+      <div class="hint">Today tab cannot be hidden</div>
+    </div>
+    <button class="btn btn-gold" onclick="saveTabSettings()">Save & refresh</button>
+  `;
+  const html = `
+    <div class="field"><button class="btn btn-ghost" onclick="exportData()">📤 Export (JSON)</button></div>
+    <div class="field"><button class="btn btn-ghost" onclick="document.getElementById('m_imp_file').click()">📥 Import (JSON)</button><input id="m_imp_file" type="file" accept="application/json" style="display:none" onchange="importData(this)"><div class="hint">Replaces all data. Make an export first.</div></div>
+    <div class="field"><button class="btn btn-ghost" onclick="addManualSphere()">➕ Add sphere</button></div>
+    <div class="field"><button class="btn btn-ghost" onclick="manageSpheres()">📊 Manage spheres</button></div>
+    ${tabsHtml}
+    <div class="field" style="margin-top:24px"><button class="btn" style="background:var(--red);color:#fff" onclick="resetAll()">⚠️ Reset everything</button></div>
+    <div style="text-align:center;font-size:.7rem;color:var(--dim);margin-top:14px">Life Quest v${APP_VERSION}</div>`;
+  showModal('⚙️ Settings', html);
+}
+
+function saveTabSettings() {
+  tabVisibility.char = document.getElementById('tab-char').checked;
+  tabVisibility.habits = document.getElementById('tab-habits').checked;
+  tabVisibility.cal = document.getElementById('tab-cal').checked;
+  tabVisibility.quest = document.getElementById('tab-quest').checked;
+  tabVisibility.lvl = document.getElementById('tab-lvl').checked;
+  tabVisibility.hist = document.getElementById('tab-hist').checked;
+  saveTabVisibility();
+  applyTabVisibility();
+  closeModal();
+  toast('Tab visibility updated');
+}
+
+window.openSettings = openSettingsWithTabs;
+
 function defaultState(){
-  return { version:1, onboarded:false, hero:{name:'',class:'',avatar:'⚔️'}, spheres:[], daily:[], weekly:[], quests:[], levels:generateLevels(20), today:freshToday(), totalXp:0, history:[], streak:0, lastFinishedDate:null, calendar:{}, calMonth:null };
+  return { version:1, onboarded:false, hero:{name:'',class:'',avatar:'⚔️'}, spheres:[], daily:[], weekly:[], quests:[], levels:generateLevels(20), today:freshToday(), totalXp:0, history:[], streak:0, lastFinishedDate:null, calendar:{}, calMonth:null, activeTab:'today' };
 }
 function freshToday(){ return { date:todayStr(), tasks:[], earnedXp:0 }; }
 function defaultTitleFor(L){ if(L===1) return 'Start'; return LEVEL_TITLES_DEFAULT[(L-2)%LEVEL_TITLES_DEFAULT.length] || ('Level '+L); }
 function generateLevels(n){ let arr=[], cum=0; for(let L=1;L<=n;L++){ if(L===1){ arr.push({level:1,xpRequired:0,reward:'',title:defaultTitleFor(1)}); continue; } let inc=100+(L-2)*150; cum+=inc; arr.push({level:L,xpRequired:cum,reward:'',title:defaultTitleFor(L)}); } return arr; }
 function extendLevels(cur,add){ let last=cur[cur.length-1], cum=last.xpRequired, nextL=last.level+1, out=[...cur]; for(let i=0;i<add;i++){ let inc=100+(nextL-2)*150; cum+=inc; out.push({level:nextL,xpRequired:cum,reward:'',title:defaultTitleFor(nextL)}); nextL++; } return out; }
-function loadState(){ try{ let raw=localStorage.getItem(STORAGE_KEY); if(!raw) return defaultState(); let parsed=JSON.parse(raw); let def=defaultState(); let merged=Object.assign(def,parsed,{hero:Object.assign(def.hero,parsed.hero||{}),today:Object.assign(def.today,parsed.today||{})}); if(Array.isArray(merged.levels)) merged.levels.forEach(L=>{ if(!L.title) L.title=defaultTitleFor(L.level); }); if(!merged.calendar) merged.calendar={}; return merged; }catch(e){ return defaultState(); } }
+function loadState(){ try{ let raw=localStorage.getItem(STORAGE_KEY); if(!raw) return defaultState(); let parsed=JSON.parse(raw); let def=defaultState(); let merged=Object.assign(def,parsed,{hero:Object.assign(def.hero,parsed.hero||{}),today:Object.assign(def.today,parsed.today||{})}); if(Array.isArray(merged.levels)) merged.levels.forEach(L=>{ if(!L.title) L.title=defaultTitleFor(L.level); }); if(!merged.calendar) merged.calendar={}; if(!merged.activeTab) merged.activeTab='today'; return merged; }catch(e){ return defaultState(); } }
 function save(){ if(saveTimer) clearTimeout(saveTimer); saveTimer=setTimeout(()=>{ try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); }catch(e){ toast('⚠️ Failed to save. Try refreshing.'); } },250); }
 function saveNow(){ if(saveTimer){ clearTimeout(saveTimer); saveTimer=null; } try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); }catch(e){} }
 function uid(){ return Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4); }
@@ -495,7 +606,8 @@ function obRenderHabitList(sel,list,rerender,kind){ let c=$(sel); c.innerHTML=''
 function attachHabitInputs(container,list,rerender,kind){ container.querySelectorAll('input,select').forEach(el=>{ el.oninput=el.onchange=()=>{ let i=+el.dataset.i, k=el.dataset.k; list[i][k]=(k==='xp')?Math.max(1,parseInt(el.value)||10):el.value; saveOnboarding(); if(rerender) rerender(); }; }); container.querySelectorAll('button[data-act="del"]').forEach(b=>b.onclick=()=>{ list.splice(+b.dataset.i,1); rerender(); saveOnboarding(); }); }
 function obRenderPresetChips(){ let dc=document.getElementById('ob_daily_presets'); if(dc){ let presets=[{name:'💧 1.5L water',xp:10,sphereName:'Health'},{name:'🧘 5 min meditation',xp:15,sphereName:'Spirituality'},{name:'🚶 20 min walk',xp:15,sphereName:'Health'},{name:'📖 15 min reading',xp:10,sphereName:'Learning'},{name:'💪 Exercise',xp:15,sphereName:'Health'}]; dc.innerHTML=presets.map((p,i)=>`<div class="prchip" data-type="daily" data-i="${i}">${escapeHtml(p.name)} <span class="pr-xp">+${p.xp}</span></div>`).join(''); dc.querySelectorAll('.prchip').forEach(el=>{ el.onclick=()=>{ let i=+el.dataset.i, p=presets[i]; let idx=obData.daily.findIndex(d=>d.name===p.name); if(idx>=0) obData.daily.splice(idx,1); else obData.daily.push({...p}); obRenderDaily(); saveOnboarding(); }; }); } let wc=document.getElementById('ob_weekly_presets'); if(wc){ let presets=[{name:'🧹 Deep cleaning',xp:40,sphereName:'Home'},{name:'📝 Weekly plan',xp:30,sphereName:''},{name:'🌲 Nature walk',xp:35,sphereName:'Health'}]; wc.innerHTML=presets.map((p,i)=>`<div class="prchip" data-type="weekly" data-i="${i}">${escapeHtml(p.name)} <span class="pr-xp">+${p.xp}</span></div>`).join(''); wc.querySelectorAll('.prchip').forEach(el=>{ el.onclick=()=>{ let i=+el.dataset.i, p=presets[i]; let idx=obData.weekly.findIndex(d=>d.name===p.name); if(idx>=0) obData.weekly.splice(idx,1); else obData.weekly.push({...p}); obRenderWeekly(); saveOnboarding(); }; }); } let qc=document.getElementById('ob_quest_presets'); if(qc){ let presets=[{name:'Write a book',identity:'published author',desc:'',sphereName:'Creativity',color:QUEST_COLORS[0]},{name:'Improve physical shape',identity:'best version of myself',desc:'',sphereName:'Health',color:QUEST_COLORS[1]},{name:'Learn a language to B2',identity:'bilingual',desc:'',sphereName:'Learning',color:QUEST_COLORS[2]}]; qc.innerHTML=presets.map((p,i)=>`<div class="prchip" data-type="quest" data-i="${i}">${escapeHtml(p.name)}</div>`).join(''); qc.querySelectorAll('.prchip').forEach(el=>{ el.onclick=()=>{ let i=+el.dataset.i, p=presets[i]; let idx=obData.quests.findIndex(q=>q.name===p.name); if(idx>=0) obData.quests.splice(idx,1); else obData.quests.push({...p,cost:'',belief:5,impact:'',possible:''}); obRenderQuests(); saveOnboarding(); }; }); } }
 function obRenderLevels(){ let c=$('#ob_levels_list'); c.innerHTML=''; obData.levels.forEach((L,i)=>{ if(L.level===1) return; let ph=REWARD_HINTS[(i-1)%REWARD_HINTS.length]; let div=document.createElement('div'); div.className='lvinp'; div.innerHTML=`<div class="lv-pill"><div>${L.level}</div><div class="lp-x">LVL</div></div><div class="lv-info"><div class="lv-xp">${L.xpRequired} XP</div><input type="text" placeholder="Title: ${escapeHtml(L.title||defaultTitleFor(L.level))}" value="${escapeHtml(L.title||'')}" data-i="${i}" data-k="title" style="margin-bottom:4px"><input type="text" placeholder="🎁 e.g. ${ph}" value="${escapeHtml(L.reward)}" data-i="${i}" data-k="reward"></div>`; c.appendChild(div); }); c.querySelectorAll('input').forEach(el=>{ el.oninput=()=>{ obData.levels[+el.dataset.i][el.dataset.k]=el.value; saveOnboarding(); }; }); }
-function obFinish(){ state=defaultState(); state.onboarded=true; state.hero={name:obData.name||'Hero',class:obData.cls||'',avatar:obData.avatar}; state.spheres=obData.spheres.map(s=>({id:uid(),name:s.name,xp:0,level:1})); let sphereByName=n=>state.spheres.find(s=>s.name===n)?.id||null; state.daily=obData.daily.filter(d=>d.name.trim()).map(d=>({id:uid(),name:d.name.trim(),xp:+d.xp||10,sphereId:sphereByName(d.sphereName)})); state.weekly=obData.weekly.filter(d=>d.name.trim()).map(d=>({id:uid(),name:d.name.trim(),xp:+d.xp||20,sphereId:sphereByName(d.sphereName)})); state.quests=obData.quests.filter(q=>q.name.trim()).map(q=>({id:uid(),name:q.name.trim(),description:q.desc.trim(),identity:(q.identity||'').trim(),sphereId:sphereByName(q.sphereName),color:q.color||QUEST_COLORS[0],subtasks:[],created:todayStr(),cost:q.cost||'',belief:parseInt(q.belief)||5,impact:q.impact||'',possible:q.possible||''})); state.levels=obData.levels.map(L=>({...L})); state.today=freshToday(); state.daily.forEach(d=>{ state.today.tasks.push({id:uid(),name:d.name,cat:'red',xp:d.xp,sphereId:d.sphereId,sourceDailyId:d.id,done:false}); }); if(new Date().getDay()===0){ state.weekly.forEach(w=>{ state.today.tasks.push({id:uid(),name:w.name,cat:'yellow',xp:w.xp,sphereId:w.sphereId,sourceWeeklyId:w.id,done:false}); }); } saveNow(); localStorage.removeItem('onboarding_progress'); $('#onboarding').classList.remove('active'); $('#app').style.display='block'; initApp(); toast('🎉 Done! Go, '+state.hero.name+'!'); }
+function obFinish(){ state=defaultState(); state.onboarded=true; state.hero={name:obData.name||'Hero',class:obData.cls||'',avatar:obData.avatar}; state.spheres=obData.spheres.map(s=>({id:uid(),name:s.name,xp:0,level:1})); let sphereByName=n=>state.spheres.find(s=>s.name===n)?.id||null; state.daily=obData.daily.filter(d=>d.name.trim()).map(d=>({id:uid(),name:d.name.trim(),xp:+d.xp||10,sphereId:sphereByName(d.sphereName)})); state.weekly=obData.weekly.filter(d=>d.name.trim()).map(d=>({id:uid(),name:d.name.trim(),xp:+d.xp||20,sphereId:sphereByName(d.sphereName)})); state.quests=obData.quests.filter(q=>q.name.trim()).map(q=>({id:uid(),name:q.name.trim(),description:q.desc.trim(),identity:(q.identity||'').trim(),sphereId:sphereByName(q.sphereName),color:q.color||QUEST_COLORS[0],subtasks:[],created:todayStr(),cost:q.cost||'',belief:parseInt(q.belief)||5,impact:q.impact||'',possible:q.possible||''})); state.levels=obData.levels.map(L=>({...L})); state.today=freshToday(); // No automatic habit addition to today
+  saveNow(); localStorage.removeItem('onboarding_progress'); $('#onboarding').classList.remove('active'); $('#app').style.display='block'; initApp(); toast('🎉 Done! Go, '+state.hero.name+'!'); }
 
 // ========== APP INIT & TUTORIAL ==========
 function initApp(){
@@ -506,14 +618,15 @@ function initApp(){
   if(!tutorialCompleted && state.onboarded && !localStorage.getItem('tutorial_done')){
     setTimeout(()=>startTutorial(),500);
   }
+  applyTabVisibility();
 }
 function startTutorial(){
   let steps=[{title:'🎯 Today',text:'Add one‑time tasks here. Red = urgent, yellow = important, green = bonus. Tap to complete.'},{title:'📋 Habits',text:'Your sacred minimum (daily) and Sunday ritual. Do them → you already win.'},{title:'🗺️ Quests',text:'Big projects with coaching questions. Tap 🧠 to see your answers.'}];
   let i=0;
   function showStep(){ if(i>=steps.length){ localStorage.setItem('tutorial_done','true'); return; } let s=steps[i]; let html=`<h2 style="text-align:center;">${s.title}</h2><p style="margin:12px 0;">${s.text}</p><div style="display:flex;gap:8px;"><button class="btn btn-gold" style="flex:1" onclick="closeModal(); i++; showStep();">Next</button><button class="btn btn-outline" style="flex:1" onclick="closeModal(); localStorage.setItem('tutorial_done','true');">Skip</button></div>`; showModal('Tutorial',html); } showStep();
 }
-function rolloverIfNeeded(){ let td=todayStr(); if(state.today.date!==td){ let carry=state.today.tasks.filter(t=>!t.done && t.cat!=='green' && !t.sourceDailyId && !t.sourceWeeklyId); state.today=freshToday(); state.daily.forEach(d=>{ state.today.tasks.push({id:uid(),name:d.name,cat:'red',xp:d.xp,sphereId:d.sphereId,sourceDailyId:d.id,done:false}); }); if(new Date().getDay()===0){ state.weekly.forEach(w=>{ state.today.tasks.push({id:uid(),name:w.name,cat:'yellow',xp:w.xp,sphereId:w.sphereId,sourceWeeklyId:w.id,done:false}); }); } carry.forEach(t=>{ t.id=uid(); t.done=false; state.today.tasks.push(t); }); save(); } }
-function goTab(name){ $$('.pg').forEach(p=>p.classList.remove('active')); $('#pg-'+name).classList.add('active'); $$('.tab-b').forEach(b=>b.classList.toggle('active',b.dataset.tab===name)); window.scrollTo(0,0); }
+function rolloverIfNeeded(){ let td=todayStr(); if(state.today.date!==td){ let carry=state.today.tasks.filter(t=>!t.done && t.cat!=='green' && !t.sourceDailyId && !t.sourceWeeklyId); state.today=freshToday(); // No automatic habit addition
+    carry.forEach(t=>{ t.id=uid(); t.done=false; state.today.tasks.push(t); }); save(); } }
 function renderAll(){ renderToday(); renderMe(); renderHabits(); renderCalendar(); renderQuests(); renderLevels(); renderHistory(); }
 
 // ========== TODAY ==========
@@ -536,8 +649,10 @@ function openAddDailyHabit(){ openHabitEditor('daily',null); }
 function openAddWeeklyHabit(){ openHabitEditor('weekly',null); }
 function openEditHabit(kind,hid){ openHabitEditor(kind,hid); }
 function openHabitEditor(kind,hid){ let list=kind==='daily'?state.daily:state.weekly; let h=hid?list.find(x=>x.id===hid):{name:'',xp:kind==='daily'?10:20,sphereId:''}; let sphereOpts=['<option value="">— no sphere —</option>'].concat(state.spheres.map(s=>`<option value="${s.id}"${s.id===h.sphereId?' selected':''}>${escapeHtml(s.name)}</option>`)).join(''); let html=`<div class="field"><label class="lab">Name</label><input id="m_h_name" type="text" value="${escapeHtml(h.name)}" placeholder="${kind==='daily'?'water 1.5L / meditation':'cleaning / weekly plan'}" autofocus></div><div class="field"><label class="lab">XP</label><input id="m_h_xp" type="number" min="1" value="${h.xp}"></div><div class="field"><label class="lab">Sphere (opt.)</label><select id="m_h_sphere">${sphereOpts}</select></div><button class="btn btn-gold" onclick="confirmHabit('${kind}','${hid||''}')">${hid?'Save':'Add'}</button>`; showModal((kind==='daily'?'⭐ Daily':'🏡 Sunday')+(hid?' — edit':' — new'),html); }
-function confirmHabit(kind,hid){ let list=kind==='daily'?state.daily:state.weekly; let name=$('#m_h_name').value.trim(); if(!name){ toast('Empty'); return; } let xp=Math.max(1,parseInt($('#m_h_xp').value)||10); let sphereId=$('#m_h_sphere').value||null; if(hid){ let h=list.find(x=>x.id===hid); if(!h) return; h.name=name; h.xp=xp; h.sphereId=sphereId; state.today.tasks.filter(t=>kind==='daily'?t.sourceDailyId===hid:t.sourceWeeklyId===hid).forEach(t=>{ if(!t.done){ t.name=name; t.xp=xp; t.sphereId=sphereId; } }); }else{ let h={id:uid(),name,xp,sphereId}; list.push(h); if(kind==='daily'){ state.today.tasks.push({id:uid(),name,cat:'red',xp,sphereId,sourceDailyId:h.id,done:false}); }else if(kind==='weekly' && new Date().getDay()===0){ state.today.tasks.push({id:uid(),name,cat:'yellow',xp,sphereId,sourceWeeklyId:h.id,done:false}); } } save(); closeModal(); renderHabits(); renderToday(); }
-function deleteHabit(kind,hid){ let list=kind==='daily'?state.daily:state.weekly; let h=list.find(x=>x.id===hid); if(!h) return; if(!confirm(`Delete "${h.name}"?`)) return; if(kind==='daily') state.daily=state.daily.filter(x=>x.id!==hid); else state.weekly=state.weekly.filter(x=>x.id!==hid); state.today.tasks=state.today.tasks.filter(t=>{ let fromThis=(kind==='daily'?t.sourceDailyId:t.sourceWeeklyId)===hid; return !(fromThis && !t.done); }); save(); renderHabits(); renderToday(); }
+function confirmHabit(kind,hid){ let list=kind==='daily'?state.daily:state.weekly; let name=$('#m_h_name').value.trim(); if(!name){ toast('Empty'); return; } let xp=Math.max(1,parseInt($('#m_h_xp').value)||10); let sphereId=$('#m_h_sphere').value||null; if(hid){ let h=list.find(x=>x.id===hid); if(!h) return; h.name=name; h.xp=xp; h.sphereId=sphereId; // Do NOT add to today automatically
+    }else{ let h={id:uid(),name,xp,sphereId}; list.push(h); // No automatic addition to today
+    } save(); closeModal(); renderHabits(); renderToday(); }
+function deleteHabit(kind,hid){ let list=kind==='daily'?state.daily:state.weekly; let h=list.find(x=>x.id===hid); if(!h) return; if(!confirm(`Delete "${h.name}"?`)) return; if(kind==='daily') state.daily=state.daily.filter(x=>x.id!==hid); else state.weekly=state.weekly.filter(x=>x.id!==hid); save(); renderHabits(); renderToday(); }
 
 // ========== SIMPLIFIED CALENDAR (no time blocks) ==========
 function renderCalendar(){ if(!state.calMonth){ let d=new Date(); state.calMonth={y:d.getFullYear(),m:d.getMonth()}; } let {y,m}=state.calMonth; $('#calMonth').textContent=`${MONTHS_EN[m]} ${y}`; let lg=$('#calLegend'); lg.innerHTML='<div style="color:var(--dim);font-size:.72rem">Tap a day to see details.</div>'; $('#calDow').innerHTML=DOW_EN.map(d=>`<div class="dow">${d}</div>`).join(''); let first=new Date(y,m,1), offset=(first.getDay()+6)%7, daysIn=new Date(y,m+1,0).getDate(); let cells=[]; for(let i=0;i<offset;i++) cells.push({empty:true}); let tdy=todayStr(); for(let d=1;d<=daysIn;d++){ let ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; let blocks=state.calendar[ds]||[]; let hist=state.history.find(h=>h.date===ds); cells.push({d,ds,blocks,hist,today:ds===tdy,future:ds>tdy}); } let grid=$('#calGrid'); grid.innerHTML=cells.map(c=>{ if(c.empty) return `<div class="day empty"></div>`; let blkHtml=c.blocks.slice(0,2).map(b=>`<div class="blk" style="background:${b.color}">${escapeHtml(b.name)}</div>`).join(''); let more=c.blocks.length>2?`<div class="blk-more">+${c.blocks.length-2}</div>`:''; let xp=c.hist?`<div class="day-xp">+${c.hist.earnedXp}</div>`:''; return `<div class="day ${c.today?'today':''} ${c.future?'future':''}" data-ds="${c.ds}"><div class="day-n">${c.d}</div>${xp}${blkHtml}${more}</div>`; }).join(''); grid.querySelectorAll('.day[data-ds]').forEach(el=>{ el.onclick=()=>openCalDay(el.dataset.ds); }); }
@@ -573,7 +688,14 @@ function saveLevelReward(N){ let L=levelObj(N); if(!L) return; L.reward=$('#m_re
 function renderHistory(){ let totalDays=state.history.length, totalTasks=state.history.reduce((s,h)=>s+h.tasks.filter(t=>t.done).length,0), totalXp=state.totalXp; $('#histDays').textContent=totalDays; $('#histTasks').textContent=totalTasks; $('#histXp').textContent=totalXp; let c=$('#histList'); if(state.history.length===0){ c.innerHTML='<div class="empty-state"><div class="es-i">📜</div><div class="es-t">History empty</div><div class="es-d">Complete a day with the "⚔️ Complete day" button</div></div>'; return; } let sorted=[...state.history].sort((a,b)=>a.date<b.date?1:-1); c.innerHTML=sorted.map(h=>{ let doneCount=h.tasks.filter(t=>t.done).length; return `<div class="hist-day ${h.leveledUpTo?'up':''}"><div class="hd-top"><div class="hd-date">${fmtDateHuman(h.date)}</div><div class="hd-xp">+${h.earnedXp} XP</div></div><div class="hd-meta">${doneCount} of ${h.tasks.length} tasks</div>${h.leveledUpTo?`<div class="hd-up">🏆 Level Up to ${h.leveledUpTo}!</div>`:''}<div class="hd-tasks">${h.tasks.map(t=>`<div>${t.done?'✓':'·'} ${escapeHtml(t.name)} <span style="color:var(--gold)">${t.done?'+':''}${t.xp}</span></div>`).join('')}</div></div>`; }).join(''); }
 
 // ========== FINISH DAY ==========
-function finishDay(){ let tasks=state.today.tasks; if(tasks.length===0){ toast('Today is empty'); return; } let earned=tasks.filter(t=>t.done).reduce((s,t)=>s+t.xp,0); let lvNow=currentLevel(); let startLv=computeLevelFor(state.totalXp-earned); let leveledUpTo=lvNow>startLv?lvNow:null; let yesterday=(()=>{ let d=new Date(state.today.date); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10); })(); if(state.lastFinishedDate===yesterday) state.streak=(state.streak||0)+1; else if(state.lastFinishedDate!==state.today.date) state.streak=1; state.lastFinishedDate=state.today.date; state.history.push({date:state.today.date,earnedXp:earned,tasks:tasks.map(t=>({name:t.name,xp:t.xp,done:t.done,cat:t.cat})),leveledUpTo,afterLevel:lvNow}); let carry=tasks.filter(t=>!t.done && t.cat!=='green' && !t.sourceDailyId && !t.sourceWeeklyId).map(t=>({...t,id:uid(),done:false})); let d=new Date(state.today.date); d.setDate(d.getDate()+1); state.today={date:d.toISOString().slice(0,10),tasks:[],earnedXp:0}; state.daily.forEach(h=>{ state.today.tasks.push({id:uid(),name:h.name,cat:'red',xp:h.xp,sphereId:h.sphereId,sourceDailyId:h.id,done:false}); }); if(d.getDay()===0){ state.weekly.forEach(w=>{ state.today.tasks.push({id:uid(),name:w.name,cat:'yellow',xp:w.xp,sphereId:w.sphereId,sourceWeeklyId:w.id,done:false}); }); } carry.forEach(t=>state.today.tasks.push(t)); saveNow(); renderAll(); goTab('hist'); toast(`🌙 Turn made! +${earned} XP${leveledUpTo?` · Lvl ${leveledUpTo}!`:''}`); }
+function finishDay(){ let tasks=state.today.tasks; if(tasks.length===0){ toast('Today is empty'); return; } // Check for unfinished green (bonus) tasks
+  let unfinishedGreen = tasks.filter(t=>!t.done && t.cat==='green');
+  if(unfinishedGreen.length > 0){
+    if(!confirm(`You have ${unfinishedGreen.length} unfinished bonus task(s). They will be reset (not carried over). Continue?`)){
+      return;
+    }
+  }
+  let earned=tasks.filter(t=>t.done).reduce((s,t)=>s+t.xp,0); let lvNow=currentLevel(); let startLv=computeLevelFor(state.totalXp-earned); let leveledUpTo=lvNow>startLv?lvNow:null; let yesterday=(()=>{ let d=new Date(state.today.date); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10); })(); if(state.lastFinishedDate===yesterday) state.streak=(state.streak||0)+1; else if(state.lastFinishedDate!==state.today.date) state.streak=1; state.lastFinishedDate=state.today.date; state.history.push({date:state.today.date,earnedXp:earned,tasks:tasks.map(t=>({name:t.name,xp:t.xp,done:t.done,cat:t.cat})),leveledUpTo,afterLevel:lvNow}); let carry=tasks.filter(t=>!t.done && t.cat!=='green' && !t.sourceDailyId && !t.sourceWeeklyId).map(t=>({...t,id:uid(),done:false})); let d=new Date(state.today.date); d.setDate(d.getDate()+1); state.today={date:d.toISOString().slice(0,10),tasks:[],earnedXp:0}; carry.forEach(t=>state.today.tasks.push(t)); saveNow(); renderAll(); goTab('hist'); toast(`🌙 Turn made! +${earned} XP${leveledUpTo?` · Lvl ${leveledUpTo}!`:''}`); }
 
 // ========== MODALS, HELP, ADD TASK, SETTINGS, PROFILE ==========
 function showModal(title,bodyHtml){ $('#modalTitle').textContent=title; $('#modalBody').innerHTML=bodyHtml; $('#modal').classList.add('open'); }
@@ -584,7 +706,7 @@ function openAddTask(cat){ let sphereOpts=['<option value="">— no sphere —</
 function confirmAddTask(cat){ let name=$('#m_t_name').value.trim(); if(!name){ toast('Empty'); return; } let xp=Math.max(1,parseInt($('#m_t_xp').value)||10); let sphereId=$('#m_t_sphere').value||null; let questId=$('#m_t_quest').value||null; state.today.tasks.push({id:uid(),name,cat,xp,sphereId,questId,done:false}); save(); closeModal(); renderToday(); }
 function openEditProfile(){ let avGrid=AVATARS.map(a=>`<div class="av-it${a===state.hero.avatar?' on':''}" data-a="${a}">${a}</div>`).join(''); let html=`<div class="field"><label class="lab">Name</label><input id="m_p_name" type="text" value="${escapeHtml(state.hero.name)}"></div><div class="field"><label class="lab">Class</label><input id="m_p_class" type="text" value="${escapeHtml(state.hero.class)}" placeholder="e.g. Psychologist Warrior"></div><div class="field"><label class="lab">Avatar</label><div class="av-grid" id="m_p_av">${avGrid}</div></div><button class="btn btn-gold" onclick="saveProfile()">Save</button>`; showModal('✏️ Profile',html); let chosen=state.hero.avatar; setTimeout(()=>{ document.querySelectorAll('#m_p_av .av-it').forEach(el=>{ el.onclick=()=>{ chosen=el.dataset.a; document.querySelectorAll('#m_p_av .av-it').forEach(x=>x.classList.remove('on')); el.classList.add('on'); }; }); },20); window._pChosenAv=()=>chosen; }
 function saveProfile(){ let name=$('#m_p_name').value.trim()||'Hero'; let cls=$('#m_p_class').value.trim(); let av=window._pChosenAv?window._pChosenAv():state.hero.avatar; state.hero={name,class:cls,avatar:av}; save(); closeModal(); renderMe(); renderToday(); toast('✓ Saved'); }
-function openSettings(){ let html=`<div class="field"><button class="btn btn-ghost" onclick="exportData()">📤 Export (JSON)</button></div><div class="field"><button class="btn btn-ghost" onclick="document.getElementById('m_imp_file').click()">📥 Import (JSON)</button><input id="m_imp_file" type="file" accept="application/json" style="display:none" onchange="importData(this)"><div class="hint">Replaces all data. Make an export first.</div></div><div class="field"><button class="btn btn-ghost" onclick="addManualSphere()">➕ Add sphere</button></div><div class="field"><button class="btn btn-ghost" onclick="manageSpheres()">📊 Manage spheres</button></div><div class="field" style="margin-top:24px"><button class="btn" style="background:var(--red);color:#fff" onclick="resetAll()">⚠️ Reset everything</button></div><div style="text-align:center;font-size:.7rem;color:var(--dim);margin-top:14px">Life Quest v${APP_VERSION}</div>`; showModal('⚙️ Settings',html); }
+// manageSpheres and other functions unchanged, they remain
 function exportData(){ let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); let url=URL.createObjectURL(blob); let a=document.createElement('a'); a.href=url; a.download=`questhub-${todayStr()}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),500); toast('File downloaded'); }
 function importData(input){ let file=input.files?.[0]; if(!file) return; let r=new FileReader(); r.onload=()=>{ try{ let obj=JSON.parse(r.result); if(!obj||typeof obj!=='object') throw new Error(); if(!confirm('Import will replace ALL current data. Continue?')) return; state=Object.assign(defaultState(),obj); saveNow(); closeModal(); initApp(); toast('Imported'); }catch(e){ toast('⚠️ Corrupted file'); } }; r.readAsText(file); }
 function resetAll(){ if(!confirm('Delete ALL data and start over?')) return; if(!confirm('Really? This cannot be undone.')) return; localStorage.removeItem(STORAGE_KEY); closeModal(); state=defaultState(); startOnboarding(); }
@@ -592,6 +714,8 @@ function addManualSphere(){ let html=`<div class="field"><label class="lab">Sphe
 function confirmAddSphere(){ let v=$('#m_ns_name').value.trim(); if(!v){ toast('Empty'); return; } state.spheres.push({id:uid(),name:v,xp:0,level:1}); save(); closeModal(); renderMe(); toast('Added'); }
 function manageSpheres(){ if(state.spheres.length===0){ openSettings(); toast('No spheres'); return; } let html=state.spheres.map(s=>`<div class="iitem"><div class="iitem-row"><input type="text" value="${escapeHtml(s.name)}" data-sid="${s.id}" data-k="name"><button class="delx" data-sid="${s.id}" data-act="del">✕</button></div><div class="iitem-meta">Lv ${s.level} · ${s.xp} XP</div></div>`).join('')+'<button class="btn btn-gold" onclick="closeModal();openSettings()" style="margin-top:10px">← Back</button>'; showModal('📊 Spheres',html); document.querySelectorAll('#modalBody input[data-k]').forEach(el=>{ el.oninput=()=>{ let s=state.spheres.find(x=>x.id===el.dataset.sid); if(!s) return; s.name=el.value.trim()||s.name; save(); }; }); document.querySelectorAll('#modalBody button[data-act="del"]').forEach(b=>{ b.onclick=()=>{ let s=state.spheres.find(x=>x.id===b.dataset.sid); if(!s) return; if(!confirm(`Delete sphere "${s.name}"? XP attached remains in total.`)) return; state.spheres=state.spheres.filter(x=>x.id!==b.dataset.sid); state.daily.forEach(d=>{ if(d.sphereId===b.dataset.sid) d.sphereId=null; }); state.weekly.forEach(d=>{ if(d.sphereId===b.dataset.sid) d.sphereId=null; }); state.quests.forEach(q=>{ if(q.sphereId===b.dataset.sid) q.sphereId=null; }); state.today.tasks.forEach(t=>{ if(t.sphereId===b.dataset.sid) t.sphereId=null; }); save(); manageSpheres(); renderMe(); }; }); }
 if('serviceWorker' in navigator){ window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(e=>console.warn('SW failed',e)); }); }
+
+loadTabVisibility();
 state=loadState();
 if(!state.onboarded){ startOnboarding(); } else { $('#app').style.display='block'; initApp(); }
 </script>
