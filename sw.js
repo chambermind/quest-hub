@@ -1,4 +1,4 @@
-// LifeQuest Service Worker v1.4.0
+// LifeQuest Service Worker (поддерживает английскую и русскую версии)
 const CACHE = 'lifequest-v1.4.0';
 const ASSETS = [
   './',
@@ -15,7 +15,7 @@ const ASSETS = [
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE).then((cache) => {
-      console.log('Caching LifeQuest assets');
+      console.log('Caching assets');
       return cache.addAll(ASSETS).catch((err) => console.warn('Failed to cache some assets:', err));
     }).then(() => self.skipWaiting())
   );
@@ -38,10 +38,8 @@ self.addEventListener('fetch', (e) => {
       if (cached) return cached;
 
       return fetch(req).then((res) => {
-        // Кэшируем только успешные ответы
         if (res && res.status === 200) {
           const url = new URL(req.url);
-          // Кэшируем свои файлы и шрифты Google
           if (url.origin === location.origin || url.host.includes('fonts.g')) {
             const copy = res.clone();
             caches.open(CACHE).then((cache) => cache.put(req, copy));
@@ -49,7 +47,6 @@ self.addEventListener('fetch', (e) => {
         }
         return res;
       }).catch(() => {
-        // Офлайн: для HTML-запросов пытаемся отдать запрошенную страницу из кэша или index.html
         if (req.headers.get('accept').includes('text/html')) {
           return caches.match(req).then(cached => cached || caches.match('./index.html'));
         }
