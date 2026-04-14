@@ -1,59 +1,599 @@
-// LifeQuest Service Worker
-const CACHE = 'lifequest-v1.4.0';
-const ASSETS = [
-  './',
-  './index.html',
-  './app.html',
-  './app-ru.html',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png',
-  'https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;600;700&display=swap'
-];
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0a0e1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Life Quest">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<title>Life Quest</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0e1a; --panel:#131829; --panel2:#0f1428;
+  --gold:#d4a948; --gold2:#f4cf6e; --gold-dim:#8a6e30;
+  --green:#4ade80; --red:#ef4444; --yellow:#fbbf24;
+  --blue:#60a5fa; --purple:#a78bfa; --pink:#f472b6;
+  --orange:#fb923c; --cyan:#22d3ee; --teal:#14b8a6;
+  --text:#e8e8f0; --dim:#7a8299; --locked:#3a3f55; --border:#2a3149;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{overscroll-behavior-y:none}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-top:var(--safe-top)}
+button{font-family:inherit;cursor:pointer}
+input,textarea,select{font-family:inherit;font-size:.95rem;background:#0a0e1a;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:10px 12px;width:100%}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--gold)}
+textarea{resize:vertical;min-height:60px}
+.container{max-width:680px;margin:0 auto;padding:14px 12px calc(80px + var(--safe-bottom))}
 
-self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open(CACHE).then((cache) => {
-      console.log('Caching assets');
-      return cache.addAll(ASSETS).catch((err) => console.warn('Failed to cache some assets:', err));
-    }).then(() => self.skipWaiting())
-  );
-});
+/* ============ ONBOARDING ============ */
+#onboarding{display:none;position:fixed;inset:0;background:var(--bg);z-index:50;overflow-y:auto;padding-top:var(--safe-top);padding-bottom:var(--safe-bottom)}
+#onboarding.active{display:block}
+.ob-wrap{max-width:560px;margin:0 auto;padding:24px 18px 100px;min-height:100vh;display:flex;flex-direction:column}
+.ob-progress{display:flex;gap:5px;margin-bottom:24px}
+.ob-dot{flex:1;height:4px;background:var(--border);border-radius:2px;transition:background .3s}
+.ob-dot.done{background:var(--gold)}
+.ob-dot.cur{background:var(--gold2);box-shadow:0 0 8px var(--gold)}
+.ob-step{display:none;flex:1;flex-direction:column}
+.ob-step.active{display:flex;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.ob-icon{font-size:3.2rem;text-align:center;margin-bottom:10px}
+.ob-title{font-family:'Cinzel',serif;color:var(--gold);font-size:1.6rem;text-align:center;font-weight:900;line-height:1.15;margin-bottom:8px}
+.ob-sub{text-align:center;color:var(--dim);font-size:.88rem;line-height:1.5;margin-bottom:24px;padding:0 6px}
+.ob-body{flex:1}
+.ob-foot{position:sticky;bottom:0;background:linear-gradient(to top,var(--bg) 60%,transparent);padding:18px 0 10px;display:flex;gap:10px;margin-top:14px}
+.btn{padding:13px 18px;border-radius:10px;border:none;font-weight:700;font-size:.92rem;font-family:'Cinzel',serif;text-transform:uppercase;letter-spacing:1px;flex:1;transition:transform .1s,opacity .2s}
+.btn:active{transform:scale(.97)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a1530;box-shadow:0 0 14px rgba(212,169,72,.35)}
+.btn-gold:disabled{opacity:.4;box-shadow:none}
+.btn-ghost{background:transparent;color:var(--dim);border:1px solid var(--border)}
+.btn-back{background:transparent;color:var(--dim);border:1px solid var(--border);flex:0 0 auto;padding:13px 16px}
+.btn-skip{background:transparent;color:var(--dim);border:none;padding:13px 12px;flex:0 0 auto;font-size:.78rem;text-decoration:underline}
+.field{margin-bottom:14px}
+.lab{display:block;font-size:.78rem;color:var(--gold);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.hint{font-size:.72rem;color:var(--dim);margin-top:5px;line-height:1.4}
 
-self.addEventListener('activate', (e) => {
-  e.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
-    ).then(() => self.clients.claim())
-  );
-});
+/* sphere chips */
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.chip{padding:8px 13px;border-radius:18px;background:#0a0e1a;border:1px solid var(--border);color:var(--text);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s}
+.chip.on{background:var(--gold);color:#1a1530;border-color:var(--gold)}
+.chip-add{display:flex;gap:6px;margin-top:8px}
+.chip-add input{flex:1}
+.chip-add button{background:var(--panel);border:1px solid var(--gold);color:var(--gold);border-radius:8px;padding:0 14px;font-weight:700;font-size:.85rem}
 
-self.addEventListener('fetch', (e) => {
-  const req = e.request;
-  if (req.method !== 'GET') return;
+/* item rows in onboarding */
+.iitem{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px}
+.iitem-row{display:flex;gap:6px;align-items:center}
+.iitem-row input{flex:1}
+.iitem-row .xpin{flex:0 0 70px;text-align:center}
+.iitem-row .delx{background:var(--red);color:#fff;border:none;width:34px;height:38px;border-radius:8px;font-weight:700;font-size:1rem;flex:0 0 auto}
+.iitem-row select{flex:0 0 auto;width:auto;min-width:120px}
+.iitem-meta{font-size:.7rem;color:var(--dim);margin-top:5px;display:flex;gap:8px;flex-wrap:wrap}
+.add-it{width:100%;padding:11px;background:transparent;border:1.5px dashed var(--border);color:var(--gold);border-radius:10px;font-weight:700;font-size:.85rem;margin-top:4px}
+.preset-hint{font-size:.7rem;color:var(--dim);margin:6px 0 8px;font-style:italic}
+.preset-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.prchip{background:#181e30;border:1px solid #2a3147;color:var(--text);padding:6px 10px;border-radius:18px;font-size:.72rem;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:5px;user-select:none}
+.prchip:hover{border-color:var(--gold);color:var(--gold)}
+.prchip.on{background:rgba(212,169,72,.18);border-color:var(--gold);color:var(--gold)}
+.prchip .pr-xp{font-size:.62rem;color:var(--gold);opacity:.7}
+.prchip.on .pr-xp{opacity:1}
+.sun-banner{background:linear-gradient(100deg,rgba(212,169,72,.12),rgba(212,169,72,.04));border:1px solid rgba(212,169,72,.4);border-radius:12px;padding:12px 14px;margin-bottom:12px;position:relative;cursor:pointer}
+.sun-banner:hover{background:linear-gradient(100deg,rgba(212,169,72,.2),rgba(212,169,72,.08))}
+.sun-banner-t{font-family:'Cinzel',serif;color:var(--gold);font-size:.85rem;letter-spacing:.5px;margin-bottom:4px}
+.sun-banner-d{font-size:.73rem;color:var(--text);line-height:1.35}
+.sun-banner-x{position:absolute;top:6px;right:8px;background:none;border:none;color:var(--dim);font-size:1rem;cursor:pointer;padding:2px 6px}
+.sun-banner-x:hover{color:var(--gold)}
+.add-it:hover{border-color:var(--gold);background:rgba(212,169,72,.05)}
 
-  e.respondWith(
-    caches.match(req).then((cached) => {
-      if (cached) return cached;
+/* level rewards in onboarding */
+.lvinp{display:flex;gap:8px;align-items:center;margin-bottom:7px;background:var(--panel);border:1px solid var(--border);border-radius:9px;padding:8px 10px}
+.lvinp.cur{border-color:var(--gold)}
+.lv-pill{flex:0 0 auto;width:42px;height:42px;border-radius:50%;background:radial-gradient(circle,var(--gold2),var(--gold));color:#1a1530;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-weight:900;font-size:.95rem;line-height:1}
+.lv-pill .lp-x{font-size:.5rem;font-weight:700;letter-spacing:1px;margin-top:1px}
+.lv-pill.locked{background:var(--locked);color:var(--dim);box-shadow:none}
+.lv-info{flex:1;min-width:0}
+.lv-xp{font-size:.7rem;color:var(--dim);margin-bottom:3px}
+.lvinp input{padding:7px 9px;font-size:.85rem}
+.av-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px}
+.av-it{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:1.6rem;background:var(--panel);border:2px solid var(--border);border-radius:10px;cursor:pointer;transition:all .1s}
+.av-it.on{border-color:var(--gold);background:#1a1530;box-shadow:0 0 10px rgba(212,169,72,.3)}
 
-      return fetch(req).then((res) => {
-        // Кэшируем только успешные ответы
-        if (res && res.status === 200) {
-          const url = new URL(req.url);
-          // Кэшируем свои файлы и шрифты Google
-          if (url.origin === location.origin || url.host.includes('fonts.g')) {
-            const copy = res.clone();
-            caches.open(CACHE).then((cache) => cache.put(req, copy));
-          }
-        }
-        return res;
-      }).catch(() => {
-        // Офлайн: для HTML-запросов пытаемся отдать страницу из кэша или index.html
-        if (req.headers.get('accept').includes('text/html')) {
-          return caches.match(req).then(cached => cached || caches.match('./index.html'));
-        }
-        return new Response('Нет соединения с интернетом', { status: 503 });
-      });
-    })
-  );
-});
+/* ============ APP HEADER ============ */
+.app-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.app-title{font-family:'Cinzel',serif;color:var(--gold);font-size:1.05rem;font-weight:900;letter-spacing:1px}
+.app-sub{color:var(--dim);font-size:.65rem;text-transform:uppercase;letter-spacing:2px;margin-top:1px}
+.head-btn{background:var(--panel);border:1px solid var(--border);color:var(--gold);width:38px;height:38px;border-radius:10px;font-size:1rem;display:flex;align-items:center;justify-content:center}
+
+h2{color:var(--gold);font-family:'Cinzel',serif;font-size:.88rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+h2 .h2-act{background:transparent;border:1px solid var(--border);color:var(--gold);width:30px;height:30px;border-radius:8px;font-size:.95rem;font-family:inherit}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:13px;margin-bottom:11px}
+
+/* ============ TODAY ============ */
+.today-hd{border:1px solid var(--gold);background:linear-gradient(135deg,#1a1530,#0f1428);text-align:center;border-radius:12px;padding:13px;margin-bottom:11px}
+.today-date{font-family:'Cinzel',serif;color:var(--gold);font-size:.95rem;text-transform:uppercase;letter-spacing:2px}
+.today-streak{font-size:.72rem;color:var(--orange);margin-top:3px;font-weight:700}
+.today-xp{font-size:.78rem;color:var(--dim);margin-top:6px}
+.today-xp b{color:var(--gold)}
+.today-bar{margin-top:7px;height:8px;background:#0a0e1a;border-radius:4px;border:1px solid var(--border);overflow:hidden}
+.today-bar div{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .5s;box-shadow:0 0 8px var(--gold)}
+.cat-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.cat-h .ct{font-family:'Cinzel',serif;font-size:.85rem;text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.cat-add{background:transparent;border:1.5px dashed var(--border);color:var(--dim);width:30px;height:30px;border-radius:8px;font-size:1rem;font-weight:700}
+.cat-add:hover{color:var(--gold);border-color:var(--gold)}
+.task{background:#0a0e1a;border:1px solid var(--border);border-radius:9px;padding:9px 11px;margin-bottom:5px;display:flex;align-items:center;gap:9px;cursor:pointer;transition:all .15s}
+.task:active{transform:scale(.99)}
+.task.done{opacity:.45}.task.done .tn{text-decoration:line-through}
+.tck{width:20px;height:20px;min-width:20px;border:2px solid var(--border);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.task.done .tck{background:var(--green);border-color:var(--green);color:#0a0e1a}
+.tn{flex:1;font-size:.85rem;font-weight:600;line-height:1.3}
+.tag{font-size:.6rem;padding:1px 5px;border-radius:4px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#0a0e1a}
+.tx{font-size:.7rem;color:var(--gold);font-weight:700;margin-left:4px;white-space:nowrap}
+.task .tdel{background:transparent;border:none;color:var(--dim);font-size:.85rem;padding:2px 6px}
+.empty-cat{font-size:.72rem;color:var(--dim);font-style:italic;text-align:center;padding:7px 4px}
+.cat-red{color:var(--red)}
+.cat-yel{color:var(--yellow)}
+.cat-grn{color:var(--green)}
+.finish-card{text-align:center;border:1px dashed var(--border);background:#0a0e1a;border-radius:12px;padding:14px;margin-top:8px}
+.finish-card .ftxt{color:var(--dim);font-size:.78rem;font-style:italic}
+.finish-btn{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a1530;border:none;padding:11px 22px;border-radius:10px;font-weight:700;font-size:.85rem;margin-top:8px;font-family:'Cinzel',serif;text-transform:uppercase;letter-spacing:1px;box-shadow:0 0 14px rgba(212,169,72,.35)}
+
+/* ============ ME ============ */
+.char-card{border:1px solid var(--gold);background:linear-gradient(135deg,#1a1530,#0f1428);border-radius:14px;padding:16px;margin-bottom:11px;position:relative}
+.char-edit{position:absolute;top:10px;right:10px;background:transparent;border:1px solid var(--border);color:var(--gold);width:32px;height:32px;border-radius:8px;font-size:.85rem}
+.char-top{display:flex;align-items:center;gap:14px}
+.char-av{width:74px;height:74px;border-radius:50%;background:radial-gradient(circle,#2a1f10,#1a1530);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:2.4rem;flex:0 0 auto;box-shadow:0 0 16px rgba(212,169,72,.35)}
+.char-info{flex:1;min-width:0}
+.char-name{font-family:'Cinzel',serif;font-size:1.25rem;color:var(--gold);font-weight:900;line-height:1.1}
+.char-class{color:var(--purple);font-size:.7rem;text-transform:uppercase;letter-spacing:1.5px;margin-top:3px}
+.char-lvl{display:flex;align-items:center;gap:11px;margin-top:14px}
+.lvl-badge{width:54px;height:54px;border-radius:50%;background:radial-gradient(circle,var(--gold2),var(--gold));display:flex;flex-direction:column;align-items:center;justify-content:center;color:#1a1530;font-weight:900;box-shadow:0 0 18px rgba(212,169,72,.5);flex:0 0 auto}
+.lvl-num{font-size:1.3rem;font-family:'Cinzel',serif;line-height:1}
+.lvl-lbl{font-size:.5rem;text-transform:uppercase;letter-spacing:1px}
+.xp-block{flex:1;min-width:0}
+.xp-txt{display:flex;justify-content:space-between;font-size:.72rem;color:var(--dim);margin-bottom:3px}
+.bar{height:9px;background:#0a0e1a;border-radius:5px;border:1px solid var(--border);overflow:hidden}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .6s;box-shadow:0 0 8px var(--gold)}
+.next-rew{margin-top:11px;padding:9px 11px;background:rgba(212,169,72,.08);border:1px dashed var(--gold-dim);border-radius:9px;font-size:.78rem;color:var(--text)}
+.next-rew b{color:var(--gold);font-family:'Cinzel',serif;text-transform:uppercase;letter-spacing:1px;font-size:.7rem;display:block;margin-bottom:3px}
+
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:#0a0e1a;border-radius:9px;padding:10px;border:1px solid var(--border)}
+.stat-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;gap:6px}
+.stat-n{font-size:.78rem;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stat-v{font-family:'Cinzel',serif;font-weight:900;font-size:1.05rem;color:var(--gold)}
+.mini{height:5px;background:#1a2138;border-radius:3px;overflow:hidden}
+.mini div{height:100%;transition:width .6s;background:linear-gradient(90deg,var(--gold),var(--gold2))}
+.stat-xp{font-size:.62rem;color:var(--dim);margin-top:3px;text-align:right}
+
+/* ============ HABITS ============ */
+.hrow{background:#0a0e1a;border:1px solid var(--border);border-radius:9px;padding:10px 12px;margin-bottom:5px;display:flex;align-items:center;gap:10px}
+.hn{flex:1;font-size:.86rem;font-weight:600}
+.hsphere{font-size:.62rem;color:var(--dim);margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+.hx{font-size:.7rem;color:var(--gold);font-weight:700;white-space:nowrap}
+.hact{background:transparent;border:none;color:var(--dim);padding:4px 8px;font-size:.95rem}
+.hact:hover{color:var(--gold)}
+
+/* ============ SIMPLIFIED CALENDAR (only history) ============ */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:6px}
+.cal-nav button{background:var(--panel);border:1px solid var(--border);color:var(--gold);width:36px;height:36px;border-radius:9px;font-size:1.1rem;font-weight:700}
+.cal-month{font-family:'Cinzel',serif;color:var(--gold);font-size:1rem;text-transform:uppercase;letter-spacing:1px;flex:1;text-align:center;font-weight:900}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px}
+.dow{text-align:center;font-size:.6rem;color:var(--dim);font-weight:700;padding:3px}
+.day{background:var(--panel);border:1px solid var(--border);border-radius:7px;padding:4px;min-height:74px;cursor:pointer;font-size:.62rem;display:flex;flex-direction:column;gap:2px;overflow:hidden}
+.day.empty{background:transparent;border:none;min-height:0}
+.day.today{border-color:var(--gold);box-shadow:0 0 10px rgba(212,169,72,.4)}
+.day.future{opacity:.55}
+.day-n{font-weight:900;color:var(--gold);font-size:.78rem;font-family:'Cinzel',serif}
+.day-xp{font-size:.55rem;color:var(--green);font-weight:700;margin-bottom:1px}
+.hist-badge{background:rgba(74,222,128,0.2);border-radius:3px;padding:1px 2px;font-size:.5rem;margin-top:2px;color:var(--green);text-align:center}
+.legend{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;font-size:.68rem}
+.leg-it{display:flex;align-items:center;gap:5px;background:var(--panel);padding:4px 9px;border-radius:11px;border:1px solid var(--border)}
+.leg-dot{width:10px;height:10px;border-radius:3px}
+
+/* ============ QUESTS ============ */
+.qgrp{background:#0a0e1a;border-left:4px solid var(--gold);border-radius:0 10px 10px 0;margin-bottom:7px;overflow:hidden}
+.qgrp-head{padding:11px 12px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.qgrp-arr{font-size:.72rem;color:var(--dim);transition:transform .2s;flex:0 0 auto}
+.qgrp.open .qgrp-arr{transform:rotate(90deg)}
+.qgrp-info{flex:1;min-width:0}
+.qgrp-n{font-size:.92rem;font-weight:700;line-height:1.2}
+.qgrp-meta{font-size:.65rem;color:var(--dim);margin-top:3px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.qgrp-ident{font-size:.72rem;color:var(--gold);margin-top:3px;opacity:.92;font-style:italic;letter-spacing:.2px}
+.qgrp-prog{font-size:.7rem;color:var(--gold);font-weight:700;flex:0 0 auto}
+.qgrp-act{background:transparent;border:none;color:var(--dim);padding:2px 8px;font-size:.95rem}
+.qgrp-subs{display:none;padding:0 10px 10px 36px;background:#060912}
+.qgrp.open .qgrp-subs{display:block}
+.subt{padding:7px 8px;margin-top:4px;display:flex;align-items:center;gap:8px;cursor:pointer;border-radius:6px;font-size:.78rem;background:#0a0e1a}
+.subt.done{opacity:.45}.subt.done .sn{text-decoration:line-through}
+.sck{width:15px;height:15px;min-width:15px;border:1.5px solid var(--border);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px}
+.subt.done .sck{background:var(--green);border-color:var(--green);color:#0a0e1a}
+.sn{flex:1;color:var(--text)}
+.subt.done .sn{color:var(--dim)}
+.sub-add{padding:8px;margin-top:5px;text-align:left;background:transparent;border:1.5px dashed var(--border);color:var(--gold);border-radius:6px;font-size:.75rem;font-weight:600;width:100%}
+.q-color-dot{width:10px;height:10px;border-radius:3px;display:inline-block;flex:0 0 auto}
+
+/* ============ LEVELS ============ */
+.lvcard{background:linear-gradient(135deg,#2a1f10,#1a1530);border:2px solid var(--gold);border-radius:13px;padding:13px;margin-bottom:9px;position:relative}
+.lvcard.locked{opacity:.45;border-style:dashed;border-color:var(--locked);background:#0f1220}
+.lvcard.cur{border-color:var(--gold2);box-shadow:0 0 18px rgba(244,207,110,.3)}
+.lvcard.done{border-color:var(--green);background:linear-gradient(135deg,#10261c,#0f1428)}
+.lvtop{display:flex;align-items:center;gap:11px;margin-bottom:7px}
+.lvtop-badge{width:44px;height:44px;border-radius:50%;background:radial-gradient(circle,var(--gold2),var(--gold));color:#1a1530;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-weight:900;font-size:1rem;flex:0 0 auto}
+.lvcard.locked .lvtop-badge{background:var(--locked);color:var(--dim);box-shadow:none}
+.lvcard.done .lvtop-badge{background:var(--green);color:#0a0e1a}
+.lvtop-info{flex:1;min-width:0}
+.lvtop-t{font-family:'Cinzel',serif;font-size:.95rem;color:var(--gold);font-weight:900;line-height:1.1}
+.lvcard.done .lvtop-t{color:var(--green)}
+.lvtop-x{font-size:.65rem;color:var(--dim);margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
+.lvtop-edit{background:transparent;border:1px solid var(--border);color:var(--gold);width:32px;height:32px;border-radius:8px;font-size:.85rem;flex:0 0 auto}
+.lvrew{font-size:.85rem;font-style:italic;line-height:1.4;color:var(--text);margin:5px 0 3px;padding-left:55px}
+.lvrew.empty{color:var(--dim);font-style:italic}
+.add-lvls{width:100%;padding:13px;background:transparent;border:1.5px dashed var(--border);color:var(--gold);border-radius:10px;font-weight:700;font-size:.85rem;margin-top:8px;font-family:'Cinzel',serif;text-transform:uppercase;letter-spacing:1px}
+
+/* ============ HISTORY ============ */
+.hist-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:11px}
+.hst{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 8px;text-align:center}
+.hst-v{font-family:'Cinzel',serif;font-size:1.25rem;color:var(--gold);font-weight:900;line-height:1}
+.hst-l{font-size:.6rem;color:var(--dim);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+.hist-day{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:11px;margin-bottom:7px}
+.hist-day.up{border-color:var(--gold)}
+.hd-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px}
+.hd-date{font-family:'Cinzel',serif;color:var(--gold);font-size:.85rem;font-weight:700}
+.hd-xp{font-size:.78rem;color:var(--green);font-weight:700;white-space:nowrap}
+.hd-meta{font-size:.7rem;color:var(--dim);margin-bottom:6px}
+.hd-up{font-size:.72rem;color:var(--gold2);background:rgba(212,169,72,.1);border:1px dashed var(--gold);border-radius:6px;padding:5px 8px;margin-bottom:6px;font-weight:700}
+.hd-tasks{font-size:.74rem;color:var(--text);line-height:1.5}
+.hd-tasks div{padding:2px 0;border-bottom:1px dotted var(--border)}
+.hd-tasks div:last-child{border:none}
+
+/* ============ BOTTOM TABS ============ */
+.tabs-b{position:fixed;bottom:0;left:0;right:0;background:var(--panel);border-top:1px solid var(--border);display:flex;z-index:10;padding-bottom:var(--safe-bottom)}
+.tab-b{flex:1;padding:9px 2px 7px;background:transparent;border:none;color:var(--dim);font-size:.55rem;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:2px;text-transform:uppercase;letter-spacing:.5px;font-family:'Cinzel',serif;transition:color .15s;min-width:0}
+.tab-b .ti{font-size:1.15rem;line-height:1;font-family:'Inter',sans-serif}
+.tab-b.active{color:var(--gold)}
+.pg{display:none}.pg.active{display:block;animation:fadeIn .25s}
+
+/* ============ MODAL ============ */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;padding:14px;overflow-y:auto;padding-top:calc(20px + var(--safe-top));padding-bottom:calc(20px + var(--safe-bottom))}
+.modal.open{display:block;animation:fadeIn .2s}
+.modal-in{max-width:540px;margin:20px auto;background:var(--panel);border:1px solid var(--gold);border-radius:14px;padding:16px}
+.modal-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px}
+.modal-t{font-family:'Cinzel',serif;color:var(--gold);font-size:1.05rem;font-weight:900}
+.close{background:var(--red);color:#fff;border:none;width:32px;height:32px;border-radius:8px;font-weight:700;font-size:.95rem;flex:0 0 auto}
+.color-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.color-it{width:32px;height:32px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:all .1s}
+.color-it.on{border-color:#fff;transform:scale(1.1)}
+
+/* ============ TOAST + XP FLOAT + LEVELUP ============ */
+.toast{position:fixed;bottom:calc(78px + var(--safe-bottom));left:50%;transform:translateX(-50%) translateY(20px);background:var(--gold);color:#1a1530;padding:10px 18px;border-radius:20px;font-weight:700;opacity:0;transition:all .3s;z-index:200;font-size:.82rem;pointer-events:none;max-width:90%;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.xp-float{position:fixed;color:var(--gold);font-family:'Cinzel',serif;font-weight:900;font-size:1.4rem;pointer-events:none;z-index:300;text-shadow:0 0 12px var(--gold),0 0 4px #000;animation:xpf 1.4s cubic-bezier(.2,.8,.3,1) forwards}
+@keyframes xpf{0%{opacity:0;transform:translateY(0) scale(.7)}20%{opacity:1;transform:translateY(-12px) scale(1.1)}100%{opacity:0;transform:translateY(-90px) scale(1)}}
+
+.levelup{display:none;position:fixed;inset:0;background:radial-gradient(circle at center,#2a1f10 0%,#0a0e1a 70%);z-index:500;align-items:center;justify-content:center;flex-direction:column;padding:30px;text-align:center}
+.levelup.show{display:flex;animation:fadeIn .4s}
+.lu-glow{position:absolute;inset:0;background:radial-gradient(circle at center,rgba(212,169,72,.3),transparent 60%);animation:luGlow 2s ease-in-out infinite alternate;pointer-events:none}
+@keyframes luGlow{from{opacity:.5}to{opacity:1}}
+.lu-icon{font-size:5rem;animation:luBounce .8s ease-out;z-index:1}
+@keyframes luBounce{0%{transform:scale(0) rotate(-180deg);opacity:0}60%{transform:scale(1.2) rotate(10deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+.lu-title{font-family:'Cinzel',serif;color:var(--gold);font-size:2rem;font-weight:900;margin:14px 0 6px;text-shadow:0 0 18px var(--gold);z-index:1}
+.lu-num{font-family:'Cinzel',serif;color:var(--gold2);font-size:3.6rem;font-weight:900;line-height:1;text-shadow:0 0 22px var(--gold);z-index:1}
+.lu-rew{margin-top:18px;padding:14px 18px;background:rgba(212,169,72,.1);border:1.5px dashed var(--gold);border-radius:12px;max-width:360px;z-index:1}
+.lu-rew-l{font-family:'Cinzel',serif;color:var(--gold);font-size:.7rem;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px}
+.lu-rew-t{font-size:1.05rem;color:var(--text);font-style:italic;line-height:1.4}
+.lu-rew-note{margin-top:8px;font-size:0.8rem;color:var(--gold2);font-weight:700}
+.lu-btn{margin-top:24px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a1530;border:none;padding:13px 32px;border-radius:11px;font-weight:700;font-family:'Cinzel',serif;text-transform:uppercase;letter-spacing:1.5px;font-size:.95rem;box-shadow:0 0 22px rgba(212,169,72,.5);z-index:1}
+
+.empty-state{text-align:center;padding:30px 16px;color:var(--dim)}
+.empty-state .es-i{font-size:2.6rem;margin-bottom:8px;opacity:.6}
+.empty-state .es-t{font-size:.95rem;color:var(--text);margin-bottom:4px;font-weight:600}
+.empty-state .es-d{font-size:.78rem;line-height:1.4}
+
+/* small responsive */
+@media(max-width:380px){
+  .av-grid{grid-template-columns:repeat(5,1fr)}
+  .stats-grid{grid-template-columns:1fr}
+  h2{font-size:.82rem}
+  .container{padding:12px 10px calc(78px + var(--safe-bottom))}
+}
+</style>
+</head>
+<body>
+
+<!-- ========== ONBOARDING (4 steps) ========== -->
+<div id="onboarding">
+  <div class="ob-wrap">
+    <div class="ob-progress" id="obProgress"></div>
+
+    <!-- Step 1: Герой -->
+    <div class="ob-step active" data-step="1">
+      <div class="ob-icon">⚔️</div>
+      <div class="ob-title">Добро пожаловать,<br>герой!</div>
+      <div class="ob-sub">Это твой персональный квест-хаб. Жизнь как RPG: задачи дают XP, XP даёт уровни, уровни — реальные награды.</div>
+      <div class="ob-body">
+        <div class="field"><label class="lab">Имя героя *</label><input id="ob_name" type="text" placeholder="Светлана / Дима / как тебя зовут"></div>
+        <div class="field"><label class="lab">Класс героя</label><input id="ob_class" type="text" placeholder="Психолог-Воин / Писатель-Маг"><div class="hint">Свободный текст. Будь креативен!</div></div>
+        <div class="field"><label class="lab">Аватар</label><div class="av-grid" id="ob_av_grid"></div></div>
+      </div>
+      <div class="ob-foot"><button class="btn btn-gold" id="ob_next1" disabled onclick="obNext(1)">Дальше →</button></div>
+    </div>
+
+    <!-- Step 2: Сферы + Уровни -->
+    <div class="ob-step" data-step="2">
+      <div class="ob-icon">📊</div>
+      <div class="ob-title">Сферы жизни и уровни</div>
+      <div class="ob-sub">Выбери 4–6 сфер — качаются отдельно. Затем укажи награды за первые уровни.</div>
+      <div class="ob-body">
+        <label class="lab">Сферы (нажми, чтобы выбрать)</label><div class="chips" id="ob_sphere_chips"></div><div class="hint" id="ob_sphere_count"></div>
+        <div class="chip-add"><input id="ob_sphere_input" placeholder="Своя сфера"><button onclick="obAddSphere()">+ Добавить</button></div>
+        <div class="chips" id="ob_sphere_custom"></div>
+        <label class="lab" style="margin-top:16px">Награды за уровни (первые 5)</label>
+        <div id="ob_levels_list"></div>
+        <div class="hint">Остальные уровни добавишь позже в разделе «Уровни».</div>
+      </div>
+      <div class="ob-foot"><button class="btn-back" onclick="obPrev(2)">← Назад</button><button class="btn btn-gold" onclick="obNext(2)">Дальше →</button><button class="btn-skip" onclick="obSkip(2)">Пропустить</button></div>
+    </div>
+
+    <!-- Step 3: Привычки (ежедневные + воскресные) -->
+    <div class="ob-step" data-step="3">
+      <div class="ob-icon">⭐</div>
+      <div class="ob-title">Привычки</div>
+      <div class="ob-sub">Священный минимум (каждый день) + Воскресный ритуал. Сделал → ты уже молодец.</div>
+      <div class="ob-body">
+        <label class="lab">Ежедневные привычки</label><div class="preset-chips" id="ob_daily_presets"></div><div id="ob_daily_list"></div><button class="add-it" onclick="obAddDaily()">+ Добавить свою</button>
+        <label class="lab" style="margin-top:16px">Воскресный ритуал</label><div class="preset-chips" id="ob_weekly_presets"></div><div id="ob_weekly_list"></div><button class="add-it" onclick="obAddWeekly()">+ Добавить свой</button>
+      </div>
+      <div class="ob-foot"><button class="btn-back" onclick="obPrev(3)">← Назад</button><button class="btn btn-gold" onclick="obNext(3)">Дальше →</button><button class="btn-skip" onclick="obSkip(3)">Пропустить</button></div>
+    </div>
+
+    <!-- Step 4: Квесты с коучинговыми вопросами -->
+    <div class="ob-step" data-step="4">
+      <div class="ob-icon">🗺️</div>
+      <div class="ob-title">Большие квесты</div>
+      <div class="ob-sub">Проекты на недели. Добавь пару (или пропусти). Подзадачи добавишь позже.</div>
+      <div class="ob-body">
+        <div class="preset-chips" id="ob_quest_presets"></div><div id="ob_quest_list"></div><button class="add-it" onclick="obAddQuest()">+ Свой квест</button>
+      </div>
+      <div class="ob-foot"><button class="btn-back" onclick="obPrev(4)">← Назад</button><button class="btn btn-gold" onclick="obFinish()">⚔️ Начать!</button><button class="btn-skip" onclick="obSkip(4)">Пропустить</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== APP ========== -->
+<div id="app" style="display:none">
+  <div class="container">
+    <div class="app-head">
+      <div><div class="app-title" id="app_title">Life Quest</div><div class="app-sub" id="app_subtitle">—</div></div>
+      <div style="display:flex;gap:8px;"><button class="head-btn" onclick="openHelp()">❓</button><button class="head-btn" onclick="openSettings()">⚙️</button></div>
+    </div>
+    <div class="pg active" id="pg-today">
+      <div id="sundayBanner" style="display:none"></div>
+      <div class="today-hd"><div class="today-date" id="todayDate">—</div><div class="today-streak" id="todayStreak"></div><div class="today-xp">Сегодня: <b>+<span id="todayXP">0</span></b> XP из <span id="todayMax">0</span></div><div class="today-bar"><div id="todayBar" style="width:0%"></div></div></div>
+      <div class="card"><div class="cat-h"><div class="ct cat-red">🔴 Срочное</div><button class="cat-add" onclick="openAddTask('red')">+</button></div><div id="redList"></div></div>
+      <div class="card"><div class="cat-h"><div class="ct cat-yel">🟡 Важное</div><button class="cat-add" onclick="openAddTask('yellow')">+</button></div><div id="yelList"></div></div>
+      <div class="card"><div class="cat-h"><div class="ct cat-grn">🟢 Бонус</div><button class="cat-add" onclick="openAddTask('green')">+</button></div><div id="grnList"></div></div>
+      <div class="finish-card"><div class="ftxt">Закончила день? Нажми:</div><button class="finish-btn" onclick="finishDay()">⚔️ Завершить день</button><div style="font-size:.66rem;color:var(--dim);margin-top:6px">Сохранит в историю · Перенесёт незавершённое срочное/важное · Зелёное обнулится</div></div>
+    </div>
+    <div class="pg" id="pg-char">
+      <div class="char-card"><button class="char-edit" onclick="openEditProfile()">✏️</button><div class="char-top"><div class="char-av" id="meAv">⚔️</div><div class="char-info"><div class="char-name" id="meName">—</div><div class="char-class" id="meClass">—</div></div></div>
+      <div class="char-lvl"><div class="lvl-badge"><div class="lvl-num" id="meLvN">1</div><div class="lvl-lbl">Level</div></div><div class="xp-block"><div class="xp-txt" style="margin-bottom:3px"><b id="meLvTitle" style="color:var(--gold)">—</b></div><div class="xp-txt"><span>До уровня <span id="meNextLvN">2</span></span><span id="meXpT">0 / 100</span></div><div class="bar"><div class="bar-fill" id="meXpB" style="width:0%"></div></div><div class="xp-txt" style="margin-top:5px"><span>Всего XP</span><span id="meTotalXp">0</span></div></div></div>
+      <div class="next-rew" id="meNextRew" style="display:none"><b>🎁 Награда за след. уровень</b><span id="meNextRewT">—</span></div></div>
+      <div class="card"><h2>📊 Сферы жизни</h2><div class="stats-grid" id="meSphereGrid"></div></div>
+    </div>
+    <div class="pg" id="pg-habits">
+      <div class="card"><h2>⭐ Священный минимум <button class="h2-act" onclick="openAddDailyHabit()">+</button></h2><div id="dailyList"></div><div style="text-align:center;font-size:.7rem;color:var(--dim);margin-top:8px;font-style:italic">Сделала всё → ты уже молодец. Точка.</div></div>
+      <div class="card"><h2>🏡 Воскресный ритуал <button class="h2-act" onclick="openAddWeeklyHabit()">+</button></h2><div id="weeklyList"></div></div>
+    </div>
+    <div class="pg" id="pg-cal">
+      <div class="cal-nav"><button onclick="calPrev()">‹</button><div class="cal-month" id="calMonth">—</div><button onclick="calNext()">›</button></div>
+      <div class="legend" id="calLegend"></div><div class="week" id="calDow"></div><div class="week" id="calGrid" style="grid-auto-rows:minmax(74px,auto)"></div>
+    </div>
+    <div class="pg" id="pg-quest"><div style="margin-bottom:11px"><button class="add-it" onclick="openAddQuest()">+ Новый квест</button></div><div id="questsList"></div></div>
+    <div class="pg" id="pg-lvl"><div id="levelsList"></div><button class="add-lvls" onclick="addMoreLevels()">+ Добавить ещё 5 уровней</button></div>
+    <div class="pg" id="pg-hist"><div class="hist-stats"><div class="hst"><div class="hst-v" id="histDays">0</div><div class="hst-l">Дней</div></div><div class="hst"><div class="hst-v" id="histTasks">0</div><div class="hst-l">Задач</div></div><div class="hst"><div class="hst-v" id="histXp">0</div><div class="hst-l">XP всего</div></div></div><div id="histList"></div></div>
+  </div>
+  <div class="tabs-b">
+    <button class="tab-b active" data-tab="today" onclick="goTab('today')"><div class="ti">🎯</div>Сегодня</button>
+    <button class="tab-b" data-tab="char" onclick="goTab('char')"><div class="ti">⚔️</div>Я</button>
+    <button class="tab-b" data-tab="habits" onclick="goTab('habits')"><div class="ti">📋</div>Привычки</button>
+    <button class="tab-b" data-tab="cal" onclick="goTab('cal')"><div class="ti">📅</div>Календарь</button>
+    <button class="tab-b" data-tab="quest" onclick="goTab('quest')"><div class="ti">🗺️</div>Квесты</button>
+    <button class="tab-b" data-tab="lvl" onclick="goTab('lvl')"><div class="ti">🏆</div>Уровни</button>
+    <button class="tab-b" data-tab="hist" onclick="goTab('hist')"><div class="ti">📜</div>История</button>
+  </div>
+</div>
+
+<div class="modal" id="modal"><div class="modal-in"><div class="modal-h"><div class="modal-t" id="modalTitle">—</div><button class="close" onclick="closeModal()">✕</button></div><div id="modalBody"></div></div></div>
+<div class="levelup" id="levelup"><div class="lu-glow"></div><div class="lu-icon">🏆</div><div class="lu-title">LEVEL UP!</div><div class="lu-num" id="luNum">2</div><div id="luTitle" style="font-family:'Cinzel',serif;color:var(--gold);font-size:1.1rem;letter-spacing:1px;margin-top:-6px;margin-bottom:10px;text-align:center">—</div><div class="lu-rew" id="luRew" style="display:none"><div class="lu-rew-l">🎁 Твоя награда</div><div class="lu-rew-t" id="luRewT">—</div><div id="luRewNote" class="lu-rew-note"></div></div><button class="lu-btn" onclick="closeLevelUp()">Принять →</button></div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+const STORAGE_KEY = 'questhub_v1';
+const APP_VERSION = '1.0.0';
+const PRESET_SPHERES = ['Здоровье','Работа','Творчество','Отношения','Финансы','Дом','Учёба','Духовное'];
+const AVATARS = ['⚔️','🧙','🧝','🧛','🧚','🧞','🦸','🦹','🥷','👸','🫅','🧑‍🎤','🧑‍🚀','🧑‍🎨','🧑‍🔬','🧑‍🏫','🐉','🦊','🐺','🦁','🐯','🦅','🦉','🐱'];
+const QUEST_COLORS = ['#a78bfa','#ef4444','#60a5fa','#f472b6','#fb923c','#4ade80','#22d3ee','#d4a948','#ec4899','#14b8a6','#fbbf24','#8b5cf6'];
+const REWARD_HINTS = ['мороженое','кино','массаж','новая книга','час безделья','любимая еда','купить цветы','ванна со свечами','сериал без вины','новые наушники','поездка к морю','новый ноутбук','короткий отпуск','тату','новая мебель','поход в спа','концерт','подарок себе','день в постели','что-то очень большое'];
+const LEVEL_TITLES_DEFAULT = ['Искатель','Ученик','Подмастерье','Странник','Рыцарь','Маг','Знаток','Мастер','Старший маг','Архимаг','Хранитель','Целитель','Мудрец','Провидец','Маг высшей категории','Великий мастер','Легенда','Светоч','Бессмертный','Легендарный герой'];
+const DOW_RU = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+const DOW_RU_FULL = ['понедельник','вторник','среда','четверг','пятница','суббота','воскресенье'];
+const MONTHS_RU = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+
+let state = null, saveTimer = null;
+let obStep = 1, obData = null;
+let _openQuests = new Set();
+let tutorialCompleted = false;
+
+function defaultState(){
+  return { version:1, onboarded:false, hero:{name:'',class:'',avatar:'⚔️'}, spheres:[], daily:[], weekly:[], quests:[], levels:generateLevels(20), today:freshToday(), totalXp:0, history:[], streak:0, lastFinishedDate:null, calendar:{}, calMonth:null };
+}
+function freshToday(){ return { date:todayStr(), tasks:[], earnedXp:0 }; }
+function defaultTitleFor(L){ if(L===1) return 'Старт'; return LEVEL_TITLES_DEFAULT[(L-2)%LEVEL_TITLES_DEFAULT.length] || ('Уровень '+L); }
+function generateLevels(n){ let arr=[], cum=0; for(let L=1;L<=n;L++){ if(L===1){ arr.push({level:1,xpRequired:0,reward:'',title:defaultTitleFor(1)}); continue; } let inc=100+(L-2)*150; cum+=inc; arr.push({level:L,xpRequired:cum,reward:'',title:defaultTitleFor(L)}); } return arr; }
+function extendLevels(cur,add){ let last=cur[cur.length-1], cum=last.xpRequired, nextL=last.level+1, out=[...cur]; for(let i=0;i<add;i++){ let inc=100+(nextL-2)*150; cum+=inc; out.push({level:nextL,xpRequired:cum,reward:'',title:defaultTitleFor(nextL)}); nextL++; } return out; }
+function loadState(){ try{ let raw=localStorage.getItem(STORAGE_KEY); if(!raw) return defaultState(); let parsed=JSON.parse(raw); let def=defaultState(); let merged=Object.assign(def,parsed,{hero:Object.assign(def.hero,parsed.hero||{}),today:Object.assign(def.today,parsed.today||{})}); if(Array.isArray(merged.levels)) merged.levels.forEach(L=>{ if(!L.title) L.title=defaultTitleFor(L.level); }); if(!merged.calendar) merged.calendar={}; return merged; }catch(e){ return defaultState(); } }
+function save(){ if(saveTimer) clearTimeout(saveTimer); saveTimer=setTimeout(()=>{ try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); }catch(e){ toast('⚠️ Не удалось сохранить. Попробуй перезагрузить страницу.'); } },250); }
+function saveNow(){ if(saveTimer){ clearTimeout(saveTimer); saveTimer=null; } try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); }catch(e){} }
+function uid(){ return Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4); }
+function todayStr(){ let d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function fmtDateHuman(s){ let [y,m,d]=s.split('-').map(Number); let dt=new Date(y,m-1,d); return `${d} ${MONTHS_RU[m-1].toLowerCase()} ${y}, ${DOW_RU[(dt.getDay()+6)%7]}`; }
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function $(sel){ return document.querySelector(sel); }
+function $$(sel){ return document.querySelectorAll(sel); }
+function toast(msg){ let t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),1800); }
+function xpFloat(amount,x,y){ let el=document.createElement('div'); el.className='xp-float'; el.textContent=(amount>=0?'+':'')+amount+' XP'; if(amount<0) el.style.color='var(--red)'; el.style.left=(x-30)+'px'; el.style.top=(y-20)+'px'; document.body.appendChild(el); setTimeout(()=>el.remove(),1500); }
+function currentLevel(){ let lv=1; for(let L of state.levels){ if(state.totalXp>=L.xpRequired) lv=L.level; else break; } return lv; }
+function levelObj(N){ return state.levels.find(l=>l.level===N)||null; }
+function nextLevelObj(){ let cur=currentLevel(); return state.levels.find(l=>l.level===cur+1)||null; }
+function xpProgressInLevel(){ let cur=currentLevel(); let here=levelObj(cur)?.xpRequired??0; let next=levelObj(cur+1); if(!next) return {got:state.totalXp-here,need:0,pct:100,capped:true}; let got=state.totalXp-here, need=next.xpRequired-here; return {got,need,pct:need?Math.min(100,Math.round(got/need*100)):100,capped:false}; }
+function computeLevelFor(xp){ let lv=1; for(let L of state.levels){ if(xp>=L.xpRequired) lv=L.level; else break; } return lv; }
+
+// ========== ONBOARDING (4 steps, saved progress) ==========
+function startOnboarding(){
+  let saved = localStorage.getItem('onboarding_progress_ru');
+  if(saved){ try{ let p=JSON.parse(saved); obData=p; obStep=p.step||1; }catch(e){} }
+  if(!obData) obData = { step:1, name:'', cls:'', avatar:'⚔️', spheres:[], customSphereSet:[], daily:[], weekly:[], quests:[], levels:generateLevels(20) };
+  obData.levels = obData.levels || generateLevels(20);
+  $('#onboarding').classList.add('active');
+  $('#app').style.display='none';
+  obRenderProgress();
+  let avg=$('#ob_av_grid'); avg.innerHTML='';
+  AVATARS.forEach(a=>{ let el=document.createElement('div'); el.className='av-it'+(a===obData.avatar?' on':''); el.textContent=a; el.onclick=()=>{ obData.avatar=a; avg.querySelectorAll('.av-it').forEach(x=>x.classList.remove('on')); el.classList.add('on'); }; avg.appendChild(el); });
+  let ch=$('#ob_sphere_chips'); ch.innerHTML='';
+  PRESET_SPHERES.forEach(sp=>{ let c=document.createElement('div'); c.className='chip'; c.textContent=sp; c.onclick=()=>toggleObSphere(sp,c); ch.appendChild(c); });
+  obRenderSphereCount();
+  $('#ob_name').oninput=e=>{ obData.name=e.target.value.trim(); $('#ob_next1').disabled=!obData.name; saveOnboarding(); };
+  $('#ob_class').oninput=e=>{ obData.cls=e.target.value.trim(); saveOnboarding(); };
+  obRenderDaily(); obRenderWeekly(); obRenderQuests(); obRenderPresetChips(); obRenderLevels();
+  obShowStep(obData.step);
+}
+function saveOnboarding(){ obData.step=obStep; localStorage.setItem('onboarding_progress_ru',JSON.stringify(obData)); }
+function obRenderProgress(){ let p=$('#obProgress'); p.innerHTML=''; for(let i=1;i<=4;i++){ let d=document.createElement('div'); d.className='ob-dot'+(i<obStep?' done':i===obStep?' cur':''); p.appendChild(d); } }
+function obShowStep(n){ obStep=n; $$('#onboarding .ob-step').forEach(el=>el.classList.toggle('active',+el.dataset.step===n)); obRenderProgress(); window.scrollTo(0,0); saveOnboarding(); }
+function obNext(from){ if(from===1&&!obData.name){ toast('Назови героя 🙂'); return; } obShowStep(from+1); }
+function obPrev(from){ obShowStep(from-1); }
+function obSkip(from){ obShowStep(from+1); }
+function toggleObSphere(name,chipEl){ let idx=obData.spheres.findIndex(s=>s.name===name); if(idx>=0){ obData.spheres.splice(idx,1); chipEl?.classList.remove('on'); }else{ obData.spheres.push({name}); chipEl?.classList.add('on'); } obRenderSphereCount(); saveOnboarding(); }
+function obAddSphere(){ let inp=$('#ob_sphere_input'), v=inp.value.trim(); if(!v) return; if(obData.spheres.some(s=>s.name.toLowerCase()===v.toLowerCase())){ toast('Уже есть'); return; } obData.spheres.push({name:v}); obData.customSphereSet.push(v); inp.value=''; let c=$('#ob_sphere_custom'); c.innerHTML=''; obData.customSphereSet.forEach(name=>{ let el=document.createElement('div'); el.className='chip on'; el.textContent=name+' ✕'; el.onclick=()=>{ obData.spheres=obData.spheres.filter(s=>s.name!==name); obData.customSphereSet=obData.customSphereSet.filter(n=>n!==name); el.remove(); obRenderSphereCount(); saveOnboarding(); }; c.appendChild(el); }); obRenderSphereCount(); saveOnboarding(); }
+function obRenderSphereCount(){ let n=obData.spheres.length; let txt=n===0?'Выбрано: 0 (рекомендуем 4–6)':`Выбрано: ${n}`+(n>=4&&n<=6?' ✓':n<4?' (можно ещё)':' (многовато, но ок)'); $('#ob_sphere_count').textContent=txt; }
+function obAddDaily(){ obData.daily.push({name:'',xp:10,sphereName:''}); obRenderDaily(); saveOnboarding(); }
+function obAddWeekly(){ obData.weekly.push({name:'',xp:20,sphereName:''}); obRenderWeekly(); saveOnboarding(); }
+function obRenderDaily(){ obRenderHabitList('#ob_daily_list',obData.daily,obRenderDaily,'daily'); }
+function obRenderWeekly(){ obRenderHabitList('#ob_weekly_list',obData.weekly,obRenderWeekly,'weekly'); }
+function obAddQuest(){ let defaultColor=QUEST_COLORS[obData.quests.length%QUEST_COLORS.length]; obData.quests.push({name:'',desc:'',identity:'',sphereName:'',color:defaultColor,cost:'',belief:5,impact:'',possible:''}); obRenderQuests(); saveOnboarding(); }
+function obRenderQuests(){ let c=$('#ob_quest_list'); c.innerHTML=''; if(obData.quests.length===0){ c.innerHTML='<div style="text-align:center;color:var(--dim);font-size:.78rem;padding:14px 4px;font-style:italic">Можно пропустить — добавишь позже из «Квестов»</div>'; return; } obData.quests.forEach((q,i)=>{ let sphereOpts=['<option value="">— без сферы —</option>'].concat(obData.spheres.map(s=>`<option value="${escapeHtml(s.name)}"${s.name===q.sphereName?' selected':''}>${escapeHtml(s.name)}</option>`)).join(''); let colorOpts=QUEST_COLORS.map(col=>`<div class="color-it${col===q.color?' on':''}" style="background:${col}" data-i="${i}" data-col="${col}"></div>`).join(''); let div=document.createElement('div'); div.className='iitem'; div.innerHTML=`<div class="iitem-row"><input type="text" placeholder="Название квеста" value="${escapeHtml(q.name)}" data-i="${i}" data-k="name"><button class="delx" data-i="${i}" data-act="del">✕</button></div><div style="margin-top:6px"><input type="text" placeholder="🦋 Кем я стану, когда завершу?" value="${escapeHtml(q.identity||'')}" data-i="${i}" data-k="identity"></div><div style="margin-top:6px"><textarea placeholder="Краткое описание" rows="2" data-i="${i}" data-k="desc">${escapeHtml(q.desc)}</textarea></div><div style="margin-top:6px"><textarea placeholder="❓ Чего никогда не будет в моей жизни, если я этого не достигну?" rows="2" data-i="${i}" data-k="cost">${escapeHtml(q.cost||'')}</textarea></div><div style="margin-top:6px"><input type="number" min="1" max="10" placeholder="📊 Вера в успех (1–10)" value="${q.belief||5}" data-i="${i}" data-k="belief"></div><div style="margin-top:6px"><textarea placeholder="👨‍👩‍👧 Как достижение повлияет на моих близких?" rows="2" data-i="${i}" data-k="impact">${escapeHtml(q.impact||'')}</textarea></div><div style="margin-top:6px"><textarea placeholder="🚀 Что станет возможным благодаря этой цели?" rows="2" data-i="${i}" data-k="possible">${escapeHtml(q.possible||'')}</textarea></div><div style="margin-top:6px"><select data-i="${i}" data-k="sphereName">${sphereOpts}</select></div><div style="margin-top:6px"><div class="lab" style="font-size:.65rem;margin-bottom:4px">Цвет</div><div class="color-row">${colorOpts}</div></div>`; c.appendChild(div); }); attachOnboardingInputs(c); }
+function attachOnboardingInputs(container){ container.querySelectorAll('input,textarea,select').forEach(el=>{ el.oninput=el.onchange=()=>{ let i=+el.dataset.i, k=el.dataset.k; if(k==='belief') obData.quests[i][k]=Math.min(10,Math.max(1,parseInt(el.value)||5)); else obData.quests[i][k]=el.value; saveOnboarding(); }; }); container.querySelectorAll('button[data-act="del"]').forEach(b=>b.onclick=()=>{ obData.quests.splice(+b.dataset.i,1); obRenderQuests(); saveOnboarding(); }); container.querySelectorAll('.color-it').forEach(el=>el.onclick=()=>{ let i=+el.dataset.i; obData.quests[i].color=el.dataset.col; obRenderQuests(); saveOnboarding(); }); }
+function obRenderHabitList(sel,list,rerender,kind){ let c=$(sel); c.innerHTML=''; if(list.length===0){ c.innerHTML='<div style="text-align:center;color:var(--dim);font-size:.78rem;padding:14px 4px;font-style:italic">Пока пусто. Добавь хотя бы одно ↓</div>'; return; } list.forEach((it,i)=>{ let sphereOpts=['<option value="">— без сферы —</option>'].concat(obData.spheres.map(s=>`<option value="${escapeHtml(s.name)}"${s.name===it.sphereName?' selected':''}>${escapeHtml(s.name)}</option>`)).join(''); let div=document.createElement('div'); div.className='iitem'; div.innerHTML=`<div class="iitem-row"><input type="text" placeholder="Например: вода 1.5л / зарядка" value="${escapeHtml(it.name)}" data-i="${i}" data-k="name"><input type="number" class="xpin" min="1" max="500" value="${it.xp}" data-i="${i}" data-k="xp"><button class="delx" data-i="${i}" data-act="del">✕</button></div><div style="margin-top:6px"><select data-i="${i}" data-k="sphereName">${sphereOpts}</select></div>`; c.appendChild(div); }); attachHabitInputs(c,list,rerender,kind); }
+function attachHabitInputs(container,list,rerender,kind){ container.querySelectorAll('input,select').forEach(el=>{ el.oninput=el.onchange=()=>{ let i=+el.dataset.i, k=el.dataset.k; list[i][k]=(k==='xp')?Math.max(1,parseInt(el.value)||10):el.value; saveOnboarding(); if(rerender) rerender(); }; }); container.querySelectorAll('button[data-act="del"]').forEach(b=>b.onclick=()=>{ list.splice(+b.dataset.i,1); rerender(); saveOnboarding(); }); }
+function obRenderPresetChips(){ let dc=document.getElementById('ob_daily_presets'); if(dc){ let presets=[{name:'💧 Вода 1.5л',xp:10,sphereName:'Здоровье'},{name:'🧘 Медитация 5 мин',xp:15,sphereName:'Духовное'},{name:'🚶 Прогулка 20 мин',xp:15,sphereName:'Здоровье'},{name:'📖 Чтение 15 мин',xp:10,sphereName:'Знания'},{name:'💪 Зарядка',xp:15,sphereName:'Здоровье'}]; dc.innerHTML=presets.map((p,i)=>`<div class="prchip" data-type="daily" data-i="${i}">${escapeHtml(p.name)} <span class="pr-xp">+${p.xp}</span></div>`).join(''); dc.querySelectorAll('.prchip').forEach(el=>{ el.onclick=()=>{ let i=+el.dataset.i, p=presets[i]; let idx=obData.daily.findIndex(d=>d.name===p.name); if(idx>=0) obData.daily.splice(idx,1); else obData.daily.push({...p}); obRenderDaily(); saveOnboarding(); }; }); } let wc=document.getElementById('ob_weekly_presets'); if(wc){ let presets=[{name:'🧹 Генеральная уборка',xp:40,sphereName:'Дом'},{name:'📝 План на неделю',xp:30,sphereName:''},{name:'🌲 Прогулка на природе',xp:35,sphereName:'Здоровье'}]; wc.innerHTML=presets.map((p,i)=>`<div class="prchip" data-type="weekly" data-i="${i}">${escapeHtml(p.name)} <span class="pr-xp">+${p.xp}</span></div>`).join(''); wc.querySelectorAll('.prchip').forEach(el=>{ el.onclick=()=>{ let i=+el.dataset.i, p=presets[i]; let idx=obData.weekly.findIndex(d=>d.name===p.name); if(idx>=0) obData.weekly.splice(idx,1); else obData.weekly.push({...p}); obRenderWeekly(); saveOnboarding(); }; }); } let qc=document.getElementById('ob_quest_presets'); if(qc){ let presets=[{name:'Написать книгу',identity:'автор изданной книги',desc:'',sphereName:'Творчество',color:QUEST_COLORS[0]},{name:'Улучшить физическую форму',identity:'человек в своей лучшей форме',desc:'',sphereName:'Здоровье',color:QUEST_COLORS[1]},{name:'Выучить язык до B2',identity:'билингв',desc:'',sphereName:'Знания',color:QUEST_COLORS[2]}]; qc.innerHTML=presets.map((p,i)=>`<div class="prchip" data-type="quest" data-i="${i}">${escapeHtml(p.name)}</div>`).join(''); qc.querySelectorAll('.prchip').forEach(el=>{ el.onclick=()=>{ let i=+el.dataset.i, p=presets[i]; let idx=obData.quests.findIndex(q=>q.name===p.name); if(idx>=0) obData.quests.splice(idx,1); else obData.quests.push({...p,cost:'',belief:5,impact:'',possible:''}); obRenderQuests(); saveOnboarding(); }; }); } }
+function obRenderLevels(){ let c=$('#ob_levels_list'); c.innerHTML=''; obData.levels.forEach((L,i)=>{ if(L.level===1) return; let ph=REWARD_HINTS[(i-1)%REWARD_HINTS.length]; let div=document.createElement('div'); div.className='lvinp'; div.innerHTML=`<div class="lv-pill"><div>${L.level}</div><div class="lp-x">LVL</div></div><div class="lv-info"><div class="lv-xp">${L.xpRequired} XP</div><input type="text" placeholder="Титул: ${escapeHtml(L.title||defaultTitleFor(L.level))}" value="${escapeHtml(L.title||'')}" data-i="${i}" data-k="title" style="margin-bottom:4px"><input type="text" placeholder="🎁 Например: ${ph}" value="${escapeHtml(L.reward)}" data-i="${i}" data-k="reward"></div>`; c.appendChild(div); }); c.querySelectorAll('input').forEach(el=>{ el.oninput=()=>{ obData.levels[+el.dataset.i][el.dataset.k]=el.value; saveOnboarding(); }; }); }
+function obFinish(){ state=defaultState(); state.onboarded=true; state.hero={name:obData.name||'Герой',class:obData.cls||'',avatar:obData.avatar}; state.spheres=obData.spheres.map(s=>({id:uid(),name:s.name,xp:0,level:1})); let sphereByName=n=>state.spheres.find(s=>s.name===n)?.id||null; state.daily=obData.daily.filter(d=>d.name.trim()).map(d=>({id:uid(),name:d.name.trim(),xp:+d.xp||10,sphereId:sphereByName(d.sphereName)})); state.weekly=obData.weekly.filter(d=>d.name.trim()).map(d=>({id:uid(),name:d.name.trim(),xp:+d.xp||20,sphereId:sphereByName(d.sphereName)})); state.quests=obData.quests.filter(q=>q.name.trim()).map(q=>({id:uid(),name:q.name.trim(),description:q.desc.trim(),identity:(q.identity||'').trim(),sphereId:sphereByName(q.sphereName),color:q.color||QUEST_COLORS[0],subtasks:[],created:todayStr(),cost:q.cost||'',belief:parseInt(q.belief)||5,impact:q.impact||'',possible:q.possible||''})); state.levels=obData.levels.map(L=>({...L})); state.today=freshToday(); state.daily.forEach(d=>{ state.today.tasks.push({id:uid(),name:d.name,cat:'red',xp:d.xp,sphereId:d.sphereId,sourceDailyId:d.id,done:false}); }); if(new Date().getDay()===0){ state.weekly.forEach(w=>{ state.today.tasks.push({id:uid(),name:w.name,cat:'yellow',xp:w.xp,sphereId:w.sphereId,sourceWeeklyId:w.id,done:false}); }); } saveNow(); localStorage.removeItem('onboarding_progress_ru'); $('#onboarding').classList.remove('active'); $('#app').style.display='block'; initApp(); toast('🎉 Готово! В путь, '+state.hero.name+'!'); }
+
+// ========== APP INIT & TUTORIAL ==========
+function initApp(){
+  $('#app_title').textContent=state.hero.name+(state.hero.class?' · '+state.hero.class:'');
+  $('#app_subtitle').textContent=`Lvl ${currentLevel()} · ${state.totalXp} XP`;
+  rolloverIfNeeded();
+  renderAll();
+  if(!tutorialCompleted && state.onboarded && !localStorage.getItem('tutorial_done_ru')){
+    setTimeout(()=>startTutorial(),500);
+  }
+}
+function startTutorial(){
+  let steps=[{title:'🎯 Сегодня',text:'Добавляй разовые задачи. Красные = срочные, жёлтые = важные, зелёные = бонус. Нажми на задачу, чтобы отметить её.'},{title:'📋 Привычки',text:'Твои ежедневные дела (священный минимум) и воскресные ритуалы. Сделал → ты уже молодец.'},{title:'🗺️ Квесты',text:'Большие проекты с коучинговыми вопросами. Нажми 🧠, чтобы увидеть свои ответы.'}];
+  let i=0;
+  function showStep(){ if(i>=steps.length){ localStorage.setItem('tutorial_done_ru','true'); return; } let s=steps[i]; let html=`<h2 style="text-align:center;">${s.title}</h2><p style="margin:12px 0;">${s.text}</p><div style="display:flex;gap:8px;"><button class="btn btn-gold" style="flex:1" onclick="closeModal(); i++; showStep();">Далее</button><button class="btn btn-outline" style="flex:1" onclick="closeModal(); localStorage.setItem('tutorial_done_ru','true');">Пропустить</button></div>`; showModal('Обучение',html); } showStep();
+}
+function rolloverIfNeeded(){ let td=todayStr(); if(state.today.date!==td){ let carry=state.today.tasks.filter(t=>!t.done && t.cat!=='green' && !t.sourceDailyId && !t.sourceWeeklyId); state.today=freshToday(); state.daily.forEach(d=>{ state.today.tasks.push({id:uid(),name:d.name,cat:'red',xp:d.xp,sphereId:d.sphereId,sourceDailyId:d.id,done:false}); }); if(new Date().getDay()===0){ state.weekly.forEach(w=>{ state.today.tasks.push({id:uid(),name:w.name,cat:'yellow',xp:w.xp,sphereId:w.sphereId,sourceWeeklyId:w.id,done:false}); }); } carry.forEach(t=>{ t.id=uid(); t.done=false; state.today.tasks.push(t); }); save(); } }
+function goTab(name){ $$('.pg').forEach(p=>p.classList.remove('active')); $('#pg-'+name).classList.add('active'); $$('.tab-b').forEach(b=>b.classList.toggle('active',b.dataset.tab===name)); window.scrollTo(0,0); }
+function renderAll(){ renderToday(); renderMe(); renderHabits(); renderCalendar(); renderQuests(); renderLevels(); renderHistory(); }
+
+// ========== TODAY ==========
+function renderSundayBanner(){ let el=document.getElementById('sundayBanner'); if(!el) return; let d=new Date(); if(d.getDay()!==0 || state.sundayDismissed===todayStr()){ el.style.display='none'; return; } let msgs=[{t:'🎲 КАПИТАНСКОЕ СОБРАНИЕ',d:'Воскресенье, герой. Открой Календарь, чтобы посмотреть свои успехи за неделю.'},{t:'🗺️ ПЛАН НА ПОХОД',d:'Новая неделя — новый рейд. Взгляни на свои квесты и выбери главный приоритет.'}]; let pick=msgs[d.getDate()%msgs.length]; el.className='sun-banner'; el.style.display='block'; el.innerHTML=`<button class="sun-banner-x" onclick="event.stopPropagation(); dismissSunday()">✕</button><div class="sun-banner-t">${pick.t}</div><div class="sun-banner-d">${pick.d}</div>`; el.onclick=()=>goTab('cal'); }
+function dismissSunday(){ state.sundayDismissed=todayStr(); save(); renderSundayBanner(); }
+function renderToday(){ $('#todayDate').textContent=fmtDateHuman(state.today.date); let streak=state.streak||0; $('#todayStreak').textContent=streak>0?`🔥 Серия: ${streak} ${streak===1?'день':'дня'}`:''; renderSundayBanner(); let tasks=state.today.tasks, earned=tasks.filter(t=>t.done).reduce((s,t)=>s+t.xp,0), max=tasks.reduce((s,t)=>s+t.xp,0); state.today.earnedXp=earned; $('#todayXP').textContent=earned; $('#todayMax').textContent=max; $('#todayBar').style.width=(max?Math.round(earned/max*100):0)+'%'; ['red','yellow','green'].forEach(cat=>{ let el=$('#'+(cat==='red'?'redList':cat==='yellow'?'yelList':'grnList')); let list=tasks.filter(t=>t.cat===cat); if(list.length===0){ el.innerHTML='<div class="empty-cat">Пусто. Нажми + чтобы добавить</div>'; return; } el.innerHTML=list.map(t=>renderTaskRow(t)).join(''); list.forEach(t=>{ let row=el.querySelector(`[data-tid="${t.id}"]`); if(!row) return; row.onclick=e=>{ if(e.target.closest('.tdel')) return; toggleTask(t.id,e); }; row.querySelector('.tdel').onclick=e=>{ e.stopPropagation(); deleteTask(t.id); }; }); }); $('#app_title').textContent=state.hero.name+(state.hero.class?' · '+state.hero.class:''); $('#app_subtitle').textContent=`Lvl ${currentLevel()} · ${state.totalXp} XP`; }
+function renderTaskRow(t){ let badge=''; if(t.sourceDailyId) badge=`<span class="tag" style="background:var(--gold)">⭐ ежедневное</span>`; if(t.sourceWeeklyId) badge=`<span class="tag" style="background:var(--cyan)">🏡 недельное</span>`; if(t.questId){ let q=state.quests.find(q=>q.id===t.questId); if(q) badge=`<span class="tag" style="background:${q.color}">🗺️ ${escapeHtml(q.name)}</span>`; } return `<div class="task ${t.done?'done':''}" data-tid="${t.id}"><div class="tck">${t.done?'✓':''}</div><div class="tn">${escapeHtml(t.name)} ${badge}</div><div class="tx">${t.done?'+':''}${t.xp}</div><button class="tdel" title="удалить">✕</button></div>`; }
+function toggleTask(tid,ev){ let t=state.today.tasks.find(x=>x.id===tid); if(!t) return; let wasDone=t.done; t.done=!t.done; let delta=(t.done?1:-1)*t.xp; state.totalXp=Math.max(0,state.totalXp+delta); if(t.sphereId){ let s=state.spheres.find(x=>x.id===t.sphereId); if(s){ s.xp=Math.max(0,s.xp+delta); s.level=Math.max(1,1+Math.floor(s.xp/100)); } } if(ev){ let x=ev.clientX||ev.touches?.[0]?.clientX||window.innerWidth/2, y=ev.clientY||ev.touches?.[0]?.clientY||window.innerHeight/2; xpFloat(delta,x,y); } if(!wasDone && t.questId){ let q=state.quests.find(q=>q.id===t.questId); if(q){ let arr=state.calendar[state.today.date]||(state.calendar[state.today.date]=[]); if(!arr.some(c=>c.questId===q.id)) arr.push({questId:q.id,color:q.color,name:q.name}); } } if(t.questId && t.questSubId){ let q=state.quests.find(x=>x.id===t.questId); if(q){ let s=q.subtasks.find(x=>x.id===t.questSubId); if(s) s.done=t.done; } } let prevLv=computeLevelFor(state.totalXp-delta); let newLv=currentLevel(); save(); renderToday(); renderMe(); if(!wasDone && newLv>prevLv) showLevelUp(newLv); }
+function deleteTask(tid){ let t=state.today.tasks.find(x=>x.id===tid); if(!t) return; if(!confirm(`Удалить «${t.name}»?`)) return; if(t.done){ state.totalXp=Math.max(0,state.totalXp-t.xp); if(t.sphereId){ let s=state.spheres.find(x=>x.id===t.sphereId); if(s){ s.xp=Math.max(0,s.xp-t.xp); s.level=Math.max(1,1+Math.floor(s.xp/100)); } } } state.today.tasks=state.today.tasks.filter(x=>x.id!==tid); save(); renderToday(); renderMe(); }
+function showLevelUp(N){ let lv=$('#levelup'); $('#luNum').textContent=N; let L=levelObj(N); $('#luTitle').textContent=(L&&L.title)?L.title:defaultTitleFor(N); if(L&&L.reward){ $('#luRew').style.display='block'; $('#luRewT').textContent=L.reward; $('#luRewNote').innerHTML=`✨ Ты обещала себе: ${escapeHtml(L.reward)} ✨`; }else{ $('#luRew').style.display='none'; } lv.classList.add('show'); save(); }
+function closeLevelUp(){ $('#levelup').classList.remove('show'); }
+
+// ========== ME ==========
+function renderMe(){ $('#meAv').textContent=state.hero.avatar||'⚔️'; $('#meName').textContent=state.hero.name||'—'; $('#meClass').textContent=state.hero.class||'без класса'; let lv=currentLevel(); $('#meLvN').textContent=lv; let lvObj=state.levels.find(L=>L.level===lv); $('#meLvTitle').textContent=(lvObj&&lvObj.title)?lvObj.title:defaultTitleFor(lv); $('#meNextLvN').textContent=lv+1; let p=xpProgressInLevel(); $('#meXpT').textContent=p.capped?`${p.got} XP`:`${p.got} / ${p.need}`; $('#meXpB').style.width=p.pct+'%'; $('#meTotalXp').textContent=state.totalXp; let next=nextLevelObj(); if(next&&next.reward){ $('#meNextRew').style.display='block'; $('#meNextRewT').textContent=next.reward; }else if(next){ $('#meNextRew').style.display='block'; $('#meNextRewT').textContent='— награда не задана. Открой раздел 🏆 и впиши.'; }else{ $('#meNextRew').style.display='none'; } let grid=$('#meSphereGrid'); if(state.spheres.length===0){ grid.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="es-i">🌱</div><div class="es-t">Сфер пока нет</div><div class="es-d">Добавь в настройках или начни заново</div></div>'; return; } grid.innerHTML=state.spheres.map(s=>{ let pct=s.xp%100; return `<div class="stat"><div class="stat-top"><div class="stat-n">${escapeHtml(s.name)}</div><div class="stat-v">Lv ${s.level}</div></div><div class="mini"><div style="width:${pct}%"></div></div><div class="stat-xp">${s.xp} XP · до Lv ${s.level+1}: ${100-pct}</div></div>`; }).join(''); }
+
+// ========== HABITS ==========
+function renderHabits(){ renderHabitList('#dailyList',state.daily,'daily'); renderHabitList('#weeklyList',state.weekly,'weekly'); }
+function renderHabitList(sel,list,kind){ let c=$(sel); if(list.length===0){ c.innerHTML='<div class="empty-cat">Пусто. Нажми + чтобы добавить</div>'; return; } c.innerHTML=list.map(h=>{ let sphere=h.sphereId?state.spheres.find(s=>s.id===h.sphereId)?.name:''; return `<div class="hrow" data-hid="${h.id}"><div class="hn">${escapeHtml(h.name)}${sphere?`<div class="hsphere">${escapeHtml(sphere)}</div>`:''}</div><div class="hx">+${h.xp} XP</div><button class="hact" data-act="edit">✏️</button><button class="hact" data-act="del">✕</button></div>`; }).join(''); c.querySelectorAll('.hrow').forEach(row=>{ let hid=row.dataset.hid; row.querySelector('[data-act="edit"]').onclick=()=>openEditHabit(kind,hid); row.querySelector('[data-act="del"]').onclick=()=>deleteHabit(kind,hid); }); }
+function openAddDailyHabit(){ openHabitEditor('daily',null); }
+function openAddWeeklyHabit(){ openHabitEditor('weekly',null); }
+function openEditHabit(kind,hid){ openHabitEditor(kind,hid); }
+function openHabitEditor(kind,hid){ let list=kind==='daily'?state.daily:state.weekly; let h=hid?list.find(x=>x.id===hid):{name:'',xp:kind==='daily'?10:20,sphereId:''}; let sphereOpts=['<option value="">— без сферы —</option>'].concat(state.spheres.map(s=>`<option value="${s.id}"${s.id===h.sphereId?' selected':''}>${escapeHtml(s.name)}</option>`)).join(''); let html=`<div class="field"><label class="lab">Название</label><input id="m_h_name" type="text" value="${escapeHtml(h.name)}" placeholder="${kind==='daily'?'вода 1.5л / медитация':'уборка / планёрка'}" autofocus></div><div class="field"><label class="lab">XP</label><input id="m_h_xp" type="number" min="1" value="${h.xp}"></div><div class="field"><label class="lab">Сфера (опц.)</label><select id="m_h_sphere">${sphereOpts}</select></div><button class="btn btn-gold" onclick="confirmHabit('${kind}','${hid||''}')">${hid?'Сохранить':'Добавить'}</button>`; showModal((kind==='daily'?'⭐ Ежедневное':'🏡 Воскресное')+(hid?' — редактировать':' — новое'),html); }
+function confirmHabit(kind,hid){ let list=kind==='daily'?state.daily:state.weekly; let name=$('#m_h_name').value.trim(); if(!name){ toast('Пусто'); return; } let xp=Math.max(1,parseInt($('#m_h_xp').value)||10); let sphereId=$('#m_h_sphere').value||null; if(hid){ let h=list.find(x=>x.id===hid); if(!h) return; h.name=name; h.xp=xp; h.sphereId=sphereId; state.today.tasks.filter(t=>kind==='daily'?t.sourceDailyId===hid:t.sourceWeeklyId===hid).forEach(t=>{ if(!t.done){ t.name=name; t.xp=xp; t.sphereId=sphereId; } }); }else{ let h={id:uid(),name,xp,sphereId}; list.push(h); if(kind==='daily'){ state.today.tasks.push({id:uid(),name,cat:'red',xp,sphereId,sourceDailyId:h.id,done:false}); }else if(kind==='weekly' && new Date().getDay()===0){ state.today.tasks.push({id:uid(),name,cat:'yellow',xp,sphereId,sourceWeeklyId:h.id,done:false}); } } save(); closeModal(); renderHabits(); renderToday(); }
+function deleteHabit(kind,hid){ let list=kind==='daily'?state.daily:state.weekly; let h=list.find(x=>x.id===hid); if(!h) return; if(!confirm(`Удалить «${h.name}»?`)) return; if(kind==='daily') state.daily=state.daily.filter(x=>x.id!==hid); else state.weekly=state.weekly.filter(x=>x.id!==hid); state.today.tasks=state.today.tasks.filter(t=>{ let fromThis=(kind==='daily'?t.sourceDailyId:t.sourceWeeklyId)===hid; return !(fromThis && !t.done); }); save(); renderHabits(); renderToday(); }
+
+// ========== SIMPLIFIED CALENDAR (no time blocks) ==========
+function renderCalendar(){ if(!state.calMonth){ let d=new Date(); state.calMonth={y:d.getFullYear(),m:d.getMonth()}; } let {y,m}=state.calMonth; $('#calMonth').textContent=`${MONTHS_RU[m]} ${y}`; let lg=$('#calLegend'); lg.innerHTML='<div style="color:var(--dim);font-size:.72rem">Нажми на день, чтобы увидеть детали.</div>'; $('#calDow').innerHTML=DOW_RU.map(d=>`<div class="dow">${d}</div>`).join(''); let first=new Date(y,m,1), offset=(first.getDay()+6)%7, daysIn=new Date(y,m+1,0).getDate(); let cells=[]; for(let i=0;i<offset;i++) cells.push({empty:true}); let tdy=todayStr(); for(let d=1;d<=daysIn;d++){ let ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; let blocks=state.calendar[ds]||[]; let hist=state.history.find(h=>h.date===ds); cells.push({d,ds,blocks,hist,today:ds===tdy,future:ds>tdy}); } let grid=$('#calGrid'); grid.innerHTML=cells.map(c=>{ if(c.empty) return `<div class="day empty"></div>`; let blkHtml=c.blocks.slice(0,2).map(b=>`<div class="blk" style="background:${b.color}">${escapeHtml(b.name)}</div>`).join(''); let more=c.blocks.length>2?`<div class="blk-more">+${c.blocks.length-2}</div>`:''; let xp=c.hist?`<div class="day-xp">+${c.hist.earnedXp}</div>`:''; return `<div class="day ${c.today?'today':''} ${c.future?'future':''}" data-ds="${c.ds}"><div class="day-n">${c.d}</div>${xp}${blkHtml}${more}</div>`; }).join(''); grid.querySelectorAll('.day[data-ds]').forEach(el=>{ el.onclick=()=>openCalDay(el.dataset.ds); }); }
+function openCalDay(ds){ let blocks=state.calendar[ds]||[]; let hist=state.history.find(h=>h.date===ds); let html=`<div style="font-size:.85rem;color:var(--text);margin-bottom:10px">${fmtDateHuman(ds)}</div>`; if(hist){ html+=`<div style="padding:10px;background:rgba(74,222,128,0.1);border-radius:12px;"><div style="font-weight:700;">📜 Итог дня: +${hist.earnedXp} XP · ${hist.tasks.filter(t=>t.done).length} из ${hist.tasks.length}</div>${hist.leveledUpTo?`<div class="hd-up">🏆 Level Up до ${hist.leveledUpTo}!</div>`:''}<div class="hd-tasks">`+hist.tasks.map(t=>`<div>${t.done?'✓':'·'} ${escapeHtml(t.name)} <span style="color:var(--gold)">${t.done?'+':''}${t.xp}</span></div>`).join('')+`</div></div>`; }else if(blocks.length){ html+=`<div style="padding:10px;background:rgba(212,169,72,0.1);border-radius:12px;"><strong>Работа по квестам:</strong><br>${blocks.map(b=>`<div class="blk" style="background:${b.color};display:inline-block;margin:2px">${escapeHtml(b.name)}</div>`).join('')}</div>`; }else{ html+=`<div style="color:var(--dim);padding:12px;">Нет активности. Выполняй задачи, чтобы видеть прогресс.</div>`; } showModal('📅 Детали дня',html); }
+function calPrev(){ state.calMonth.m--; if(state.calMonth.m<0){state.calMonth.m=11; state.calMonth.y--;} save(); renderCalendar(); }
+function calNext(){ state.calMonth.m++; if(state.calMonth.m>11){state.calMonth.m=0; state.calMonth.y++;} save(); renderCalendar(); }
+
+// ========== QUESTS ==========
+function renderQuests(){ let c=$('#questsList'); if(state.quests.length===0){ c.innerHTML='<div class="empty-state"><div class="es-i">🗺️</div><div class="es-t">Квестов пока нет</div><div class="es-d">Большие проекты — то, что тянется неделями</div></div>'; return; } c.innerHTML=state.quests.map(q=>{ let total=q.subtasks.length, done=q.subtasks.filter(s=>s.done).length, pct=total?Math.round(done/total*100):0; let sphereName=q.sphereId?state.spheres.find(s=>s.id===q.sphereId)?.name:''; let subs=q.subtasks.map(s=>`<div class="subt ${s.done?'done':''}" data-qid="${q.id}" data-sid="${s.id}"><div class="sck">${s.done?'✓':''}</div><div class="sn">${escapeHtml(s.name)}</div><button class="hact" data-act="sub-to-today" style="color:var(--green);margin-right:4px">→</button><button class="hact" data-act="del-sub">✕</button></div>`).join(''); let isOpen=_openQuests.has(q.id); let hasCoaching=(q.cost||q.belief||q.impact||q.possible); let coachingBadge=hasCoaching?`<span class="coaching-badge" data-qid="${q.id}" style="cursor:pointer;margin-left:8px;background:rgba(212,169,72,0.2);padding:4px 8px;border-radius:20px;font-size:0.7rem;font-weight:bold;">🧠 почему это важно</span>`:''; return `<div class="qgrp ${isOpen?'open':''}" data-qid="${q.id}" style="border-left-color:${q.color}"><div class="qgrp-head"><div class="qgrp-arr">▶</div><div class="qgrp-info"><div class="qgrp-n">${escapeHtml(q.name)} ${coachingBadge}</div>${q.identity?`<div class="qgrp-ident">🦋 <i>${escapeHtml(q.identity)}</i></div>`:''}<div class="qgrp-meta"><span class="q-color-dot" style="background:${q.color}"></span>${sphereName?`<span>${escapeHtml(sphereName)}</span>`:''}${q.description?`<span style="color:var(--text)">${escapeHtml(q.description)}</span>`:''}</div></div><div class="qgrp-prog">${done}/${total} · ${pct}%</div><button class="qgrp-act" data-act="edit-q">✏️</button><button class="qgrp-act" data-act="del-q">✕</button></div><div class="qgrp-subs">${subs}<button class="sub-add" data-act="add-sub">+ Под-задача</button><button class="sub-add" data-act="to-today" style="margin-top:4px;">+ Новая задача в «Сегодня»</button></div></div>`; }).join(''); attachQuestHandlers(c); }
+function attachQuestHandlers(container){ container.querySelectorAll('.qgrp').forEach(g=>{ let qid=g.dataset.qid; g.querySelector('.qgrp-head').onclick=e=>{ if(e.target.closest('.qgrp-act')) return; if(_openQuests.has(qid)) _openQuests.delete(qid); else _openQuests.add(qid); g.classList.toggle('open'); }; g.querySelector('[data-act="edit-q"]').onclick=e=>{ e.stopPropagation(); openEditQuest(qid); }; g.querySelector('[data-act="del-q"]').onclick=e=>{ e.stopPropagation(); deleteQuest(qid); }; g.querySelector('[data-act="add-sub"]').onclick=()=>addSubtask(qid); g.querySelector('[data-act="to-today"]').onclick=()=>questToToday(qid); g.querySelectorAll('.subt').forEach(row=>{ row.onclick=e=>{ if(e.target.closest('[data-act="del-sub"]')) return; if(e.target.closest('[data-act="sub-to-today"]')) return; toggleSubtask(row.dataset.qid,row.dataset.sid,row); }; row.querySelector('[data-act="del-sub"]').onclick=e=>{ e.stopPropagation(); deleteSubtask(row.dataset.qid,row.dataset.sid); }; row.querySelector('[data-act="sub-to-today"]').onclick=e=>{ e.stopPropagation(); subtaskToToday(row.dataset.qid,row.dataset.sid); }; }); }); container.querySelectorAll('.coaching-badge').forEach(b=>{ b.onclick=e=>{ e.stopPropagation(); let q=state.quests.find(x=>x.id===b.dataset.qid); if(q) showCoachingModal(q); }; }); }
+function showCoachingModal(q){ let html=`<div style="font-family:'Inter',sans-serif; text-align:left;">`; if(q.cost) html+=`<div style="margin-bottom:16px;"><strong style="color:var(--gold);">❓ Чего никогда не будет в моей жизни, если я этого не достигну?</strong><br>${escapeHtml(q.cost)}</div>`; if(q.belief) html+=`<div style="margin-bottom:16px;"><strong style="color:var(--gold);">📊 Насколько я верю, что смогу достичь? (1–10)</strong><br>${q.belief} / 10</div>`; if(q.impact) html+=`<div style="margin-bottom:16px;"><strong style="color:var(--gold);">👨‍👩‍👧 Как достижение повлияет на моих близких?</strong><br>${escapeHtml(q.impact)}</div>`; if(q.possible) html+=`<div style="margin-bottom:16px;"><strong style="color:var(--gold);">🚀 Что станет возможным благодаря этой цели?</strong><br>${escapeHtml(q.possible)}</div>`; if(!q.cost && !q.belief && !q.impact && !q.possible) html=`<div>Нет заполненных коучинговых вопросов. Нажми ✏️, чтобы добавить.</div>`; html+=`</div>`; showModal(`🧠 Рефлексия: ${escapeHtml(q.name)}`,html); }
+function toggleSubtask(qid,sid,rowEl){ let q=state.quests.find(x=>x.id===qid); if(!q) return; let s=q.subtasks.find(x=>x.id===sid); if(!s) return; s.done=!s.done; if(s.done){ let arr=state.calendar[todayStr()]||(state.calendar[todayStr()]=[]); if(!arr.some(c=>c.questId===q.id)) arr.push({questId:q.id,color:q.color,name:q.name}); } save(); if(rowEl){ rowEl.classList.toggle('done',s.done); rowEl.querySelector('.sck').textContent=s.done?'✓':''; let grp=rowEl.closest('.qgrp'); if(grp){ let total=q.subtasks.length, done=q.subtasks.filter(x=>x.done).length, pct=total?Math.round(done/total*100):0; let pEl=grp.querySelector('.qgrp-prog'); if(pEl) pEl.textContent=`${done}/${total} · ${pct}%`; } } else { renderQuests(); } renderCalendar(); }
+function subtaskToToday(qid,sid){ let q=state.quests.find(x=>x.id===qid); if(!q) return; let s=q.subtasks.find(x=>x.id===sid); if(!s) return; let html=`<div class="field"><label class="lab">Задача на сегодня</label><input id="m_qt_name" type="text" value="${escapeHtml(s.name)}" autofocus></div><div class="field"><label class="lab">Категория</label><select id="m_qt_cat"><option value="red">🔴 Срочное</option><option value="yellow" selected>🟡 Важное</option><option value="green">🟢 Бонус</option></select></div><div class="field"><label class="lab">XP</label><input id="m_qt_xp" type="number" min="1" value="20"></div><div style="font-size:.72rem;color:var(--dim);margin-bottom:10px">Выполнишь в «Сегодня» → подзадача отметится автоматически.</div><button class="btn btn-gold" onclick="confirmSubtaskToToday('${qid}','${sid}')">Добавить</button>`; showModal('→ В сегодня',html); }
+function confirmSubtaskToToday(qid,sid){ let q=state.quests.find(x=>x.id===qid); if(!q) return; let s=q.subtasks.find(x=>x.id===sid); if(!s) return; let name=$('#m_qt_name').value.trim(); if(!name){ toast('Пусто'); return; } let cat=$('#m_qt_cat').value; let xp=Math.max(1,+$('#m_qt_xp').value||20); state.today.tasks.push({id:uid(),name,cat,xp,sphereId:q.sphereId,questId:q.id,questSubId:s.id,done:false}); save(); closeModal(); renderToday(); goTab('today'); toast('✓ Добавлено'); }
+function deleteSubtask(qid,sid){ let q=state.quests.find(x=>x.id===qid); if(!q) return; q.subtasks=q.subtasks.filter(s=>s.id!==sid); save(); renderQuests(); }
+function addSubtask(qid){ let q=state.quests.find(x=>x.id===qid); if(!q) return; let html=`<div class="field"><label class="lab">Название под-задачи</label><input id="m_subname" type="text" placeholder="Например: написать главу 3" autofocus></div><button class="btn btn-gold" onclick="confirmAddSubtask('${qid}')">Добавить</button>`; showModal('➕ Под-задача',html); }
+function confirmAddSubtask(qid){ let v=$('#m_subname').value.trim(); if(!v){ toast('Пусто'); return; } let q=state.quests.find(x=>x.id===qid); if(!q) return; q.subtasks.push({id:uid(),name:v,done:false}); save(); closeModal(); renderQuests(); }
+function questToToday(qid){ let q=state.quests.find(x=>x.id===qid); if(!q) return; let html=`<div class="field"><label class="lab">Что сделаешь сегодня по «${escapeHtml(q.name)}»?</label><input id="m_qt_name" type="text" placeholder="Например: 1 час над главой 3" autofocus></div><div class="field"><label class="lab">XP</label><input id="m_qt_xp" type="number" min="1" value="20"></div><div class="field"><label class="lab">Категория</label><select id="m_qt_cat"><option value="red">🔴 Срочное</option><option value="yellow" selected>🟡 Важное</option><option value="green">🟢 Бонус</option></select></div><button class="btn btn-gold" onclick="confirmQuestToToday('${qid}')">Добавить</button>`; showModal('🗺️ → 🎯',html); }
+function confirmQuestToToday(qid){ let q=state.quests.find(x=>x.id===qid); if(!q) return; let name=$('#m_qt_name').value.trim(); if(!name){ toast('Пусто'); return; } let xp=Math.max(1,parseInt($('#m_qt_xp').value)||20); let cat=$('#m_qt_cat').value; state.today.tasks.push({id:uid(),name,cat,xp,sphereId:q.sphereId,questId:q.id,done:false}); save(); closeModal(); renderToday(); goTab('today'); toast('Добавлено'); }
+function openAddQuest(){ openQuestEditor(null); }
+function openEditQuest(qid){ openQuestEditor(qid); }
+function openQuestEditor(qid){ let q=qid?state.quests.find(x=>x.id===qid):{name:'',description:'',identity:'',sphereId:'',color:QUEST_COLORS[0],cost:'',belief:5,impact:'',possible:''}; let sphereOpts=['<option value="">— без сферы —</option>'].concat(state.spheres.map(s=>`<option value="${s.id}"${s.id===q.sphereId?' selected':''}>${escapeHtml(s.name)}</option>`)).join(''); let colorRow=QUEST_COLORS.map(col=>`<div class="color-it${col===q.color?' on':''}" style="background:${col}" data-col="${col}"></div>`).join(''); let html=`<div class="field"><label class="lab">Название квеста</label><input id="m_q_name" type="text" value="${escapeHtml(q.name)}" placeholder="Например: Дописать книгу" autofocus></div><div class="field"><label class="lab">🦋 Кем я стану, когда завершу?</label><input id="m_q_ident" type="text" value="${escapeHtml(q.identity||'')}" placeholder="Например: автор книги"></div><div class="field"><label class="lab">Описание (опц.)</label><textarea id="m_q_desc" rows="2">${escapeHtml(q.description)}</textarea></div><div class="field"><label class="lab">❓ Чего никогда не будет в моей жизни, если я этого не достигну?</label><textarea id="m_q_cost" rows="2">${escapeHtml(q.cost||'')}</textarea></div><div class="field"><label class="lab">📊 Вера в успех (1–10)</label><input id="m_q_belief" type="number" min="1" max="10" value="${q.belief||5}"></div><div class="field"><label class="lab">👨‍👩‍👧 Как достижение повлияет на моих близких?</label><textarea id="m_q_impact" rows="2">${escapeHtml(q.impact||'')}</textarea></div><div class="field"><label class="lab">🚀 Что станет возможным благодаря этой цели?</label><textarea id="m_q_possible" rows="2">${escapeHtml(q.possible||'')}</textarea></div><div class="field"><label class="lab">Сфера (опц.)</label><select id="m_q_sphere">${sphereOpts}</select></div><div class="field"><label class="lab">Цвет</label><div class="color-row" id="m_q_colors">${colorRow}</div></div><button class="btn btn-gold" onclick="confirmQuest('${qid||''}')">${qid?'Сохранить':'Создать'}</button>`; showModal('🗺️ Квест'+(qid?' — редактировать':' — новый'),html); let chosen=q.color; setTimeout(()=>{ document.querySelectorAll('#m_q_colors .color-it').forEach(el=>{ el.onclick=()=>{ chosen=el.dataset.col; document.querySelectorAll('#m_q_colors .color-it').forEach(x=>x.classList.remove('on')); el.classList.add('on'); }; }); },20); window._qChosenColor=()=>chosen; }
+function confirmQuest(qid){ let name=$('#m_q_name').value.trim(); if(!name){ toast('Квест без имени — не бывает'); return; } let desc=$('#m_q_desc').value.trim(); let identity=$('#m_q_ident').value.trim(); let sphereId=$('#m_q_sphere').value||null; let color=window._qChosenColor?window._qChosenColor():QUEST_COLORS[0]; let cost=$('#m_q_cost').value.trim(); let belief=Math.min(10,Math.max(1,parseInt($('#m_q_belief').value)||5)); let impact=$('#m_q_impact').value.trim(); let possible=$('#m_q_possible').value.trim(); if(qid){ let q=state.quests.find(x=>x.id===qid); if(!q) return; q.name=name; q.description=desc; q.identity=identity; q.sphereId=sphereId; q.color=color; q.cost=cost; q.belief=belief; q.impact=impact; q.possible=possible; }else{ state.quests.push({id:uid(),name,description:desc,identity,sphereId,color,subtasks:[],created:todayStr(),cost,belief,impact,possible}); } save(); closeModal(); renderQuests(); renderCalendar(); }
+function deleteQuest(qid){ let q=state.quests.find(x=>x.id===qid); if(!q) return; if(!confirm(`Удалить квест «${q.name}» и все под-задачи?`)) return; state.quests=state.quests.filter(x=>x.id!==qid); state.today.tasks.forEach(t=>{ if(t.questId===qid) t.questId=null; }); Object.keys(state.calendar).forEach(d=>{ state.calendar[d]=state.calendar[d].filter(c=>c.questId!==qid); if(state.calendar[d].length===0) delete state.calendar[d]; }); save(); renderQuests(); renderCalendar(); renderToday(); }
+
+// ========== LEVELS ==========
+function renderLevels(){ let cur=currentLevel(); let c=$('#levelsList'); c.innerHTML=state.levels.map(L=>{ let status=L.level<cur?'done':L.level===cur?'cur':(state.totalXp>=L.xpRequired?'cur':'locked'); let cls=status==='done'?'done':status==='cur'?'cur':'locked'; let rew=L.reward?escapeHtml(L.reward):'<span class="lvrew empty">— награда не задана. Нажми ✏️ и впиши.</span>'; let title=escapeHtml(L.title||defaultTitleFor(L.level)); return `<div class="lvcard ${cls}"><div class="lvtop"><div class="lvtop-badge">${L.level}</div><div class="lvtop-info"><div class="lvtop-t">${title}</div><div class="lvtop-x">${L.xpRequired===0?'твоя точка отсчёта':L.xpRequired+' XP · '+(status==='done'?'получен':status==='cur'?'текущий':'нужно ещё '+(L.xpRequired-state.totalXp)+' XP')}</div></div><button class="lvtop-edit" onclick="openEditLevel(${L.level})">✏️</button></div>${L.level>1?`<div class="lvrew ${L.reward?'':'empty'}">${L.reward?'🎁 '+rew:rew}</div>`:''}</div>`; }).join(''); }
+function addMoreLevels(){ state.levels=extendLevels(state.levels,5); save(); renderLevels(); toast('+5 уровней добавлено'); }
+function openEditLevel(N){ let L=levelObj(N); if(!L) return; let html=`<div class="field"><label class="lab">Уровень ${N}</label><div style="font-size:.75rem;color:var(--dim);margin-bottom:8px">Нужно XP: ${L.xpRequired}</div><label class="lab">Название / титул</label><input id="m_title" type="text" placeholder="Например: Маг высшей категории" value="${escapeHtml(L.title||defaultTitleFor(N))}"><label class="lab">🎁 Награда</label><textarea id="m_rew" rows="2" placeholder="Что подаришь себе?">${escapeHtml(L.reward)}</textarea></div><button class="btn btn-gold" onclick="saveLevelReward(${N})">Сохранить</button>`; showModal('🏆 '+(L.title||'Уровень '+N),html); }
+function saveLevelReward(N){ let L=levelObj(N); if(!L) return; L.reward=$('#m_rew').value.trim(); let newTitle=$('#m_title').value.trim(); L.title=newTitle||defaultTitleFor(N); save(); closeModal(); renderLevels(); renderMe(); toast('✓ Записано в свиток'); }
+
+// ========== HISTORY ==========
+function renderHistory(){ let totalDays=state.history.length, totalTasks=state.history.reduce((s,h)=>s+h.tasks.filter(t=>t.done).length,0), totalXp=state.totalXp; $('#histDays').textContent=totalDays; $('#histTasks').textContent=totalTasks; $('#histXp').textContent=totalXp; let c=$('#histList'); if(state.history.length===0){ c.innerHTML='<div class="empty-state"><div class="es-i">📜</div><div class="es-t">История пуста</div><div class="es-d">Заверши день кнопкой «⚔️ Завершить день»</div></div>'; return; } let sorted=[...state.history].sort((a,b)=>a.date<b.date?1:-1); c.innerHTML=sorted.map(h=>{ let doneCount=h.tasks.filter(t=>t.done).length; return `<div class="hist-day ${h.leveledUpTo?'up':''}"><div class="hd-top"><div class="hd-date">${fmtDateHuman(h.date)}</div><div class="hd-xp">+${h.earnedXp} XP</div></div><div class="hd-meta">${doneCount} из ${h.tasks.length} задач</div>${h.leveledUpTo?`<div class="hd-up">🏆 Level Up до ${h.leveledUpTo}!</div>`:''}<div class="hd-tasks">${h.tasks.map(t=>`<div>${t.done?'✓':'·'} ${escapeHtml(t.name)} <span style="color:var(--gold)">${t.done?'+':''}${t.xp}</span></div>`).join('')}</div></div>`; }).join(''); }
+
+// ========== FINISH DAY ==========
+function finishDay(){ let tasks=state.today.tasks; if(tasks.length===0){ toast('Сегодня пусто'); return; } let earned=tasks.filter(t=>t.done).reduce((s,t)=>s+t.xp,0); let lvNow=currentLevel(); let startLv=computeLevelFor(state.totalXp-earned); let leveledUpTo=lvNow>startLv?lvNow:null; let yesterday=(()=>{ let d=new Date(state.today.date); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10); })(); if(state.lastFinishedDate===yesterday) state.streak=(state.streak||0)+1; else if(state.lastFinishedDate!==state.today.date) state.streak=1; state.lastFinishedDate=state.today.date; state.history.push({date:state.today.date,earnedXp:earned,tasks:tasks.map(t=>({name:t.name,xp:t.xp,done:t.done,cat:t.cat})),leveledUpTo,afterLevel:lvNow}); let carry=tasks.filter(t=>!t.done && t.cat!=='green' && !t.sourceDailyId && !t.sourceWeeklyId).map(t=>({...t,id:uid(),done:false})); let d=new Date(state.today.date); d.setDate(d.getDate()+1); state.today={date:d.toISOString().slice(0,10),tasks:[],earnedXp:0}; state.daily.forEach(h=>{ state.today.tasks.push({id:uid(),name:h.name,cat:'red',xp:h.xp,sphereId:h.sphereId,sourceDailyId:h.id,done:false}); }); if(d.getDay()===0){ state.weekly.forEach(w=>{ state.today.tasks.push({id:uid(),name:w.name,cat:'yellow',xp:w.xp,sphereId:w.sphereId,sourceWeeklyId:w.id,done:false}); }); } carry.forEach(t=>state.today.tasks.push(t)); saveNow(); renderAll(); goTab('hist'); toast(`🌙 Ход сделан! +${earned} XP${leveledUpTo?` · Lvl ${leveledUpTo}!`:''}`); }
+
+// ========== MODALS, HELP, ADD TASK, SETTINGS, PROFILE ==========
+function showModal(title,bodyHtml){ $('#modalTitle').textContent=title; $('#modalBody').innerHTML=bodyHtml; $('#modal').classList.add('open'); }
+function closeModal(){ $('#modal').classList.remove('open'); }
+$('#modal').addEventListener('click',(e)=>{ if(e.target.id==='modal') closeModal(); });
+function openHelp(){ let html=`<h2 style="text-align:center;">📖 Как пользоваться LifeQuest</h2><div style="text-align:left;"><p><strong>🎯 Сегодня</strong><br>Добавляй разовые задачи. Красные = срочные, жёлтые = важные, зелёные = бонус. Можно добавлять задачи из квестов.</p><p><strong>⭐ Привычки</strong><br>Вещи, которые ты делаешь каждый день (Священный минимум) или только по воскресеньям (Воскресный ритуал).</p><p><strong>🗺️ Квесты</strong><br>Большие проекты. Добавляй подзадачи, отвечай на коучинговые вопросы.</p><p><strong>🏆 Уровни</strong><br>Зарабатывай XP, получай уровни, назначай себе реальные награды.</p><p><strong>📅 Календарь</strong><br>Смотри историю и активность по квестам. (Сложное планирование не нужно.)</p><p><strong>⚙️ Настройки</strong><br>Экспорт/импорт данных, управление сферами, сброс всего.</p></div><button class="btn btn-gold" onclick="closeModal()" style="margin-top:16px;">Понятно</button>`; showModal('📖 Помощь',html); }
+function openAddTask(cat){ let sphereOpts=['<option value="">— без сферы —</option>'].concat(state.spheres.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`)).join(''); let questOpts=['<option value="">— не привязывать —</option>'].concat(state.quests.map(q=>`<option value="${q.id}">${escapeHtml(q.name)}</option>`)).join(''); let html=`<div class="field"><label class="lab">Название</label><input id="m_t_name" type="text" placeholder="Что сделать?" autofocus></div><div class="field"><label class="lab">XP</label><input id="m_t_xp" type="number" min="1" value="${cat==='red'?15:cat==='yellow'?10:5}"></div><div class="field"><label class="lab">Сфера (опц.)</label><select id="m_t_sphere">${sphereOpts}</select></div><div class="field"><label class="lab">Привязать к квесту (опц.)</label><select id="m_t_quest">${questOpts}</select></div><button class="btn btn-gold" onclick="confirmAddTask('${cat}')">Добавить</button>`; showModal((cat==='red'?'🔴 Срочное':cat==='yellow'?'🟡 Важное':'🟢 Бонус')+' — новая задача',html); setTimeout(()=>$('#m_t_name')?.focus(),50); }
+function confirmAddTask(cat){ let name=$('#m_t_name').value.trim(); if(!name){ toast('Пусто'); return; } let xp=Math.max(1,parseInt($('#m_t_xp').value)||10); let sphereId=$('#m_t_sphere').value||null; let questId=$('#m_t_quest').value||null; state.today.tasks.push({id:uid(),name,cat,xp,sphereId,questId,done:false}); save(); closeModal(); renderToday(); }
+function openEditProfile(){ let avGrid=AVATARS.map(a=>`<div class="av-it${a===state.hero.avatar?' on':''}" data-a="${a}">${a}</div>`).join(''); let html=`<div class="field"><label class="lab">Имя</label><input id="m_p_name" type="text" value="${escapeHtml(state.hero.name)}"></div><div class="field"><label class="lab">Класс</label><input id="m_p_class" type="text" value="${escapeHtml(state.hero.class)}" placeholder="например: Психолог-Воин"></div><div class="field"><label class="lab">Аватар</label><div class="av-grid" id="m_p_av">${avGrid}</div></div><button class="btn btn-gold" onclick="saveProfile()">Сохранить</button>`; showModal('✏️ Профиль',html); let chosen=state.hero.avatar; setTimeout(()=>{ document.querySelectorAll('#m_p_av .av-it').forEach(el=>{ el.onclick=()=>{ chosen=el.dataset.a; document.querySelectorAll('#m_p_av .av-it').forEach(x=>x.classList.remove('on')); el.classList.add('on'); }; }); },20); window._pChosenAv=()=>chosen; }
+function saveProfile(){ let name=$('#m_p_name').value.trim()||'Герой'; let cls=$('#m_p_class').value.trim(); let av=window._pChosenAv?window._pChosenAv():state.hero.avatar; state.hero={name,class:cls,avatar:av}; save(); closeModal(); renderMe(); renderToday(); toast('✓ Записано в свиток'); }
+function openSettings(){ let html=`<div class="field"><button class="btn btn-ghost" onclick="exportData()">📤 Экспорт (JSON)</button></div><div class="field"><button class="btn btn-ghost" onclick="document.getElementById('m_imp_file').click()">📥 Импорт (JSON)</button><input id="m_imp_file" type="file" accept="application/json" style="display:none" onchange="importData(this)"><div class="hint">Заменит все данные. Сначала сделай экспорт.</div></div><div class="field"><button class="btn btn-ghost" onclick="addManualSphere()">➕ Добавить сферу</button></div><div class="field"><button class="btn btn-ghost" onclick="manageSpheres()">📊 Управление сферами</button></div><div class="field" style="margin-top:24px"><button class="btn" style="background:var(--red);color:#fff" onclick="resetAll()">⚠️ Сбросить всё</button></div><div style="text-align:center;font-size:.7rem;color:var(--dim);margin-top:14px">Life Quest v${APP_VERSION}</div>`; showModal('⚙️ Настройки',html); }
+function exportData(){ let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); let url=URL.createObjectURL(blob); let a=document.createElement('a'); a.href=url; a.download=`questhub-${todayStr()}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),500); toast('Файл скачан'); }
+function importData(input){ let file=input.files?.[0]; if(!file) return; let r=new FileReader(); r.onload=()=>{ try{ let obj=JSON.parse(r.result); if(!obj||typeof obj!=='object') throw new Error(); if(!confirm('Импорт заменит ВСЕ текущие данные. Продолжить?')) return; state=Object.assign(defaultState(),obj); saveNow(); closeModal(); initApp(); toast('Импортировано'); }catch(e){ toast('⚠️ Файл повреждён'); } }; r.readAsText(file); }
+function resetAll(){ if(!confirm('Удалить ВСЕ данные и начать заново?')) return; if(!confirm('Точно? Это нельзя отменить.')) return; localStorage.removeItem(STORAGE_KEY); closeModal(); state=defaultState(); startOnboarding(); }
+function addManualSphere(){ let html=`<div class="field"><label class="lab">Название сферы</label><input id="m_ns_name" type="text" placeholder="Например: Спорт" autofocus></div><button class="btn btn-gold" onclick="confirmAddSphere()">Добавить</button>`; showModal('📊 Новая сфера',html); }
+function confirmAddSphere(){ let v=$('#m_ns_name').value.trim(); if(!v){ toast('Пусто'); return; } state.spheres.push({id:uid(),name:v,xp:0,level:1}); save(); closeModal(); renderMe(); toast('Добавлено'); }
+function manageSpheres(){ if(state.spheres.length===0){ openSettings(); toast('Сфер нет'); return; } let html=state.spheres.map(s=>`<div class="iitem"><div class="iitem-row"><input type="text" value="${escapeHtml(s.name)}" data-sid="${s.id}" data-k="name"><button class="delx" data-sid="${s.id}" data-act="del">✕</button></div><div class="iitem-meta">Lv ${s.level} · ${s.xp} XP</div></div>`).join('')+'<button class="btn btn-gold" onclick="closeModal();openSettings()" style="margin-top:10px">← Назад</button>'; showModal('📊 Сферы',html); document.querySelectorAll('#modalBody input[data-k]').forEach(el=>{ el.oninput=()=>{ let s=state.spheres.find(x=>x.id===el.dataset.sid); if(!s) return; s.name=el.value.trim()||s.name; save(); }; }); document.querySelectorAll('#modalBody button[data-act="del"]').forEach(b=>{ b.onclick=()=>{ let s=state.spheres.find(x=>x.id===b.dataset.sid); if(!s) return; if(!confirm(`Удалить сферу «${s.name}»? XP, привязанный к ней, останется в общем.`)) return; state.spheres=state.spheres.filter(x=>x.id!==b.dataset.sid); state.daily.forEach(d=>{ if(d.sphereId===b.dataset.sid) d.sphereId=null; }); state.weekly.forEach(d=>{ if(d.sphereId===b.dataset.sid) d.sphereId=null; }); state.quests.forEach(q=>{ if(q.sphereId===b.dataset.sid) q.sphereId=null; }); state.today.tasks.forEach(t=>{ if(t.sphereId===b.dataset.sid) t.sphereId=null; }); save(); manageSpheres(); renderMe(); }; }); }
+if('serviceWorker' in navigator){ window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(e=>console.warn('SW failed',e)); }); }
+state=loadState();
+if(!state.onboarded){ startOnboarding(); } else { $('#app').style.display='block'; initApp(); }
+</script>
+</body>
+</html>
