@@ -173,6 +173,8 @@ h2 .h2-act{background:transparent;border:1px solid var(--border);color:var(--gol
 
 /* ============ HABITS ============ */
 .hrow{background:#0a0e1a;border:1px solid var(--border);border-radius:9px;padding:10px 12px;margin-bottom:5px;display:flex;align-items:center;gap:10px}
+.hcheck{width:24px;height:24px;min-width:24px;border:2px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:transparent;margin-right:4px}
+.hcheck.completed{background:var(--green);border-color:var(--green);color:#0a0e1a}
 .hn{flex:1;font-size:.86rem;font-weight:600}
 .hsphere{font-size:.62rem;color:var(--dim);margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
 .hx{font-size:.7rem;color:var(--gold);font-weight:700;white-space:nowrap}
@@ -434,6 +436,34 @@ let tabVisibility = {
   hist: true
 };
 
+// Habit completion tracking for today
+let habitCompletedToday = {
+  daily: {},
+  weekly: {}
+};
+
+function loadHabitCompletions() {
+  const saved = localStorage.getItem('habit_completions_ru');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      habitCompletedToday = parsed;
+    } catch(e) {}
+  }
+  if (!habitCompletedToday.daily) habitCompletedToday.daily = {};
+  if (!habitCompletedToday.weekly) habitCompletedToday.weekly = {};
+}
+function saveHabitCompletions() {
+  localStorage.setItem('habit_completions_ru', JSON.stringify(habitCompletedToday));
+}
+function resetHabitCompletionsIfNeeded() {
+  const today = todayStr();
+  if (habitCompletedToday.date !== today) {
+    habitCompletedToday = { date: today, daily: {}, weekly: {} };
+    saveHabitCompletions();
+  }
+}
+
 function loadTabVisibility() {
   const saved = localStorage.getItem('tab_visibility_ru');
   if (saved) {
@@ -561,6 +591,7 @@ function initApp(){
   $('#app_title').textContent=state.hero.name+(state.hero.class?' · '+state.hero.class:'');
   $('#app_subtitle').textContent=`Lvl ${currentLevel()} · ${state.totalXp} XP`;
   rolloverIfNeeded();
+  resetHabitCompletionsIfNeeded();
   renderAll();
   if(!tutorialCompleted && state.onboarded && !localStorage.getItem('tutorial_done_ru')){
     setTimeout(()=>startTutorial(),500);
@@ -568,7 +599,7 @@ function initApp(){
   applyTabVisibility();
 }
 function startTutorial(){
-  let steps=[{title:'🎯 Сегодня',text:'Добавляй разовые задачи. Красные = срочные, жёлтые = важные, зелёные = бонус. Нажми на задачу, чтобы отметить её.'},{title:'📋 Привычки',text:'Твои ежедневные дела (священный минимум) и воскресные ритуалы. Сделал → ты уже молодец.'},{title:'🗺️ Квесты',text:'Большие проекты с коучинговыми вопросами. Нажми 🧠, чтобы увидеть свои ответы.'}];
+  let steps=[{title:'🎯 Сегодня',text:'Добавляй разовые задачи. Красные = срочные, жёлтые = важные, зелёные = бонус. Нажми на задачу, чтобы отметить её.'},{title:'📋 Привычки',text:'Твои ежедневные дела (священный минимум) и воскресные ритуалы. Нажми на квадратик, чтобы отметить привычку.'},{title:'🗺️ Квесты',text:'Большие проекты с коучинговыми вопросами. Нажми 🧠, чтобы увидеть свои ответы.'}];
   let i=0;
   function showStep(){ if(i>=steps.length){ localStorage.setItem('tutorial_done_ru','true'); return; } let s=steps[i]; let html=`<h2 style="text-align:center;">${s.title}</h2><p style="margin:12px 0;">${s.text}</p><div style="display:flex;gap:8px;"><button class="btn btn-gold" style="flex:1" onclick="closeModal(); i++; showStep();">Далее</button><button class="btn btn-outline" style="flex:1" onclick="closeModal(); localStorage.setItem('tutorial_done_ru','true');">Пропустить</button></div>`; showModal('Обучение',html); } showStep();
 }
@@ -589,25 +620,110 @@ function closeLevelUp(){ $('#levelup').classList.remove('show'); }
 // ========== ME ==========
 function renderMe(){ $('#meAv').textContent=state.hero.avatar||'⚔️'; $('#meName').textContent=state.hero.name||'—'; $('#meClass').textContent=state.hero.class||'без класса'; let lv=currentLevel(); $('#meLvN').textContent=lv; let lvObj=state.levels.find(L=>L.level===lv); $('#meLvTitle').textContent=(lvObj&&lvObj.title)?lvObj.title:defaultTitleFor(lv); $('#meNextLvN').textContent=lv+1; let p=xpProgressInLevel(); $('#meXpT').textContent=p.capped?`${p.got} XP`:`${p.got} / ${p.need}`; $('#meXpB').style.width=p.pct+'%'; $('#meTotalXp').textContent=state.totalXp; let next=nextLevelObj(); if(next&&next.reward){ $('#meNextRew').style.display='block'; $('#meNextRewT').textContent=next.reward; }else if(next){ $('#meNextRew').style.display='block'; $('#meNextRewT').textContent='— награда не задана. Открой раздел 🏆 и впиши.'; }else{ $('#meNextRew').style.display='none'; } let grid=$('#meSphereGrid'); if(state.spheres.length===0){ grid.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="es-i">🌱</div><div class="es-t">Сфер пока нет</div><div class="es-d">Добавь в настройках или начни заново</div></div>'; return; } grid.innerHTML=state.spheres.map(s=>{ let pct=s.xp%100; return `<div class="stat"><div class="stat-top"><div class="stat-n">${escapeHtml(s.name)}</div><div class="stat-v">Lv ${s.level}</div></div><div class="mini"><div style="width:${pct}%"></div></div><div class="stat-xp">${s.xp} XP · до Lv ${s.level+1}: ${100-pct}</div></div>`; }).join(''); }
 
-// ========== HABITS ==========
-function renderHabits(){ renderHabitList('#dailyList',state.daily,'daily'); renderHabitList('#weeklyList',state.weekly,'weekly'); }
-function renderHabitList(sel,list,kind){ let c=$(sel); if(list.length===0){ c.innerHTML='<div class="empty-cat">Пусто. Нажми + чтобы добавить</div>'; return; } c.innerHTML=list.map(h=>{ let sphere=h.sphereId?state.spheres.find(s=>s.id===h.sphereId)?.name:''; return `<div class="hrow" data-hid="${h.id}"><div class="hn">${escapeHtml(h.name)}${sphere?`<div class="hsphere">${escapeHtml(sphere)}</div>`:''}</div><div class="hx">+${h.xp} XP</div><button class="hact" data-act="edit">✏️</button><button class="hact" data-act="del">✕</button></div>`; }).join(''); c.querySelectorAll('.hrow').forEach(row=>{ let hid=row.dataset.hid; row.querySelector('[data-act="edit"]').onclick=()=>openEditHabit(kind,hid); row.querySelector('[data-act="del"]').onclick=()=>deleteHabit(kind,hid); }); }
+// ========== HABITS with checkboxes ==========
+function renderHabits() {
+  resetHabitCompletionsIfNeeded();
+  renderHabitList('#dailyList', state.daily, 'daily');
+  renderHabitList('#weeklyList', state.weekly, 'weekly');
+}
+function renderHabitList(sel, list, kind) {
+  const c = $(sel);
+  if (!list.length) {
+    c.innerHTML = '<div class="empty-cat">Пусто. Нажми + чтобы добавить</div>';
+    return;
+  }
+  const today = todayStr();
+  const isSunday = new Date().getDay() === 0;
+  c.innerHTML = list.map(h => {
+    const sphere = h.sphereId ? state.spheres.find(s => s.id === h.sphereId)?.name : '';
+    const completed = kind === 'daily' 
+      ? (habitCompletedToday.daily[h.id] === true)
+      : (isSunday && habitCompletedToday.weekly[h.id] === true);
+    return `
+      <div class="hrow" data-hid="${h.id}" data-kind="${kind}">
+        <div class="hcheck ${completed ? 'completed' : ''}" data-hid="${h.id}" data-kind="${kind}">${completed ? '✓' : ''}</div>
+        <div class="hn">${escapeHtml(h.name)}${sphere ? `<div class="hsphere">${escapeHtml(sphere)}</div>` : ''}</div>
+        <div class="hx">+${h.xp} XP</div>
+        <button class="hact" data-act="edit">✏️</button>
+        <button class="hact" data-act="del">✕</button>
+      </div>
+    `;
+  }).join('');
+  // Attach handlers for checkboxes
+  c.querySelectorAll('.hcheck').forEach(ch => {
+    ch.onclick = (e) => {
+      e.stopPropagation();
+      const hid = ch.dataset.hid;
+      const kind = ch.dataset.kind;
+      const list = kind === 'daily' ? state.daily : state.weekly;
+      const habit = list.find(h => h.id === hid);
+      if (!habit) return;
+      const completed = kind === 'daily' 
+        ? (habitCompletedToday.daily[hid] === true)
+        : (habitCompletedToday.weekly[hid] === true);
+      if (completed) return; // нельзя отменить выполнение привычки в тот же день
+      // Mark as completed
+      if (kind === 'daily') {
+        habitCompletedToday.daily[hid] = true;
+      } else {
+        habitCompletedToday.weekly[hid] = true;
+      }
+      saveHabitCompletions();
+      // Add XP and update state
+      const delta = habit.xp;
+      state.totalXp = Math.max(0, state.totalXp + delta);
+      if (habit.sphereId) {
+        const s = state.spheres.find(x => x.id === habit.sphereId);
+        if (s) {
+          s.xp = Math.max(0, s.xp + delta);
+          s.level = Math.max(1, 1 + Math.floor(s.xp / 100));
+        }
+      }
+      // Record in calendar
+      const today = todayStr();
+      const arr = state.calendar[today] || (state.calendar[today] = []);
+      if (!arr.some(c => c.habitId === habit.id && c.kind === kind)) {
+        arr.push({ habitId: habit.id, kind: kind, name: habit.name, color: '#d4a948' });
+      }
+      // Level up check
+      const prevLv = computeLevelFor(state.totalXp - delta);
+      const newLv = currentLevel();
+      save();
+      renderHabits();
+      renderMe();
+      if (newLv > prevLv) showLevelUp(newLv);
+      // Show XP float at checkbox position
+      const rect = ch.getBoundingClientRect();
+      xpFloat(delta, rect.left + rect.width/2, rect.top + rect.height/2);
+      toast(`+${delta} XP!`);
+    };
+  });
+  // Edit/delete handlers
+  c.querySelectorAll('.hrow').forEach(row => {
+    const hid = row.dataset.hid;
+    const kind = row.dataset.kind;
+    row.querySelector('[data-act="edit"]').onclick = () => openEditHabit(kind, hid);
+    row.querySelector('[data-act="del"]').onclick = () => deleteHabit(kind, hid);
+  });
+}
 function openAddDailyHabit(){ openHabitEditor('daily',null); }
 function openAddWeeklyHabit(){ openHabitEditor('weekly',null); }
 function openEditHabit(kind,hid){ openHabitEditor(kind,hid); }
 function openHabitEditor(kind,hid){ let list=kind==='daily'?state.daily:state.weekly; let h=hid?list.find(x=>x.id===hid):{name:'',xp:kind==='daily'?10:20,sphereId:''}; let sphereOpts=['<option value="">— без сферы —</option>'].concat(state.spheres.map(s=>`<option value="${s.id}"${s.id===h.sphereId?' selected':''}>${escapeHtml(s.name)}</option>`)).join(''); let html=`<div class="field"><label class="lab">Название</label><input id="m_h_name" type="text" value="${escapeHtml(h.name)}" placeholder="${kind==='daily'?'вода 1.5л / медитация':'уборка / планёрка'}" autofocus></div><div class="field"><label class="lab">XP</label><input id="m_h_xp" type="number" min="1" value="${h.xp}"></div><div class="field"><label class="lab">Сфера (опц.)</label><select id="m_h_sphere">${sphereOpts}</select></div><button class="btn btn-gold" onclick="confirmHabit('${kind}','${hid||''}')">${hid?'Сохранить':'Добавить'}</button>`; showModal((kind==='daily'?'⭐ Ежедневное':'🏡 Воскресное')+(hid?' — редактировать':' — новое'),html); }
-function confirmHabit(kind,hid){ let list=kind==='daily'?state.daily:state.weekly; let name=$('#m_h_name').value.trim(); if(!name){ toast('Пусто'); return; } let xp=Math.max(1,parseInt($('#m_h_xp').value)||10); let sphereId=$('#m_h_sphere').value||null; if(hid){ let h=list.find(x=>x.id===hid); if(!h) return; h.name=name; h.xp=xp; h.sphereId=sphereId; // Do NOT add to today automatically
-    }else{ let h={id:uid(),name,xp,sphereId}; list.push(h); // No automatic addition to today
-    } save(); closeModal(); renderHabits(); renderToday(); }
-function deleteHabit(kind,hid){ let list=kind==='daily'?state.daily:state.weekly; let h=list.find(x=>x.id===hid); if(!h) return; if(!confirm(`Удалить «${h.name}»?`)) return; if(kind==='daily') state.daily=state.daily.filter(x=>x.id!==hid); else state.weekly=state.weekly.filter(x=>x.id!==hid); save(); renderHabits(); renderToday(); }
+function confirmHabit(kind,hid){ let list=kind==='daily'?state.daily:state.weekly; let name=$('#m_h_name').value.trim(); if(!name){ toast('Пусто'); return; } let xp=Math.max(1,parseInt($('#m_h_xp').value)||10); let sphereId=$('#m_h_sphere').value||null; if(hid){ let h=list.find(x=>x.id===hid); if(!h) return; h.name=name; h.xp=xp; h.sphereId=sphereId; }else{ let h={id:uid(),name,xp,sphereId}; list.push(h); } save(); closeModal(); renderHabits(); renderToday(); }
+function deleteHabit(kind,hid){ let list=kind==='daily'?state.daily:state.weekly; let h=list.find(x=>x.id===hid); if(!h) return; if(!confirm(`Удалить «${h.name}»?`)) return; if(kind==='daily') state.daily=state.daily.filter(x=>x.id!==hid); else state.weekly=state.weekly.filter(x=>x.id!==hid); // Remove from completion tracking
+  if(kind==='daily') delete habitCompletedToday.daily[hid];
+  else delete habitCompletedToday.weekly[hid];
+  saveHabitCompletions();
+  save(); renderHabits(); renderToday(); }
 
 // ========== SIMPLIFIED CALENDAR (no time blocks) ==========
 function renderCalendar(){ if(!state.calMonth){ let d=new Date(); state.calMonth={y:d.getFullYear(),m:d.getMonth()}; } let {y,m}=state.calMonth; $('#calMonth').textContent=`${MONTHS_RU[m]} ${y}`; let lg=$('#calLegend'); lg.innerHTML='<div style="color:var(--dim);font-size:.72rem">Нажми на день, чтобы увидеть детали.</div>'; $('#calDow').innerHTML=DOW_RU.map(d=>`<div class="dow">${d}</div>`).join(''); let first=new Date(y,m,1), offset=(first.getDay()+6)%7, daysIn=new Date(y,m+1,0).getDate(); let cells=[]; for(let i=0;i<offset;i++) cells.push({empty:true}); let tdy=todayStr(); for(let d=1;d<=daysIn;d++){ let ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; let blocks=state.calendar[ds]||[]; let hist=state.history.find(h=>h.date===ds); cells.push({d,ds,blocks,hist,today:ds===tdy,future:ds>tdy}); } let grid=$('#calGrid'); grid.innerHTML=cells.map(c=>{ if(c.empty) return `<div class="day empty"></div>`; let blkHtml=c.blocks.slice(0,2).map(b=>`<div class="blk" style="background:${b.color}">${escapeHtml(b.name)}</div>`).join(''); let more=c.blocks.length>2?`<div class="blk-more">+${c.blocks.length-2}</div>`:''; let xp=c.hist?`<div class="day-xp">+${c.hist.earnedXp}</div>`:''; return `<div class="day ${c.today?'today':''} ${c.future?'future':''}" data-ds="${c.ds}"><div class="day-n">${c.d}</div>${xp}${blkHtml}${more}</div>`; }).join(''); grid.querySelectorAll('.day[data-ds]').forEach(el=>{ el.onclick=()=>openCalDay(el.dataset.ds); }); }
-function openCalDay(ds){ let blocks=state.calendar[ds]||[]; let hist=state.history.find(h=>h.date===ds); let html=`<div style="font-size:.85rem;color:var(--text);margin-bottom:10px">${fmtDateHuman(ds)}</div>`; if(hist){ html+=`<div style="padding:10px;background:rgba(74,222,128,0.1);border-radius:12px;"><div style="font-weight:700;">📜 Итог дня: +${hist.earnedXp} XP · ${hist.tasks.filter(t=>t.done).length} из ${hist.tasks.length}</div>${hist.leveledUpTo?`<div class="hd-up">🏆 Level Up до ${hist.leveledUpTo}!</div>`:''}<div class="hd-tasks">`+hist.tasks.map(t=>`<div>${t.done?'✓':'·'} ${escapeHtml(t.name)} <span style="color:var(--gold)">${t.done?'+':''}${t.xp}</span></div>`).join('')+`</div></div>`; }else if(blocks.length){ html+=`<div style="padding:10px;background:rgba(212,169,72,0.1);border-radius:12px;"><strong>Работа по квестам:</strong><br>${blocks.map(b=>`<div class="blk" style="background:${b.color};display:inline-block;margin:2px">${escapeHtml(b.name)}</div>`).join('')}</div>`; }else{ html+=`<div style="color:var(--dim);padding:12px;">Нет активности. Выполняй задачи, чтобы видеть прогресс.</div>`; } showModal('📅 Детали дня',html); }
+function openCalDay(ds){ let blocks=state.calendar[ds]||[]; let hist=state.history.find(h=>h.date===ds); let html=`<div style="font-size:.85rem;color:var(--text);margin-bottom:10px">${fmtDateHuman(ds)}</div>`; if(hist){ html+=`<div style="padding:10px;background:rgba(74,222,128,0.1);border-radius:12px;"><div style="font-weight:700;">📜 Итог дня: +${hist.earnedXp} XP · ${hist.tasks.filter(t=>t.done).length} из ${hist.tasks.length}</div>${hist.leveledUpTo?`<div class="hd-up">🏆 Level Up до ${hist.leveledUpTo}!</div>`:''}<div class="hd-tasks">`+hist.tasks.map(t=>`<div>${t.done?'✓':'·'} ${escapeHtml(t.name)} <span style="color:var(--gold)">${t.done?'+':''}${t.xp}</span></div>`).join('')+`</div></div>`; }else if(blocks.length){ html+=`<div style="padding:10px;background:rgba(212,169,72,0.1);border-radius:12px;"><strong>Работа по квестам и привычкам:</strong><br>${blocks.map(b=>`<div class="blk" style="background:${b.color};display:inline-block;margin:2px">${escapeHtml(b.name)}</div>`).join('')}</div>`; }else{ html+=`<div style="color:var(--dim);padding:12px;">Нет активности. Выполняй задачи, чтобы видеть прогресс.</div>`; } showModal('📅 Детали дня',html); }
 function calPrev(){ state.calMonth.m--; if(state.calMonth.m<0){state.calMonth.m=11; state.calMonth.y--;} save(); renderCalendar(); }
 function calNext(){ state.calMonth.m++; if(state.calMonth.m>11){state.calMonth.m=0; state.calMonth.y++;} save(); renderCalendar(); }
 
-// ========== QUESTS ==========
+// ========== QUESTS (unchanged, but ensure they work) ==========
 function renderQuests(){ let c=$('#questsList'); if(state.quests.length===0){ c.innerHTML='<div class="empty-state"><div class="es-i">🗺️</div><div class="es-t">Квестов пока нет</div><div class="es-d">Большие проекты — то, что тянется неделями</div></div>'; return; } c.innerHTML=state.quests.map(q=>{ let total=q.subtasks.length, done=q.subtasks.filter(s=>s.done).length, pct=total?Math.round(done/total*100):0; let sphereName=q.sphereId?state.spheres.find(s=>s.id===q.sphereId)?.name:''; let subs=q.subtasks.map(s=>`<div class="subt ${s.done?'done':''}" data-qid="${q.id}" data-sid="${s.id}"><div class="sck">${s.done?'✓':''}</div><div class="sn">${escapeHtml(s.name)}</div><button class="hact" data-act="sub-to-today" style="color:var(--green);margin-right:4px">→</button><button class="hact" data-act="del-sub">✕</button></div>`).join(''); let isOpen=_openQuests.has(q.id); let hasCoaching=(q.cost||q.belief||q.impact||q.possible); let coachingBadge=hasCoaching?`<span class="coaching-badge" data-qid="${q.id}" style="cursor:pointer;margin-left:8px;background:rgba(212,169,72,0.2);padding:4px 8px;border-radius:20px;font-size:0.7rem;font-weight:bold;">🧠 почему это важно</span>`:''; return `<div class="qgrp ${isOpen?'open':''}" data-qid="${q.id}" style="border-left-color:${q.color}"><div class="qgrp-head"><div class="qgrp-arr">▶</div><div class="qgrp-info"><div class="qgrp-n">${escapeHtml(q.name)} ${coachingBadge}</div>${q.identity?`<div class="qgrp-ident">🦋 <i>${escapeHtml(q.identity)}</i></div>`:''}<div class="qgrp-meta"><span class="q-color-dot" style="background:${q.color}"></span>${sphereName?`<span>${escapeHtml(sphereName)}</span>`:''}${q.description?`<span style="color:var(--text)">${escapeHtml(q.description)}</span>`:''}</div></div><div class="qgrp-prog">${done}/${total} · ${pct}%</div><button class="qgrp-act" data-act="edit-q">✏️</button><button class="qgrp-act" data-act="del-q">✕</button></div><div class="qgrp-subs">${subs}<button class="sub-add" data-act="add-sub">+ Под-задача</button><button class="sub-add" data-act="to-today" style="margin-top:4px;">+ Новая задача в «Сегодня»</button></div></div>`; }).join(''); attachQuestHandlers(c); }
 function attachQuestHandlers(container){ container.querySelectorAll('.qgrp').forEach(g=>{ let qid=g.dataset.qid; g.querySelector('.qgrp-head').onclick=e=>{ if(e.target.closest('.qgrp-act')) return; if(_openQuests.has(qid)) _openQuests.delete(qid); else _openQuests.add(qid); g.classList.toggle('open'); }; g.querySelector('[data-act="edit-q"]').onclick=e=>{ e.stopPropagation(); openEditQuest(qid); }; g.querySelector('[data-act="del-q"]').onclick=e=>{ e.stopPropagation(); deleteQuest(qid); }; g.querySelector('[data-act="add-sub"]').onclick=()=>addSubtask(qid); g.querySelector('[data-act="to-today"]').onclick=()=>questToToday(qid); g.querySelectorAll('.subt').forEach(row=>{ row.onclick=e=>{ if(e.target.closest('[data-act="del-sub"]')) return; if(e.target.closest('[data-act="sub-to-today"]')) return; toggleSubtask(row.dataset.qid,row.dataset.sid,row); }; row.querySelector('[data-act="del-sub"]').onclick=e=>{ e.stopPropagation(); deleteSubtask(row.dataset.qid,row.dataset.sid); }; row.querySelector('[data-act="sub-to-today"]').onclick=e=>{ e.stopPropagation(); subtaskToToday(row.dataset.qid,row.dataset.sid); }; }); }); container.querySelectorAll('.coaching-badge').forEach(b=>{ b.onclick=e=>{ e.stopPropagation(); let q=state.quests.find(x=>x.id===b.dataset.qid); if(q) showCoachingModal(q); }; }); }
 function showCoachingModal(q){ let html=`<div style="font-family:'Inter',sans-serif; text-align:left;">`; if(q.cost) html+=`<div style="margin-bottom:16px;"><strong style="color:var(--gold);">❓ Чего никогда не будет в моей жизни, если я этого не достигну?</strong><br>${escapeHtml(q.cost)}</div>`; if(q.belief) html+=`<div style="margin-bottom:16px;"><strong style="color:var(--gold);">📊 Насколько я верю, что смогу достичь? (1–10)</strong><br>${q.belief} / 10</div>`; if(q.impact) html+=`<div style="margin-bottom:16px;"><strong style="color:var(--gold);">👨‍👩‍👧 Как достижение повлияет на моих близких?</strong><br>${escapeHtml(q.impact)}</div>`; if(q.possible) html+=`<div style="margin-bottom:16px;"><strong style="color:var(--gold);">🚀 Что станет возможным благодаря этой цели?</strong><br>${escapeHtml(q.possible)}</div>`; if(!q.cost && !q.belief && !q.impact && !q.possible) html=`<div>Нет заполненных коучинговых вопросов. Нажми ✏️, чтобы добавить.</div>`; html+=`</div>`; showModal(`🧠 Рефлексия: ${escapeHtml(q.name)}`,html); }
@@ -648,7 +764,7 @@ function finishDay(){ let tasks=state.today.tasks; if(tasks.length===0){ toast('
 function showModal(title,bodyHtml){ $('#modalTitle').textContent=title; $('#modalBody').innerHTML=bodyHtml; $('#modal').classList.add('open'); }
 function closeModal(){ $('#modal').classList.remove('open'); }
 $('#modal').addEventListener('click',(e)=>{ if(e.target.id==='modal') closeModal(); });
-function openHelp(){ let html=`<h2 style="text-align:center;">📖 Как пользоваться LifeQuest</h2><div style="text-align:left;"><p><strong>🎯 Сегодня</strong><br>Добавляй разовые задачи. Красные = срочные, жёлтые = важные, зелёные = бонус. Можно добавлять задачи из квестов.</p><p><strong>⭐ Привычки</strong><br>Вещи, которые ты делаешь каждый день (Священный минимум) или только по воскресеньям (Воскресный ритуал).</p><p><strong>🗺️ Квесты</strong><br>Большие проекты. Добавляй подзадачи, отвечай на коучинговые вопросы.</p><p><strong>🏆 Уровни</strong><br>Зарабатывай XP, получай уровни, назначай себе реальные награды.</p><p><strong>📅 Календарь</strong><br>Смотри историю и активность по квестам. (Сложное планирование не нужно.)</p><p><strong>⚙️ Настройки</strong><br>Экспорт/импорт данных, управление сферами, сброс всего.</p></div><button class="btn btn-gold" onclick="closeModal()" style="margin-top:16px;">Понятно</button>`; showModal('📖 Помощь',html); }
+function openHelp(){ let html=`<h2 style="text-align:center;">📖 Как пользоваться LifeQuest</h2><div style="text-align:left;"><p><strong>🎯 Сегодня</strong><br>Добавляй разовые задачи. Красные = срочные, жёлтые = важные, зелёные = бонус. Можно добавлять задачи из квестов.</p><p><strong>⭐ Привычки</strong><br>Вещи, которые ты делаешь каждый день (Священный минимум) или только по воскресеньям (Воскресный ритуал). Нажми на квадратик, чтобы отметить выполнение.</p><p><strong>🗺️ Квесты</strong><br>Большие проекты. Добавляй подзадачи, отвечай на коучинговые вопросы.</p><p><strong>🏆 Уровни</strong><br>Зарабатывай XP, получай уровни, назначай себе реальные награды.</p><p><strong>📅 Календарь</strong><br>Смотри историю и активность по квестам и привычкам.</p><p><strong>⚙️ Настройки</strong><br>Экспорт/импорт данных, управление сферами, сброс всего.</p></div><button class="btn btn-gold" onclick="closeModal()" style="margin-top:16px;">Понятно</button>`; showModal('📖 Помощь',html); }
 function openAddTask(cat){ let sphereOpts=['<option value="">— без сферы —</option>'].concat(state.spheres.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`)).join(''); let questOpts=['<option value="">— не привязывать —</option>'].concat(state.quests.map(q=>`<option value="${q.id}">${escapeHtml(q.name)}</option>`)).join(''); let html=`<div class="field"><label class="lab">Название</label><input id="m_t_name" type="text" placeholder="Что сделать?" autofocus></div><div class="field"><label class="lab">XP</label><input id="m_t_xp" type="number" min="1" value="${cat==='red'?15:cat==='yellow'?10:5}"></div><div class="field"><label class="lab">Сфера (опц.)</label><select id="m_t_sphere">${sphereOpts}</select></div><div class="field"><label class="lab">Привязать к квесту (опц.)</label><select id="m_t_quest">${questOpts}</select></div><button class="btn btn-gold" onclick="confirmAddTask('${cat}')">Добавить</button>`; showModal((cat==='red'?'🔴 Срочное':cat==='yellow'?'🟡 Важное':'🟢 Бонус')+' — новая задача',html); setTimeout(()=>$('#m_t_name')?.focus(),50); }
 function confirmAddTask(cat){ let name=$('#m_t_name').value.trim(); if(!name){ toast('Пусто'); return; } let xp=Math.max(1,parseInt($('#m_t_xp').value)||10); let sphereId=$('#m_t_sphere').value||null; let questId=$('#m_t_quest').value||null; state.today.tasks.push({id:uid(),name,cat,xp,sphereId,questId,done:false}); save(); closeModal(); renderToday(); }
 function openEditProfile(){ let avGrid=AVATARS.map(a=>`<div class="av-it${a===state.hero.avatar?' on':''}" data-a="${a}">${a}</div>`).join(''); let html=`<div class="field"><label class="lab">Имя</label><input id="m_p_name" type="text" value="${escapeHtml(state.hero.name)}"></div><div class="field"><label class="lab">Класс</label><input id="m_p_class" type="text" value="${escapeHtml(state.hero.class)}" placeholder="например: Психолог-Воин"></div><div class="field"><label class="lab">Аватар</label><div class="av-grid" id="m_p_av">${avGrid}</div></div><button class="btn btn-gold" onclick="saveProfile()">Сохранить</button>`; showModal('✏️ Профиль',html); let chosen=state.hero.avatar; setTimeout(()=>{ document.querySelectorAll('#m_p_av .av-it').forEach(el=>{ el.onclick=()=>{ chosen=el.dataset.a; document.querySelectorAll('#m_p_av .av-it').forEach(x=>x.classList.remove('on')); el.classList.add('on'); }; }); },20); window._pChosenAv=()=>chosen; }
@@ -685,7 +801,6 @@ function openSettingsWithTabs() {
     <div style="text-align:center;font-size:.7rem;color:var(--dim);margin-top:14px">Life Quest v${APP_VERSION}</div>`;
   showModal('⚙️ Настройки', html);
 }
-
 function saveTabSettings() {
   tabVisibility.char = document.getElementById('tab-char').checked;
   tabVisibility.habits = document.getElementById('tab-habits').checked;
@@ -698,7 +813,6 @@ function saveTabSettings() {
   closeModal();
   toast('Настройки вкладок сохранены');
 }
-
 window.openSettings = openSettingsWithTabs;
 
 function exportData(){ let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); let url=URL.createObjectURL(blob); let a=document.createElement('a'); a.href=url; a.download=`questhub-${todayStr()}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),500); toast('Файл скачан'); }
@@ -709,6 +823,7 @@ function confirmAddSphere(){ let v=$('#m_ns_name').value.trim(); if(!v){ toast('
 function manageSpheres(){ if(state.spheres.length===0){ openSettings(); toast('Сфер нет'); return; } let html=state.spheres.map(s=>`<div class="iitem"><div class="iitem-row"><input type="text" value="${escapeHtml(s.name)}" data-sid="${s.id}" data-k="name"><button class="delx" data-sid="${s.id}" data-act="del">✕</button></div><div class="iitem-meta">Lv ${s.level} · ${s.xp} XP</div></div>`).join('')+'<button class="btn btn-gold" onclick="closeModal();openSettings()" style="margin-top:10px">← Назад</button>'; showModal('📊 Сферы',html); document.querySelectorAll('#modalBody input[data-k]').forEach(el=>{ el.oninput=()=>{ let s=state.spheres.find(x=>x.id===el.dataset.sid); if(!s) return; s.name=el.value.trim()||s.name; save(); }; }); document.querySelectorAll('#modalBody button[data-act="del"]').forEach(b=>{ b.onclick=()=>{ let s=state.spheres.find(x=>x.id===b.dataset.sid); if(!s) return; if(!confirm(`Удалить сферу «${s.name}»? XP, привязанный к ней, останется в общем.`)) return; state.spheres=state.spheres.filter(x=>x.id!==b.dataset.sid); state.daily.forEach(d=>{ if(d.sphereId===b.dataset.sid) d.sphereId=null; }); state.weekly.forEach(d=>{ if(d.sphereId===b.dataset.sid) d.sphereId=null; }); state.quests.forEach(q=>{ if(q.sphereId===b.dataset.sid) q.sphereId=null; }); state.today.tasks.forEach(t=>{ if(t.sphereId===b.dataset.sid) t.sphereId=null; }); save(); manageSpheres(); renderMe(); }; }); }
 if('serviceWorker' in navigator){ window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(e=>console.warn('SW failed',e)); }); }
 
+loadHabitCompletions();
 loadTabVisibility();
 state=loadState();
 if(!state.onboarded){ startOnboarding(); } else { $('#app').style.display='block'; initApp(); }
