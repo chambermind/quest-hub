@@ -1,9 +1,12 @@
-// Quest Hub Service Worker
-const CACHE = 'lifequest-v1.3.0';
+// LifeQuest Service Worker v1.4.0
+const CACHE = 'lifequest-v1.4.0';
 const ASSETS = [
   './',
   './index.html',
+  './app.html',
+  './app-ru.html',
   './manifest.json',
+  './manifest-ru.json',
   './icon-192.png',
   './icon-512.png',
   'https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;600;700&display=swap'
@@ -11,7 +14,10 @@ const ASSETS = [
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
-    caches.open(CACHE).then((c) => c.addAll(ASSETS).catch(() => null)).then(() => self.skipWaiting())
+    caches.open(CACHE).then((cache) => {
+      console.log('Caching LifeQuest assets');
+      return cache.addAll(ASSETS).catch((err) => console.warn('Failed to cache some assets:', err));
+    }).then(() => self.skipWaiting())
   );
 });
 
@@ -26,18 +32,29 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') return;
+
   e.respondWith(
     caches.match(req).then((cached) => {
       if (cached) return cached;
+
       return fetch(req).then((res) => {
-        // cache same-origin and fonts
-        const url = new URL(req.url);
-        if (url.origin === location.origin || url.host.includes('fonts.g')) {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => null);
+        // Кэшируем только успешные ответы
+        if (res && res.status === 200) {
+          const url = new URL(req.url);
+          // Кэшируем свои файлы и шрифты Google
+          if (url.origin === location.origin || url.host.includes('fonts.g')) {
+            const copy = res.clone();
+            caches.open(CACHE).then((cache) => cache.put(req, copy));
+          }
         }
         return res;
-      }).catch(() => caches.match('./index.html'));
+      }).catch(() => {
+        // Офлайн: для HTML-запросов пытаемся отдать запрошенную страницу из кэша или index.html
+        if (req.headers.get('accept').includes('text/html')) {
+          return caches.match(req).then(cached => cached || caches.match('./index.html'));
+        }
+        return new Response('Нет соединения с интернетом', { status: 503 });
+      });
     })
   );
 });
