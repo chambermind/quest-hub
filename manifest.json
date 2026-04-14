@@ -1,14 +1,14 @@
 {
   "name": "Life Quest",
-  "short_name": "Life Quest",
-  "description": "RPG-трекер жизни: квесты, уровни, награды, прогресс по сферам",
+  "short_name": "LifeQuest",
+  "description": "Turn your daily goals into a gentle RPG — earn XP, level up, set real rewards",
   "start_url": "./app.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0a0e1a",
   "theme_color": "#0a0e1a",
-  "lang": "ru",
+  "lang": "en",
   "icons": [
     {
       "src": "icon-192.png",
