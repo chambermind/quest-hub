@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>LifeQuest — игра, которая превращает дела в приключение</title>
+    <title>LifeQuest — Turn Anxiety Into Adventure | Gamified Task Tracker</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -205,234 +205,323 @@
         .highlight li {
             margin-bottom: 8px;
         }
+        /* Language switcher */
+        .lang-switch {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+            background: rgba(19,24,41,0.9);
+            backdrop-filter: blur(8px);
+            padding: 8px 16px;
+            border-radius: 60px;
+            border: 1px solid var(--border);
+        }
+        .lang-switch button {
+            background: transparent;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 30px;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+            color: var(--dim);
+        }
+        .lang-switch button.active {
+            background: var(--gold);
+            color: #1a1530;
+        }
+        .lang-switch button:hover:not(.active) {
+            color: var(--gold);
+        }
         @media (max-width: 768px) {
-            body {
-                padding: 16px 12px 48px;
-                font-size: 1rem;
-            }
-            .card {
-                padding: 26px 20px;
-            }
-            h1 {
-                font-size: 2rem;
-            }
-            h2 {
-                font-size: 1.5rem;
-            }
-            .feature-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            .install-steps {
-                flex-direction: column;
-                align-items: center;
-            }
-            .step {
-                width: 100%;
-                max-width: 280px;
-            }
-            .btn {
-                padding: 12px 26px;
-                font-size: 0.95rem;
-            }
-            .highlight {
-                padding: 16px 18px;
-            }
+            body { padding: 16px 12px 48px; font-size: 1rem; }
+            .card { padding: 26px 20px; }
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.5rem; }
+            .feature-grid { grid-template-columns: 1fr; gap: 20px; }
+            .install-steps { flex-direction: column; align-items: center; }
+            .step { width: 100%; max-width: 280px; }
+            .btn { padding: 12px 26px; font-size: 0.95rem; }
+            .highlight { padding: 16px 18px; }
+            .lang-switch { top: 12px; right: 12px; padding: 4px 12px; }
+            .lang-switch button { padding: 4px 8px; font-size: 0.8rem; }
         }
         @media (min-width: 1200px) {
-            .container {
-                max-width: 1100px;
-            }
-            .feature-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
+            .container { max-width: 1100px; }
+            .feature-grid { grid-template-columns: repeat(3, 1fr); }
         }
     </style>
 </head>
 <body>
-<div class="container">
-
-    <!-- 1. БОЛЬ — Ты не ленивый, ты просто устал -->
-    <div class="card">
-        <div class="badge">🎮 создано life-коучем · бесплатно · PWA · офлайн</div>
-        <h1>Ты не ленивый.<br>Ты просто выдохся.</h1>
-        <p style="font-size: 1.2rem; margin: 20px 0; color: var(--dim);">
-            Бесконечные списки дел не мотивируют — они давят. Каждая невыполненная задача — как кирпич на плечи. Вечером ты чувствуешь не гордость, а вину. Снова.
-        </p>
-        <div class="highlight pain-point">
-            😰 <strong>Вот в чём соль:</strong> Твой мозг видит длинный список — и включает режим «опасность». Это не ты ленивый, это инструменты, которыми ты пользуешься, созданы для чувства вины, а не для движения.
-        </div>
-        <div class="btn-group">
-            <a href="app.html" class="btn btn-primary">🚀 Хочу попробовать по-другому →</a>
-        </div>
-    </div>
-
-    <!-- 2. ИСТОРИЯ — кто создал и почему -->
-    <div class="card">
-        <h2>👩‍⚕️ Привет, я life-коуч с 10-летним стажем и дипломом психолога</h2>
-        <p>«LifeQuest я сделала для себя и своих клиентов. Нас заколебали приложения, которые наказывают за выходные и сбрасывают прогресс, если ты заболел. Поэтому я придумала игру, где победа — это просто показаться. Никакой вины. Никакой тревоги. Только маленькие, тёплые шаги вперёд.»</p>
-        <div class="highlight solution-point">
-            🌱 <strong>А теперь представь:</strong> Твой список дел превращается в приключение. Ты получаешь опыт за зарядку и медитацию. Твои уровни растут, а награды — реальные: любимое печенье, сериал без угрызений совести, новый гаджет.
-        </div>
-    </div>
-
-    <!-- 3. КАК ИЗМЕНИТСЯ ТВОЯ ЖИЗНЬ (картина будущего, PASTOR) -->
-    <div class="card">
-        <h2>✨ Как изменится твоя жизнь через месяц с LifeQuest</h2>
-        <div class="feature-grid">
-            <div class="feature">
-                <div class="feature-icon">🧘</div>
-                <h3>Исчезнет утренняя тревога</h3>
-                <p>Ты просыпаешься и смотришь не на ужасный список из 20 дел, а на 3–5 маленьких квестов. Их легко выполнить, и ты сразу чувствуешь прогресс.</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">🏆</div>
-                <h3>Появится гордость за себя</h3>
-                <p>Каждый вечер ты видишь, сколько XP заработал. Даже если сделал только «священный минимум» — ты уже молодец, и приложение тебе это скажет.</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">🎯</div>
-                <h3>Ты перестанешь прокрастинировать</h3>
-                <p>Потому что большие квесты разбиты на мелкие шаги, а каждый шаг приносит награду. Мозг перестаёт бояться и начинает играть.</p>
-            </div>
-        </div>
-        <div class="highlight" style="background: rgba(212,169,72,0.08);">
-            💛 <strong>Вместо «опять ничего не успела» ты говоришь себе:</strong> «Я прокачала здоровье на 200 XP, сделала шаг к книге и получила уровень. Я двигаюсь».
-        </div>
-    </div>
-
-    <!-- 4. ЧЕМ ОТЛИЧАЕМСЯ — сразу преимущества, без повторного представления -->
-    <div class="card">
-        <h2>🧠 Чем LifeQuest отличается от сотен todo-приложений?</h2>
-        <div class="feature-grid">
-            <div class="feature">
-                <div class="feature-icon">🔮</div>
-                <h3>Честные коучинговые вопросы</h3>
-                <p>Не «запланируй на 10 утра», а «зачем тебе это?», «кем ты станешь?», «чего ты лишишься, если не сделаешь?»</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">🏆</div>
-                <h3>Награды за идентичность</h3>
-                <p>Ты не просто получаешь XP. Ты становишься тем человеком, который прошёл этот квест: автор, стройный, финансово свободный.</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">📈</div>
-                <h3>Вера в себя растёт</h3>
-                <p>Оцениваешь уверенность до старта — и через месяц видишь, что она реально выросла с 5 до 8.</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">🔒</div>
-                <h3>Никакой слежки и облаков</h3>
-                <p>Все данные живут только на твоём телефоне. Никто не продаст твои привычки и цели.</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">⚡</div>
-                <h3>Работает офлайн</h3>
-                <p>Установил один раз — пользуешься в метро, в самолёте, на даче без интернета.</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">🎨</div>
-                <h3>Полная кастомизация</h3>
-                <p>Свои сферы жизни, свои цвета квестов, свои награды за уровни — никаких жёстких шаблонов.</p>
-            </div>
-        </div>
-        <div class="btn-group">
-            <a href="app.html" class="btn btn-primary">Почувствовать разницу →</a>
-        </div>
-    </div>
-
-    <!-- 5. МЕХАНИКИ — как это работает -->
-    <div class="card">
-        <h2>⚔️ Как LifeQuest превращает рутину в игру (без напряжения)</h2>
-        <div class="feature-grid">
-            <div class="feature">
-                <div class="feature-icon">⭐</div>
-                <h3>Священный минимум</h3>
-                <p>3–7 привычек на день. Выполнил их — ты уже герой. Даже если больше ничего не сделал.</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">🏡</div>
-                <h3>Воскресный ритуал</h3>
-                <p>Генеральная уборка, большой поход в магазин, планирование недели, рукоделие/хобби — только по воскресеньям. Не лезут в будни.</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">🗺️</div>
-                <h3>Эпические квесты</h3>
-                <p>Книга, ремонт, изучение языка — разбивай на подзадачи, назначай цвет, отслеживай прогресс.</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">📊</div>
-                <h3>Сферы жизни</h3>
-                <p>Здоровье, работа, творчество, отношения — качай каждую отдельно. Видно, где ты молодец, а где провисаешь.</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">🏆</div>
-                <h3>Реальные награды</h3>
-                <p>За каждый новый уровень ты сам назначаешь себе подарок. Система не наказывает, а поощряет.</p>
-            </div>
-            <div class="feature">
-                <div class="feature-icon">📅</div>
-                <h3>Тайм-блокинг</h3>
-                <p>Планируй день цветными блоками, сохраняй шаблоны на неделю, смотри историю достижений.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- 6. ПОДДЕРЖКА — PayPal жирно, с мягкой формулировкой про веру -->
-    <div class="card" style="text-align: center;">
-        <h2>☕ Помоги приключению жить</h2>
-        <p>Если LifeQuest реально делает твои дни легче — поддержи проект. Я верю в эту идею, она уже помогла мне и моим друзьям. А донаты позволяют не ставить рекламу, не продавать твои данные и постоянно добавлять новые фишки.</p>
-        <div style="margin: 32px 0 24px;">
-            <a href="https://paypal.me/krilovaorg" target="_blank" style="
-                display: inline-block;
-                background: linear-gradient(135deg, #FFD140, #FFC107);
-                color: #1a1530;
-                font-family: 'Cinzel', serif;
-                font-weight: 900;
-                font-size: 1.7rem;
-                padding: 20px 48px;
-                border-radius: 60px;
-                text-decoration: none;
-                letter-spacing: 2px;
-                box-shadow: 0 0 24px rgba(255, 193, 7, 0.6), 0 4px 12px rgba(0,0,0,0.2);
-                transition: transform 0.2s, box-shadow 0.2s;
-                cursor: pointer;
-            " onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 0 40px rgba(255,193,7,0.9)';" 
-               onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 24px rgba(255,193,7,0.6)';">
-                💛 ПОДДЕРЖАТЬ ЧЕРЕЗ PAYPAL
-            </a>
-        </div>
-        <p style="font-size: 0.85rem; margin-top: 8px; color: var(--dim);">Даже небольшая сумма дарит мне веру, что я делаю что-то важное. Спасибо ❤️</p>
-    </div>
-
-    <!-- 7. УСТАНОВКА и ещё одна кнопка запуска -->
-    <div class="card">
-        <h2>📲 Как установить на телефон (30 секунд, бесплатно)</h2>
-        <div class="install-steps">
-            <div class="step">
-                <div>📱</div>
-                <strong>iPhone (Safari)</strong>
-                <span>Нажать «Поделиться» → «На экран «Домой»</span>
-            </div>
-            <div class="step">
-                <div>🤖</div>
-                <strong>Android (Chrome)</strong>
-                <span>⋮ меню → «Установить приложение»</span>
-            </div>
-        </div>
-        <p style="text-align: center; font-size: 0.9rem; color: var(--dim); margin-top: 8px;">
-            После установки иконка появится на домашнем экране — приложение запускается как обычное, без браузера.
-        </p>
-        <div style="margin-top: 36px;">
-            <a href="app.html" class="btn btn-primary" style="font-size: 1.3rem; padding: 18px 42px;">
-                ⬇️ Запустить LifeQuest сейчас
-            </a>
-        </div>
-    </div>
-
-    <div class="footer">
-        LifeQuest · открытый код (MIT) · без рекламы · без слежки · сделано с любовью для тех, кто устал от вины
-    </div>
+<div class="lang-switch">
+    <button id="btn-en" data-lang="en">🇬🇧 EN</button>
+    <button id="btn-ru" data-lang="ru">🇷🇺 RU</button>
 </div>
+<div class="container" id="app-container"></div>
+
+<script>
+    // Тексты для двух языков
+    const texts = {
+        en: {
+            badge: "🎮 life coach designed · free · offline PWA",
+            title1: "You're not lazy.<br>You're just overwhelmed.",
+            p1: "Endless to-do lists don't motivate. They paralyze. Every unchecked task adds weight, and you end the day feeling guilty instead of proud.",
+            painPoint: "😰 <strong>The real problem?</strong> Your brain sees a long list as a threat. It triggers anxiety, not action. You're not broken — your tool is.",
+            storyTitle: "👩‍⚕️ From a life coach with MA in Psychology and 10 years of practice",
+            storyText: "\"I created LifeQuest for myself and my clients. We were tired of tools that punished us for having off days. So I built a game where showing up is the win — not perfection. No guilt. No anxiety. Just small steps forward.\"",
+            solutionPoint: "🌱 <strong>What if your task list felt like an adventure?</strong> What if you could earn XP for self-care, level up your skills, and wake up excited to check off your goals?",
+            changeTitle: "✨ How your life changes after one month with LifeQuest",
+            changeFeatures: [
+                { icon: "🧘", title: "Morning anxiety disappears", desc: "You wake up not to a terrifying list of 20 tasks, but to 3–5 small quests. They feel achievable, and you see progress immediately." },
+                { icon: "🏆", title: "You feel proud of yourself", desc: "Every evening you see exactly how much XP you earned. Even if you only did the 'sacred minimum' — you already rock, and the app tells you so." },
+                { icon: "🎯", title: "Procrastination fades", desc: "Big quests are broken into tiny steps, each giving a reward. Your brain stops fearing and starts playing." }
+            ],
+            changeHighlight: "💛 <strong>Instead of \"I did nothing again\" you tell yourself:</strong> “I leveled up Health by 200 XP, took a step toward my book, and gained a level. I’m moving forward.”",
+            whyTitle: "🧠 Why LifeQuest is different from 100+ todo apps",
+            whyText: "I'm a <strong>life coach with MA in Psychology and 10+ years of practice</strong>. Most productivity tools focus only on <em>what</em> to do. They ignore <strong>why</strong> — your values, your identity, your deeper motivation.",
+            whyList: [
+                "✨ <strong>Your identity</strong> — “Who will I become when I complete this?”",
+                "🎯 <strong>Your core values</strong> — not just “do more”, but “live more aligned”",
+                "🧭 <strong>Your deep why</strong> — the real cost of not taking action"
+            ],
+            whyFeatures: [
+                { icon: "🔮", title: "Coaching questions", desc: "“What will I miss if I don't do this? How will it affect my loved ones?”" },
+                { icon: "🏆", title: "Identity‑based rewards", desc: "You don't just earn XP. You become the version of yourself who completed that quest." },
+                { icon: "📈", title: "Belief & commitment", desc: "Rate your confidence (1–10) before starting a big quest — watch it grow." },
+                { icon: "🔒", title: "No tracking, no cloud", desc: "All data stays on your phone. Nobody sells your habits." },
+                { icon: "⚡", title: "Works offline", desc: "Install once — use in the subway, on a plane, at a cabin without internet." },
+                { icon: "🎨", title: "Fully customizable", desc: "Your own life spheres, quest colors, level rewards — no rigid templates." }
+            ],
+            mechanicsTitle: "⚔️ LifeQuest turns your life into a gentle RPG",
+            mechanicsFeatures: [
+                { icon: "⭐", title: "Sacred Minimum", desc: "3–7 tiny daily habits. Do them → you already win. No pressure." },
+                { icon: "🏡", title: "Sunday Ritual", desc: "Weekly big chores appear only on Sundays. No mid‑week overwhelm." },
+                { icon: "🗺️", title: "Epic Quests", desc: "Long‑term projects with subtasks, identity transformation, and custom colors." },
+                { icon: "📊", title: "Life Spheres", desc: "Level up separately in Health, Work, Creativity, Relationships… you choose." },
+                { icon: "🏆", title: "Real Rewards", desc: "For each level, you set your own reward (ice cream, movie, new headphones)." },
+                { icon: "📅", title: "Time Blocking", desc: "Plan your day with colored blocks, save weekly templates, track history." }
+            ],
+            supportTitle: "☕ Keep the adventure alive",
+            supportText: "If LifeQuest helps you feel calmer and more in control, please consider supporting my work. As a solo creator, every donation allows me to keep the app free, private, and constantly improved.",
+            paypalText: "💛 SUPPORT VIA PayPal",
+            paypalNote: "Your support means the world. Thank you ❤️",
+            installTitle: "📲 install on your phone (30 sec, free)",
+            iphone: "iPhone (Safari)",
+            iphoneStep: "Share → Add to Home Screen",
+            android: "Android (Chrome)",
+            androidStep: "⋮ menu → Install app",
+            installNote: "After installation, launch from home screen — it becomes a standalone app.",
+            launchBtn: "⬇️ Launch LifeQuest Now",
+            footer: "LifeQuest · open source (MIT) · no ads · no tracking · made with care for anxious minds",
+            appLink: "app.html"
+        },
+        ru: {
+            badge: "🎮 создано life-коучем · бесплатно · PWA · офлайн",
+            title1: "Ты не ленивый.<br>Ты просто выдохся.",
+            p1: "Бесконечные списки дел не мотивируют — они давят. Каждая невыполненная задача — как кирпич на плечи. Вечером ты чувствуешь не гордость, а вину. Снова.",
+            painPoint: "😰 <strong>Вот в чём соль:</strong> Твой мозг видит длинный список — и включает режим «опасность». Это не ты ленивый, это инструменты, которыми ты пользуешься, созданы для чувства вины, а не для движения.",
+            storyTitle: "👩‍⚕️ Привет, я life-коуч с 10-летним стажем и дипломом психолога",
+            storyText: "«LifeQuest я сделала для себя и своих клиентов. Нас заколебали приложения, которые наказывают за выходные и сбрасывают прогресс, если ты заболел. Поэтому я придумала игру, где победа — это просто показаться. Никакой вины. Никакой тревоги. Только маленькие, тёплые шаги вперёд.»",
+            solutionPoint: "🌱 <strong>А теперь представь:</strong> Твой список дел превращается в приключение. Ты получаешь опыт за зарядку и медитацию. Твои уровни растут, а награды — реальные: любимое печенье, сериал без угрызений совести, новый гаджет.",
+            changeTitle: "✨ Как изменится твоя жизнь через месяц с LifeQuest",
+            changeFeatures: [
+                { icon: "🧘", title: "Исчезнет утренняя тревога", desc: "Ты просыпаешься и смотришь не на ужасный список из 20 дел, а на 3–5 маленьких квестов. Их легко выполнить, и ты сразу чувствуешь прогресс." },
+                { icon: "🏆", title: "Появится гордость за себя", desc: "Каждый вечер ты видишь, сколько XP заработал. Даже если сделал только «священный минимум» — ты уже молодец, и приложение тебе это скажет." },
+                { icon: "🎯", title: "Ты перестанешь прокрастинировать", desc: "Потому что большие квесты разбиты на мелкие шаги, а каждый шаг приносит награду. Мозг перестаёт бояться и начинает играть." }
+            ],
+            changeHighlight: "💛 <strong>Вместо «опять ничего не успела» ты говоришь себе:</strong> «Я прокачала здоровье на 200 XP, сделала шаг к книге и получила уровень. Я двигаюсь».",
+            whyTitle: "🧠 Чем LifeQuest отличается от сотен todo-приложений?",
+            whyText: "Я — <strong>life-коуч с дипломом психолога и 10+ лет практики</strong>. Большинство инструментов продуктивности фокусируются только на <em>что</em> сделать. Они игнорируют <strong>зачем</strong> — ваши ценности, вашу идентичность, вашу глубинную мотивацию.",
+            whyList: [
+                "✨ <strong>Вашу идентичность</strong> — «Кем я стану, когда выполню это?»",
+                "🎯 <strong>Ваши ценности</strong> — не просто «делай больше», а «живи более осознанно»",
+                "🧭 <strong>Ваше глубинное «зачем»</strong> — настоящая цена бездействия"
+            ],
+            whyFeatures: [
+                { icon: "🔮", title: "Коучинговые вопросы", desc: "«Чего я никогда не получу, если не сделаю это? Как это повлияет на моих близких?»" },
+                { icon: "🏆", title: "Награды за идентичность", desc: "Ты не просто получаешь XP. Ты становишься тем человеком, который прошёл этот квест." },
+                { icon: "📈", title: "Вера в себя растёт", desc: "Оцениваешь уверенность до старта — и через месяц видишь, что она реально выросла." },
+                { icon: "🔒", title: "Никакой слежки и облаков", desc: "Все данные живут только на твоём телефоне. Никто не продаст твои привычки." },
+                { icon: "⚡", title: "Работает офлайн", desc: "Установил один раз — пользуешься в метро, в самолёте, на даче без интернета." },
+                { icon: "🎨", title: "Полная кастомизация", desc: "Свои сферы жизни, свои цвета квестов, свои награды за уровни — никаких жёстких шаблонов." }
+            ],
+            mechanicsTitle: "⚔️ Как LifeQuest превращает рутину в игру (без напряжения)",
+            mechanicsFeatures: [
+                { icon: "⭐", title: "Священный минимум", desc: "3–7 привычек на день. Выполнил их — ты уже герой. Даже если больше ничего не сделал." },
+                { icon: "🏡", title: "Воскресный ритуал", desc: "Генеральная уборка, большой поход в магазин, планирование недели, рукоделие/хобби — только по воскресеньям. Не лезут в будни." },
+                { icon: "🗺️", title: "Эпические квесты", desc: "Книга, ремонт, изучение языка — разбивай на подзадачи, назначай цвет, отслеживай прогресс." },
+                { icon: "📊", title: "Сферы жизни", desc: "Здоровье, работа, творчество, отношения — качай каждую отдельно. Видно, где ты молодец, а где провисаешь." },
+                { icon: "🏆", title: "Реальные награды", desc: "За каждый новый уровень ты сам назначаешь себе подарок. Система не наказывает, а поощряет." },
+                { icon: "📅", title: "Тайм-блокинг", desc: "Планируй день цветными блоками, сохраняй шаблоны на неделю, смотри историю достижений." }
+            ],
+            supportTitle: "☕ Помоги приключению жить",
+            supportText: "Если LifeQuest реально делает твои дни легче — поддержи проект. Я верю в эту идею, она уже помогла мне и моим друзьям. А донаты позволяют не ставить рекламу, не продавать твои данные и постоянно добавлять новые фишки.",
+            paypalText: "💛 ПОДДЕРЖАТЬ ЧЕРЕЗ PAYPAL",
+            paypalNote: "Даже небольшая сумма дарит мне веру, что я делаю что-то важное. Спасибо ❤️",
+            installTitle: "📲 Как установить на телефон (30 секунд, бесплатно)",
+            iphone: "iPhone (Safari)",
+            iphoneStep: "Нажать «Поделиться» → «На экран «Домой»",
+            android: "Android (Chrome)",
+            androidStep: "⋮ меню → «Установить приложение»",
+            installNote: "После установки иконка появится на домашнем экране — приложение запускается как обычное, без браузера.",
+            launchBtn: "⬇️ Запустить LifeQuest сейчас",
+            footer: "LifeQuest · открытый код (MIT) · без рекламы · без слежки · сделано с любовью для тех, кто устал от вины",
+            appLink: "app-ru.html"
+        }
+    };
+
+    let currentLang = 'en';
+
+    function renderPage(lang) {
+        const t = texts[lang];
+        const container = document.getElementById('app-container');
+        if (!container) return;
+
+        // Генерация HTML
+        let html = `
+            <div class="card">
+                <div class="badge">${t.badge}</div>
+                <h1>${t.title1}</h1>
+                <p style="font-size: 1.2rem; margin: 20px 0; color: var(--dim);">${t.p1}</p>
+                <div class="highlight pain-point">${t.painPoint}</div>
+                <div class="btn-group">
+                    <a href="${t.appLink}" class="btn btn-primary">🚀 ${lang === 'en' ? 'Start My Quest →' : 'Хочу попробовать по-другому →'}</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>${t.storyTitle}</h2>
+                <p>${t.storyText}</p>
+                <div class="highlight solution-point">${t.solutionPoint}</div>
+            </div>
+
+            <div class="card">
+                <h2>${t.changeTitle}</h2>
+                <div class="feature-grid">
+                    ${t.changeFeatures.map(f => `
+                        <div class="feature">
+                            <div class="feature-icon">${f.icon}</div>
+                            <h3>${f.title}</h3>
+                            <p>${f.desc}</p>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="highlight" style="background: rgba(212,169,72,0.08);">${t.changeHighlight}</div>
+            </div>
+
+            <div class="card">
+                <h2>${t.whyTitle}</h2>
+                <p style="font-size: 1rem; margin-bottom: 16px;">${t.whyText}</p>
+                <div class="highlight" style="background: rgba(212,169,72,0.08);">
+                    💡 <strong>${lang === 'en' ? 'LifeQuest doesn\'t just track tasks.' : 'LifeQuest не просто отслеживает задачи.'}</strong> ${lang === 'en' ? 'It helps you connect every quest to:' : 'Он помогает связать каждый квест с:'}
+                    <ul>
+                        ${t.whyList.map(item => `<li>${item}</li>`).join('')}
+                    </ul>
+                </div>
+                <div class="feature-grid">
+                    ${t.whyFeatures.map(f => `
+                        <div class="feature">
+                            <div class="feature-icon">${f.icon}</div>
+                            <h3>${f.title}</h3>
+                            <p>${f.desc}</p>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="btn-group">
+                    <a href="${t.appLink}" class="btn btn-primary">${lang === 'en' ? 'Try the coaching layer →' : 'Почувствовать разницу →'}</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>${t.mechanicsTitle}</h2>
+                <div class="feature-grid">
+                    ${t.mechanicsFeatures.map(f => `
+                        <div class="feature">
+                            <div class="feature-icon">${f.icon}</div>
+                            <h3>${f.title}</h3>
+                            <p>${f.desc}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
+            <div class="card" style="text-align: center;">
+                <h2>${t.supportTitle}</h2>
+                <p>${t.supportText}</p>
+                <div style="margin: 32px 0 24px;">
+                    <a href="https://paypal.me/krilovaorg" target="_blank" style="
+                        display: inline-block;
+                        background: linear-gradient(135deg, #FFD140, #FFC107);
+                        color: #1a1530;
+                        font-family: 'Cinzel', serif;
+                        font-weight: 900;
+                        font-size: 1.7rem;
+                        padding: 20px 48px;
+                        border-radius: 60px;
+                        text-decoration: none;
+                        letter-spacing: 2px;
+                        box-shadow: 0 0 24px rgba(255, 193, 7, 0.6), 0 4px 12px rgba(0,0,0,0.2);
+                        transition: transform 0.2s, box-shadow 0.2s;
+                        cursor: pointer;
+                    " onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 0 40px rgba(255,193,7,0.9)';" 
+                       onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 24px rgba(255,193,7,0.6)';">${t.paypalText}</a>
+                </div>
+                <p style="font-size: 0.85rem; margin-top: 8px; color: var(--dim);">${t.paypalNote}</p>
+            </div>
+
+            <div class="card">
+                <h2>${t.installTitle}</h2>
+                <div class="install-steps">
+                    <div class="step">
+                        <div>📱</div>
+                        <strong>${t.iphone}</strong>
+                        <span>${t.iphoneStep}</span>
+                    </div>
+                    <div class="step">
+                        <div>🤖</div>
+                        <strong>${t.android}</strong>
+                        <span>${t.androidStep}</span>
+                    </div>
+                </div>
+                <p style="text-align: center; font-size: 0.9rem; color: var(--dim); margin-top: 8px;">${t.installNote}</p>
+                <div style="margin-top: 36px;">
+                    <a href="${t.appLink}" class="btn btn-primary" style="font-size: 1.3rem; padding: 18px 42px;">${t.launchBtn}</a>
+                </div>
+            </div>
+
+            <div class="footer">${t.footer}</div>
+        `;
+        container.innerHTML = html;
+        // Обновить активную кнопку
+        document.querySelectorAll('.lang-switch button').forEach(btn => {
+            if (btn.dataset.lang === lang) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+        // Сохранить выбор в localStorage
+        localStorage.setItem('lifequest_lang', lang);
+    }
+
+    function setLanguage(lang) {
+        currentLang = lang;
+        renderPage(lang);
+    }
+
+    // Определение языка по умолчанию: из localStorage, или из браузера, или английский
+    let defaultLang = localStorage.getItem('lifequest_lang');
+    if (!defaultLang) {
+        const browserLang = navigator.language || navigator.userLanguage;
+        defaultLang = browserLang && browserLang.startsWith('ru') ? 'ru' : 'en';
+    }
+    setLanguage(defaultLang);
+
+    // Назначить обработчики кнопкам после загрузки DOM
+    document.getElementById('btn-en').addEventListener('click', () => setLanguage('en'));
+    document.getElementById('btn-ru').addEventListener('click', () => setLanguage('ru'));
+</script>
 </body>
 </html>
