@@ -1,7 +1,7 @@
 {
   "name": "Life Quest",
-  "short_name": "LifeQuest",
-  "description": "Преврати свои ежедневные дела в добрую RPG — получай XP, прокачивай уровни, назначай реальные награды",
+  "short_name": "Life Quest",
+  "description": "RPG-трекер жизни: квесты, уровни, награды, прогресс по сферам",
   "start_url": "./app-ru.html",
   "scope": "./",
   "display": "standalone",
