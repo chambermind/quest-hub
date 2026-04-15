@@ -12,6 +12,7 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <title>Life Quest</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <style>
 :root{
   --bg:#0a0e1a; --panel:#131829; --panel2:#0f1428;
@@ -135,6 +136,8 @@ h2 .h2-act{background:transparent;border:1px solid var(--border);color:var(--gol
 .tag{font-size:.6rem;padding:1px 5px;border-radius:4px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#0a0e1a}
 .tx{font-size:.7rem;color:var(--gold);font-weight:700;margin-left:4px;white-space:nowrap}
 .task .tdel{background:transparent;border:none;color:var(--dim);font-size:.85rem;padding:2px 6px}
+.task .task-menu-btn{background:transparent;border:none;color:var(--dim);font-size:1.1rem;cursor:pointer;padding:2px 6px}
+.task .task-menu-btn:hover{color:var(--gold)}
 .empty-cat{font-size:.72rem;color:var(--dim);font-style:italic;text-align:center;padding:7px 4px}
 .cat-red{color:var(--red)}
 .cat-yel{color:var(--yellow)}
@@ -388,6 +391,24 @@ h2 .h2-act{background:transparent;border:1px solid var(--border);color:var(--gol
       <div class="char-lvl"><div class="lvl-badge"><div class="lvl-num" id="meLvN">1</div><div class="lvl-lbl">Level</div></div><div class="xp-block"><div class="xp-txt" style="margin-bottom:3px"><b id="meLvTitle" style="color:var(--gold)">—</b></div><div class="xp-txt"><span>Until level <span id="meNextLvN">2</span></span><span id="meXpT">0 / 100</span></div><div class="bar"><div class="bar-fill" id="meXpB" style="width:0%"></div></div><div class="xp-txt" style="margin-top:5px"><span>Total XP</span><span id="meTotalXp">0</span></div></div></div>
       <div class="next-rew" id="meNextRew" style="display:none"><b>🎁 Reward for next level</b><span id="meNextRewT">—</span></div></div>
       <div class="card"><h2>📊 Life spheres</h2><div class="stats-grid" id="meSphereGrid"></div></div>
+      <!-- Support & coaching card -->
+      <div class="card">
+        <h2>☕ Support the project</h2>
+        <p>If LifeQuest helps you, consider buying me a coffee. Every small donation keeps the app free, private, and improving.</p>
+        <div style="margin: 16px 0;">
+            <a href="https://paypal.me/krilovaorg" target="_blank" class="btn btn-primary" style="background: linear-gradient(135deg, #FFD140, #FFC107); color: #1a1530; display: inline-flex; align-items: center; gap: 8px;">
+                <i class="fas fa-mug-hot"></i> Buy me a coffee
+            </a>
+        </div>
+        <p><strong>Need deeper help?</strong> I'm a life coach. If something still holds you back — reach out.</p>
+        <div class="contact-icons" style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin: 16px 0 8px;">
+            <a href="https://www.instagram.com/anchorpoint_wellbeing/" target="_blank" class="btn-outline" style="padding: 8px 16px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;"><i class="fab fa-instagram"></i> Instagram</a>
+            <a href="https://www.facebook.com/svetlana.krilova.71" target="_blank" class="btn-outline" style="padding: 8px 16px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;"><i class="fab fa-facebook"></i> Facebook</a>
+            <a href="https://t.me/krilovaorg" target="_blank" class="btn-outline" style="padding: 8px 16px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;"><i class="fab fa-telegram"></i> Telegram</a>
+            <a href="mailto:svetlana@krilova.org" class="btn-outline" style="padding: 8px 16px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;"><i class="fas fa-envelope"></i> Email</a>
+        </div>
+        <p style="font-size: 0.75rem; color: var(--dim); margin-top: 12px;">Your support means the world. Thank you ❤️</p>
+      </div>
     </div>
     <div class="pg" id="pg-habits">
       <div class="card"><h2>⭐ Sacred minimum <button class="h2-act" onclick="openAddDailyHabit()">+</button></h2><div id="dailyList"></div><div style="text-align:center;font-size:.7rem;color:var(--dim);margin-top:8px;font-style:italic">Did them all → you already rock. Period.</div></div>
@@ -599,7 +620,7 @@ function initApp(){
   applyTabVisibility();
 }
 function startTutorial(){
-  let steps=[{title:'🎯 Today',text:'Add one‑time tasks here. Red = urgent, yellow = important, green = bonus. Tap to complete.'},{title:'📋 Habits',text:'Your sacred minimum (daily) and Sunday ritual. Tap the checkbox to mark a habit as done.'},{title:'🗺️ Quests',text:'Big projects with coaching questions. Tap 🧠 to see your answers.'}];
+  let steps=[{title:'🎯 Today',text:'Add one‑time tasks here. Red = urgent, yellow = important, green = bonus. Tap to complete. Long press on a task (or tap ⋮) to change its category.'},{title:'📋 Habits',text:'Your sacred minimum (daily) and Sunday ritual. Tap the checkbox to mark a habit as done.'},{title:'🗺️ Quests',text:'Big projects with coaching questions. Tap 🧠 to see your answers.'}];
   let i=0;
   function showStep(){ if(i>=steps.length){ localStorage.setItem('tutorial_done','true'); return; } let s=steps[i]; let html=`<h2 style="text-align:center;">${s.title}</h2><p style="margin:12px 0;">${s.text}</p><div style="display:flex;gap:8px;"><button class="btn btn-gold" style="flex:1" onclick="closeModal(); i++; showStep();">Next</button><button class="btn btn-outline" style="flex:1" onclick="closeModal(); localStorage.setItem('tutorial_done','true');">Skip</button></div>`; showModal('Tutorial',html); } showStep();
 }
@@ -607,10 +628,72 @@ function rolloverIfNeeded(){ let td=todayStr(); if(state.today.date!==td){ let c
     carry.forEach(t=>{ t.id=uid(); t.done=false; state.today.tasks.push(t); }); save(); } }
 function renderAll(){ renderToday(); renderMe(); renderHabits(); renderCalendar(); renderQuests(); renderLevels(); renderHistory(); }
 
+// ========== CHANGE TASK CATEGORY ==========
+function changeTaskCategory(taskId, newCat) {
+    const task = state.today.tasks.find(t => t.id === taskId);
+    if (!task) return;
+    if (task.cat === newCat) return;
+    task.cat = newCat;
+    save();
+    renderToday();
+    toast(`Task moved to ${newCat === 'red' ? 'Urgent' : newCat === 'yellow' ? 'Important' : 'Bonus'}`);
+}
+
+function showCategoryMenu(taskId, currentCat) {
+    const cats = [
+        { id: 'red', label: '🔴 Urgent', color: 'var(--red)' },
+        { id: 'yellow', label: '🟡 Important', color: 'var(--yellow)' },
+        { id: 'green', label: '🟢 Bonus', color: 'var(--green)' }
+    ];
+    let html = '<div style="display:flex; flex-direction:column; gap:8px;">';
+    cats.forEach(cat => {
+        if (cat.id === currentCat) {
+            html += `<button style="background:${cat.color}; color:#1a1530; font-weight:bold; opacity:0.6;" disabled>${cat.label} ✓</button>`;
+        } else {
+            html += `<button onclick="changeTaskCategory('${taskId}', '${cat.id}'); closeModal();" style="background:${cat.color}; color:#1a1530;">${cat.label}</button>`;
+        }
+    });
+    html += '</div>';
+    showModal('Change priority', html);
+}
+
+function attachCategoryMenuToTask(taskElement, taskId, currentCat) {
+    if (!taskElement) return;
+    // Desktop: add ⋮ button
+    let menuBtn = taskElement.querySelector('.task-menu-btn');
+    if (!menuBtn) {
+        menuBtn = document.createElement('button');
+        menuBtn.className = 'task-menu-btn';
+        menuBtn.innerHTML = '⋮';
+        menuBtn.title = 'Change category';
+        menuBtn.onclick = (e) => {
+            e.stopPropagation();
+            showCategoryMenu(taskId, currentCat);
+        };
+        const tdel = taskElement.querySelector('.tdel');
+        if (tdel) {
+            taskElement.insertBefore(menuBtn, tdel);
+        } else {
+            taskElement.appendChild(menuBtn);
+        }
+    }
+    // Mobile: long press
+    let longPressTimer;
+    const startLongPress = (e) => {
+        longPressTimer = setTimeout(() => {
+            showCategoryMenu(taskId, currentCat);
+        }, 500);
+    };
+    const cancelLongPress = () => clearTimeout(longPressTimer);
+    taskElement.addEventListener('touchstart', startLongPress);
+    taskElement.addEventListener('touchend', cancelLongPress);
+    taskElement.addEventListener('touchmove', cancelLongPress);
+}
+
 // ========== TODAY ==========
 function renderSundayBanner(){ let el=document.getElementById('sundayBanner'); if(!el) return; let d=new Date(); if(d.getDay()!==0 || state.sundayDismissed===todayStr()){ el.style.display='none'; return; } let msgs=[{t:'🎲 CAPTAIN\'S BRIEFING',d:'Sunday, hero. Open Calendar to see your week. Plan a few blocks if you like.'},{t:'🗺️ EXPEDITION PLAN',d:'New week — new raid. Take a moment to reflect on your quests.'}]; let pick=msgs[d.getDate()%msgs.length]; el.className='sun-banner'; el.style.display='block'; el.innerHTML=`<button class="sun-banner-x" onclick="event.stopPropagation(); dismissSunday()">✕</button><div class="sun-banner-t">${pick.t}</div><div class="sun-banner-d">${pick.d}</div>`; el.onclick=()=>goTab('cal'); }
 function dismissSunday(){ state.sundayDismissed=todayStr(); save(); renderSundayBanner(); }
-function renderToday(){ $('#todayDate').textContent=fmtDateHuman(state.today.date); let streak=state.streak||0; $('#todayStreak').textContent=streak>0?`🔥 Streak: ${streak} ${streak===1?'day':'days'}`:''; renderSundayBanner(); let tasks=state.today.tasks, earned=tasks.filter(t=>t.done).reduce((s,t)=>s+t.xp,0), max=tasks.reduce((s,t)=>s+t.xp,0); state.today.earnedXp=earned; $('#todayXP').textContent=earned; $('#todayMax').textContent=max; $('#todayBar').style.width=(max?Math.round(earned/max*100):0)+'%'; ['red','yellow','green'].forEach(cat=>{ let el=$('#'+(cat==='red'?'redList':cat==='yellow'?'yelList':'grnList')); let list=tasks.filter(t=>t.cat===cat); if(list.length===0){ el.innerHTML='<div class="empty-cat">Empty. Tap + to add</div>'; return; } el.innerHTML=list.map(t=>renderTaskRow(t)).join(''); list.forEach(t=>{ let row=el.querySelector(`[data-tid="${t.id}"]`); if(!row) return; row.onclick=e=>{ if(e.target.closest('.tdel')) return; toggleTask(t.id,e); }; row.querySelector('.tdel').onclick=e=>{ e.stopPropagation(); deleteTask(t.id); }; }); }); $('#app_title').textContent=state.hero.name+(state.hero.class?' · '+state.hero.class:''); $('#app_subtitle').textContent=`Lvl ${currentLevel()} · ${state.totalXp} XP`; }
+function renderToday(){ $('#todayDate').textContent=fmtDateHuman(state.today.date); let streak=state.streak||0; $('#todayStreak').textContent=streak>0?`🔥 Streak: ${streak} ${streak===1?'day':'days'}`:''; renderSundayBanner(); let tasks=state.today.tasks, earned=tasks.filter(t=>t.done).reduce((s,t)=>s+t.xp,0), max=tasks.reduce((s,t)=>s+t.xp,0); state.today.earnedXp=earned; $('#todayXP').textContent=earned; $('#todayMax').textContent=max; $('#todayBar').style.width=(max?Math.round(earned/max*100):0)+'%'; ['red','yellow','green'].forEach(cat=>{ let el=$('#'+(cat==='red'?'redList':cat==='yellow'?'yelList':'grnList')); let list=tasks.filter(t=>t.cat===cat); if(list.length===0){ el.innerHTML='<div class="empty-cat">Empty. Tap + to add</div>'; return; } el.innerHTML=list.map(t=>renderTaskRow(t)).join(''); list.forEach(t=>{ let row=el.querySelector(`[data-tid="${t.id}"]`); if(!row) return; row.onclick = (e)=>{ if(e.target.closest('.tdel')) return; if(e.target.closest('.task-menu-btn')) return; toggleTask(t.id, e); }; row.querySelector('.tdel').onclick = (e)=>{ e.stopPropagation(); deleteTask(t.id); }; attachCategoryMenuToTask(row, t.id, t.cat); }); }); $('#app_title').textContent=state.hero.name+(state.hero.class?' · '+state.hero.class:''); $('#app_subtitle').textContent=`Lvl ${currentLevel()} · ${state.totalXp} XP`; }
 function renderTaskRow(t){ let badge=''; if(t.sourceDailyId) badge=`<span class="tag" style="background:var(--gold)">⭐ daily</span>`; if(t.sourceWeeklyId) badge=`<span class="tag" style="background:var(--cyan)">🏡 weekly</span>`; if(t.questId){ let q=state.quests.find(q=>q.id===t.questId); if(q) badge=`<span class="tag" style="background:${q.color}">🗺️ ${escapeHtml(q.name)}</span>`; } return `<div class="task ${t.done?'done':''}" data-tid="${t.id}"><div class="tck">${t.done?'✓':''}</div><div class="tn">${escapeHtml(t.name)} ${badge}</div><div class="tx">${t.done?'+':''}${t.xp}</div><button class="tdel" title="delete">✕</button></div>`; }
 function toggleTask(tid,ev){ let t=state.today.tasks.find(x=>x.id===tid); if(!t) return; let wasDone=t.done; t.done=!t.done; let delta=(t.done?1:-1)*t.xp; state.totalXp=Math.max(0,state.totalXp+delta); if(t.sphereId){ let s=state.spheres.find(x=>x.id===t.sphereId); if(s){ s.xp=Math.max(0,s.xp+delta); s.level=Math.max(1,1+Math.floor(s.xp/100)); } } if(ev){ let x=ev.clientX||ev.touches?.[0]?.clientX||window.innerWidth/2, y=ev.clientY||ev.touches?.[0]?.clientY||window.innerHeight/2; xpFloat(delta,x,y); } if(!wasDone && t.questId){ let q=state.quests.find(q=>q.id===t.questId); if(q){ let arr=state.calendar[state.today.date]||(state.calendar[state.today.date]=[]); if(!arr.some(c=>c.questId===q.id)) arr.push({questId:q.id,color:q.color,name:q.name}); } } if(t.questId && t.questSubId){ let q=state.quests.find(x=>x.id===t.questId); if(q){ let s=q.subtasks.find(x=>x.id===t.questSubId); if(s) s.done=t.done; } } let prevLv=computeLevelFor(state.totalXp-delta); let newLv=currentLevel(); save(); renderToday(); renderMe(); if(!wasDone && newLv>prevLv) showLevelUp(newLv); }
 function deleteTask(tid){ let t=state.today.tasks.find(x=>x.id===tid); if(!t) return; if(!confirm(`Delete "${t.name}"?`)) return; if(t.done){ state.totalXp=Math.max(0,state.totalXp-t.xp); if(t.sphereId){ let s=state.spheres.find(x=>x.id===t.sphereId); if(s){ s.xp=Math.max(0,s.xp-t.xp); s.level=Math.max(1,1+Math.floor(s.xp/100)); } } } state.today.tasks=state.today.tasks.filter(x=>x.id!==tid); save(); renderToday(); renderMe(); }
@@ -764,7 +847,7 @@ function finishDay(){ let tasks=state.today.tasks; if(tasks.length===0){ toast('
 function showModal(title,bodyHtml){ $('#modalTitle').textContent=title; $('#modalBody').innerHTML=bodyHtml; $('#modal').classList.add('open'); }
 function closeModal(){ $('#modal').classList.remove('open'); }
 $('#modal').addEventListener('click',(e)=>{ if(e.target.id==='modal') closeModal(); });
-function openHelp(){ let html=`<h2 style="text-align:center;">📖 How to use LifeQuest</h2><div style="text-align:left;"><p><strong>🎯 Today</strong><br>Add one‑time tasks. Red = urgent, yellow = important, green = bonus. You can also add tasks from quests.</p><p><strong>⭐ Habits</strong><br>Things you do every day (Sacred minimum) or only on Sundays (Sunday ritual). Tap the checkbox to mark a habit as done.</p><p><strong>🗺️ Quests</strong><br>Big projects. Add subtasks, answer coaching questions.</p><p><strong>🏆 Levels</strong><br>Earn XP, level up, set your own rewards.</p><p><strong>📅 Calendar</strong><br>See your history and quest/habit activity.</p><p><strong>⚙️ Settings</strong><br>Export/import data, manage spheres, reset everything.</p></div><button class="btn btn-gold" onclick="closeModal()" style="margin-top:16px;">Got it</button>`; showModal('📖 Guide',html); }
+function openHelp(){ let html=`<h2 style="text-align:center;">📖 How to use LifeQuest</h2><div style="text-align:left;"><p><strong>🎯 Today</strong><br>Add one‑time tasks. Red = urgent, yellow = important, green = bonus. You can also add tasks from quests.<br><strong>✏️ Change category:</strong> Long press on a task (or tap the ⋮ icon) → move it between Urgent/Important/Bonus.</p><p><strong>⭐ Habits</strong><br>Things you do every day (Sacred minimum) or only on Sundays (Sunday ritual). Tap the checkbox to mark a habit as done.</p><p><strong>🗺️ Quests</strong><br>Big projects. Add subtasks, answer coaching questions (tap 🧠).</p><p><strong>🏆 Levels</strong><br>Earn XP, level up, set your own rewards.</p><p><strong>📅 Calendar</strong><br>See your history and quest/habit activity.</p><p><strong>⚙️ Settings</strong><br>Export/import data, manage spheres, reset everything.</p></div><button class="btn btn-gold" onclick="closeModal()" style="margin-top:16px;">Got it</button>`; showModal('📖 Guide',html); }
 function openAddTask(cat){ let sphereOpts=['<option value="">— no sphere —</option>'].concat(state.spheres.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`)).join(''); let questOpts=['<option value="">— not linked —</option>'].concat(state.quests.map(q=>`<option value="${q.id}">${escapeHtml(q.name)}</option>`)).join(''); let html=`<div class="field"><label class="lab">Name</label><input id="m_t_name" type="text" placeholder="What to do?" autofocus></div><div class="field"><label class="lab">XP</label><input id="m_t_xp" type="number" min="1" value="${cat==='red'?15:cat==='yellow'?10:5}"></div><div class="field"><label class="lab">Sphere (opt.)</label><select id="m_t_sphere">${sphereOpts}</select></div><div class="field"><label class="lab">Link to quest (opt.)</label><select id="m_t_quest">${questOpts}</select></div><button class="btn btn-gold" onclick="confirmAddTask('${cat}')">Add</button>`; showModal((cat==='red'?'🔴 Urgent':cat==='yellow'?'🟡 Important':'🟢 Bonus')+' — new task',html); setTimeout(()=>$('#m_t_name')?.focus(),50); }
 function confirmAddTask(cat){ let name=$('#m_t_name').value.trim(); if(!name){ toast('Empty'); return; } let xp=Math.max(1,parseInt($('#m_t_xp').value)||10); let sphereId=$('#m_t_sphere').value||null; let questId=$('#m_t_quest').value||null; state.today.tasks.push({id:uid(),name,cat,xp,sphereId,questId,done:false}); save(); closeModal(); renderToday(); }
 function openEditProfile(){ let avGrid=AVATARS.map(a=>`<div class="av-it${a===state.hero.avatar?' on':''}" data-a="${a}">${a}</div>`).join(''); let html=`<div class="field"><label class="lab">Name</label><input id="m_p_name" type="text" value="${escapeHtml(state.hero.name)}"></div><div class="field"><label class="lab">Class</label><input id="m_p_class" type="text" value="${escapeHtml(state.hero.class)}" placeholder="e.g. Psychologist Warrior"></div><div class="field"><label class="lab">Avatar</label><div class="av-grid" id="m_p_av">${avGrid}</div></div><button class="btn btn-gold" onclick="saveProfile()">Save</button>`; showModal('✏️ Profile',html); let chosen=state.hero.avatar; setTimeout(()=>{ document.querySelectorAll('#m_p_av .av-it').forEach(el=>{ el.onclick=()=>{ chosen=el.dataset.a; document.querySelectorAll('#m_p_av .av-it').forEach(x=>x.classList.remove('on')); el.classList.add('on'); }; }); },20); window._pChosenAv=()=>chosen; }
