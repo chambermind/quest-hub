@@ -12,6 +12,8 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <title>Life Quest</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<!-- Font Awesome 6 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <style>
 :root{
   --bg:#0a0e1a; --panel:#131829; --panel2:#0f1428;
@@ -134,7 +136,8 @@ h2 .h2-act{background:transparent;border:1px solid var(--border);color:var(--gol
 .tn{flex:1;font-size:.85rem;font-weight:600;line-height:1.3}
 .tag{font-size:.6rem;padding:1px 5px;border-radius:4px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#0a0e1a}
 .tx{font-size:.7rem;color:var(--gold);font-weight:700;margin-left:4px;white-space:nowrap}
-.task .tdel{background:transparent;border:none;color:var(--dim);font-size:.85rem;padding:2px 6px}
+.task .tdel,.task .tmenu{background:transparent;border:none;color:var(--dim);font-size:.85rem;padding:2px 6px}
+.task .tmenu{font-size:1rem;font-weight:bold;padding:2px 4px}
 .empty-cat{font-size:.72rem;color:var(--dim);font-style:italic;text-align:center;padding:7px 4px}
 .cat-red{color:var(--red)}
 .cat-yel{color:var(--yellow)}
@@ -388,6 +391,20 @@ h2 .h2-act{background:transparent;border:1px solid var(--border);color:var(--gol
       <div class="char-lvl"><div class="lvl-badge"><div class="lvl-num" id="meLvN">1</div><div class="lvl-lbl">Level</div></div><div class="xp-block"><div class="xp-txt" style="margin-bottom:3px"><b id="meLvTitle" style="color:var(--gold)">—</b></div><div class="xp-txt"><span>До уровня <span id="meNextLvN">2</span></span><span id="meXpT">0 / 100</span></div><div class="bar"><div class="bar-fill" id="meXpB" style="width:0%"></div></div><div class="xp-txt" style="margin-top:5px"><span>Всего XP</span><span id="meTotalXp">0</span></div></div></div>
       <div class="next-rew" id="meNextRew" style="display:none"><b>🎁 Награда за след. уровень</b><span id="meNextRewT">—</span></div></div>
       <div class="card"><h2>📊 Сферы жизни</h2><div class="stats-grid" id="meSphereGrid"></div></div>
+      <!-- Новая карточка поддержки и контактов -->
+      <div class="card" style="background: linear-gradient(135deg, #1a1530, #0f1428); border-color: var(--gold);">
+        <h2 style="color: var(--gold2);"><i class="fas fa-heart" style="margin-right: 6px;"></i> ☕ Поддержать проект</h2>
+        <p style="font-size: 0.85rem; margin-bottom: 12px;">Если LifeQuest помогает тебе, можешь купить мне кофе. Каждое небольшое пожертвование помогает сохранять приложение бесплатным, приватным и постоянно улучшаться.</p>
+        <a href="https://paypal.me/krilovaorg" target="_blank" style="display: inline-block; background: linear-gradient(135deg, var(--gold), var(--gold2)); color: #1a1530; padding: 10px 20px; border-radius: 40px; font-weight: bold; text-decoration: none; margin-bottom: 16px; font-family: 'Cinzel', serif; letter-spacing: 1px;"><i class="fab fa-paypal"></i> Купить кофе</a>
+        <p style="font-size: 0.85rem; margin-bottom: 12px;">Нужна более глубокая помощь? Я life-коуч. Если что-то всё ещё мешает — напиши мне.</p>
+        <div style="display: flex; gap: 16px; justify-content: center; margin-bottom: 12px;">
+          <a href="https://www.instagram.com/anchorpoint_wellbeing/" target="_blank" style="color: var(--gold); font-size: 1.6rem;"><i class="fab fa-instagram"></i></a>
+          <a href="https://www.facebook.com/svetlana.krilova.71" target="_blank" style="color: var(--gold); font-size: 1.6rem;"><i class="fab fa-facebook"></i></a>
+          <a href="https://t.me/krilovaorg" target="_blank" style="color: var(--gold); font-size: 1.6rem;"><i class="fab fa-telegram"></i></a>
+          <a href="mailto:svetlana@krilova.org" style="color: var(--gold); font-size: 1.6rem;"><i class="fas fa-envelope"></i></a>
+        </div>
+        <p style="font-size: 0.8rem; text-align: center; color: var(--dim);">Твоя поддержка очень важна. Спасибо ❤️</p>
+      </div>
     </div>
     <div class="pg" id="pg-habits">
       <div class="card"><h2>⭐ Священный минимум <button class="h2-act" onclick="openAddDailyHabit()">+</button></h2><div id="dailyList"></div><div style="text-align:center;font-size:.7rem;color:var(--dim);margin-top:8px;font-style:italic">Сделала всё → ты уже молодец. Точка.</div></div>
@@ -583,8 +600,7 @@ function obRenderHabitList(sel,list,rerender,kind){ let c=$(sel); c.innerHTML=''
 function attachHabitInputs(container,list,rerender,kind){ container.querySelectorAll('input,select').forEach(el=>{ el.oninput=el.onchange=()=>{ let i=+el.dataset.i, k=el.dataset.k; list[i][k]=(k==='xp')?Math.max(1,parseInt(el.value)||10):el.value; saveOnboarding(); if(rerender) rerender(); }; }); container.querySelectorAll('button[data-act="del"]').forEach(b=>b.onclick=()=>{ list.splice(+b.dataset.i,1); rerender(); saveOnboarding(); }); }
 function obRenderPresetChips(){ let dc=document.getElementById('ob_daily_presets'); if(dc){ let presets=[{name:'💧 Вода 1.5л',xp:10,sphereName:'Здоровье'},{name:'🧘 Медитация 5 мин',xp:15,sphereName:'Духовное'},{name:'🚶 Прогулка 20 мин',xp:15,sphereName:'Здоровье'},{name:'📖 Чтение 15 мин',xp:10,sphereName:'Знания'},{name:'💪 Зарядка',xp:15,sphereName:'Здоровье'}]; dc.innerHTML=presets.map((p,i)=>`<div class="prchip" data-type="daily" data-i="${i}">${escapeHtml(p.name)} <span class="pr-xp">+${p.xp}</span></div>`).join(''); dc.querySelectorAll('.prchip').forEach(el=>{ el.onclick=()=>{ let i=+el.dataset.i, p=presets[i]; let idx=obData.daily.findIndex(d=>d.name===p.name); if(idx>=0) obData.daily.splice(idx,1); else obData.daily.push({...p}); obRenderDaily(); saveOnboarding(); }; }); } let wc=document.getElementById('ob_weekly_presets'); if(wc){ let presets=[{name:'🧹 Генеральная уборка',xp:40,sphereName:'Дом'},{name:'📝 План на неделю',xp:30,sphereName:''},{name:'🌲 Прогулка на природе',xp:35,sphereName:'Здоровье'}]; wc.innerHTML=presets.map((p,i)=>`<div class="prchip" data-type="weekly" data-i="${i}">${escapeHtml(p.name)} <span class="pr-xp">+${p.xp}</span></div>`).join(''); wc.querySelectorAll('.prchip').forEach(el=>{ el.onclick=()=>{ let i=+el.dataset.i, p=presets[i]; let idx=obData.weekly.findIndex(d=>d.name===p.name); if(idx>=0) obData.weekly.splice(idx,1); else obData.weekly.push({...p}); obRenderWeekly(); saveOnboarding(); }; }); } let qc=document.getElementById('ob_quest_presets'); if(qc){ let presets=[{name:'Написать книгу',identity:'автор изданной книги',desc:'',sphereName:'Творчество',color:QUEST_COLORS[0]},{name:'Улучшить физическую форму',identity:'человек в своей лучшей форме',desc:'',sphereName:'Здоровье',color:QUEST_COLORS[1]},{name:'Выучить язык до B2',identity:'билингв',desc:'',sphereName:'Знания',color:QUEST_COLORS[2]}]; qc.innerHTML=presets.map((p,i)=>`<div class="prchip" data-type="quest" data-i="${i}">${escapeHtml(p.name)}</div>`).join(''); qc.querySelectorAll('.prchip').forEach(el=>{ el.onclick=()=>{ let i=+el.dataset.i, p=presets[i]; let idx=obData.quests.findIndex(q=>q.name===p.name); if(idx>=0) obData.quests.splice(idx,1); else obData.quests.push({...p,cost:'',belief:5,impact:'',possible:''}); obRenderQuests(); saveOnboarding(); }; }); } }
 function obRenderLevels(){ let c=$('#ob_levels_list'); c.innerHTML=''; obData.levels.forEach((L,i)=>{ if(L.level===1) return; let ph=REWARD_HINTS[(i-1)%REWARD_HINTS.length]; let div=document.createElement('div'); div.className='lvinp'; div.innerHTML=`<div class="lv-pill"><div>${L.level}</div><div class="lp-x">LVL</div></div><div class="lv-info"><div class="lv-xp">${L.xpRequired} XP</div><input type="text" placeholder="Титул: ${escapeHtml(L.title||defaultTitleFor(L.level))}" value="${escapeHtml(L.title||'')}" data-i="${i}" data-k="title" style="margin-bottom:4px"><input type="text" placeholder="🎁 Например: ${ph}" value="${escapeHtml(L.reward)}" data-i="${i}" data-k="reward"></div>`; c.appendChild(div); }); c.querySelectorAll('input').forEach(el=>{ el.oninput=()=>{ obData.levels[+el.dataset.i][el.dataset.k]=el.value; saveOnboarding(); }; }); }
-function obFinish(){ state=defaultState(); state.onboarded=true; state.hero={name:obData.name||'Герой',class:obData.cls||'',avatar:obData.avatar}; state.spheres=obData.spheres.map(s=>({id:uid(),name:s.name,xp:0,level:1})); let sphereByName=n=>state.spheres.find(s=>s.name===n)?.id||null; state.daily=obData.daily.filter(d=>d.name.trim()).map(d=>({id:uid(),name:d.name.trim(),xp:+d.xp||10,sphereId:sphereByName(d.sphereName)})); state.weekly=obData.weekly.filter(d=>d.name.trim()).map(d=>({id:uid(),name:d.name.trim(),xp:+d.xp||20,sphereId:sphereByName(d.sphereName)})); state.quests=obData.quests.filter(q=>q.name.trim()).map(q=>({id:uid(),name:q.name.trim(),description:q.desc.trim(),identity:(q.identity||'').trim(),sphereId:sphereByName(q.sphereName),color:q.color||QUEST_COLORS[0],subtasks:[],created:todayStr(),cost:q.cost||'',belief:parseInt(q.belief)||5,impact:q.impact||'',possible:q.possible||''})); state.levels=obData.levels.map(L=>({...L})); state.today=freshToday(); // No automatic habit addition to today
-  saveNow(); localStorage.removeItem('onboarding_progress_ru'); $('#onboarding').classList.remove('active'); $('#app').style.display='block'; initApp(); toast('🎉 Готово! В путь, '+state.hero.name+'!'); }
+function obFinish(){ state=defaultState(); state.onboarded=true; state.hero={name:obData.name||'Герой',class:obData.cls||'',avatar:obData.avatar}; state.spheres=obData.spheres.map(s=>({id:uid(),name:s.name,xp:0,level:1})); let sphereByName=n=>state.spheres.find(s=>s.name===n)?.id||null; state.daily=obData.daily.filter(d=>d.name.trim()).map(d=>({id:uid(),name:d.name.trim(),xp:+d.xp||10,sphereId:sphereByName(d.sphereName)})); state.weekly=obData.weekly.filter(d=>d.name.trim()).map(d=>({id:uid(),name:d.name.trim(),xp:+d.xp||20,sphereId:sphereByName(d.sphereName)})); state.quests=obData.quests.filter(q=>q.name.trim()).map(q=>({id:uid(),name:q.name.trim(),description:q.desc.trim(),identity:(q.identity||'').trim(),sphereId:sphereByName(q.sphereName),color:q.color||QUEST_COLORS[0],subtasks:[],created:todayStr(),cost:q.cost||'',belief:parseInt(q.belief)||5,impact:q.impact||'',possible:q.possible||''})); state.levels=obData.levels.map(L=>({...L})); state.today=freshToday(); saveNow(); localStorage.removeItem('onboarding_progress_ru'); $('#onboarding').classList.remove('active'); $('#app').style.display='block'; initApp(); toast('🎉 Готово! В путь, '+state.hero.name+'!'); }
 
 // ========== APP INIT & TUTORIAL ==========
 function initApp(){
@@ -599,19 +615,74 @@ function initApp(){
   applyTabVisibility();
 }
 function startTutorial(){
-  let steps=[{title:'🎯 Сегодня',text:'Добавляй разовые задачи. Красные = срочные, жёлтые = важные, зелёные = бонус. Нажми на задачу, чтобы отметить её.'},{title:'📋 Привычки',text:'Твои ежедневные дела (священный минимум) и воскресные ритуалы. Нажми на квадратик, чтобы отметить привычку.'},{title:'🗺️ Квесты',text:'Большие проекты с коучинговыми вопросами. Нажми 🧠, чтобы увидеть свои ответы.'}];
+  let steps=[{title:'🎯 Сегодня',text:'Добавляй разовые задачи. Красные = срочные, жёлтые = важные, зелёные = бонус. Нажми на задачу, чтобы отметить её. Долгое нажатие или иконка ⋮ — измени категорию.'},{title:'📋 Привычки',text:'Твои ежедневные дела (священный минимум) и воскресные ритуалы. Нажми на квадратик, чтобы отметить привычку.'},{title:'🗺️ Квесты',text:'Большие проекты с коучинговыми вопросами. Нажми 🧠, чтобы увидеть свои ответы.'}];
   let i=0;
   function showStep(){ if(i>=steps.length){ localStorage.setItem('tutorial_done_ru','true'); return; } let s=steps[i]; let html=`<h2 style="text-align:center;">${s.title}</h2><p style="margin:12px 0;">${s.text}</p><div style="display:flex;gap:8px;"><button class="btn btn-gold" style="flex:1" onclick="closeModal(); i++; showStep();">Далее</button><button class="btn btn-outline" style="flex:1" onclick="closeModal(); localStorage.setItem('tutorial_done_ru','true');">Пропустить</button></div>`; showModal('Обучение',html); } showStep();
 }
-function rolloverIfNeeded(){ let td=todayStr(); if(state.today.date!==td){ let carry=state.today.tasks.filter(t=>!t.done && t.cat!=='green' && !t.sourceDailyId && !t.sourceWeeklyId); state.today=freshToday(); // No automatic habit addition
-    carry.forEach(t=>{ t.id=uid(); t.done=false; state.today.tasks.push(t); }); save(); } }
+function rolloverIfNeeded(){ let td=todayStr(); if(state.today.date!==td){ let carry=state.today.tasks.filter(t=>!t.done && t.cat!=='green' && !t.sourceDailyId && !t.sourceWeeklyId); state.today=freshToday(); carry.forEach(t=>{ t.id=uid(); t.done=false; state.today.tasks.push(t); }); save(); } }
 function renderAll(){ renderToday(); renderMe(); renderHabits(); renderCalendar(); renderQuests(); renderLevels(); renderHistory(); }
 
 // ========== TODAY ==========
 function renderSundayBanner(){ let el=document.getElementById('sundayBanner'); if(!el) return; let d=new Date(); if(d.getDay()!==0 || state.sundayDismissed===todayStr()){ el.style.display='none'; return; } let msgs=[{t:'🎲 КАПИТАНСКОЕ СОБРАНИЕ',d:'Воскресенье, герой. Открой Календарь, чтобы посмотреть свои успехи за неделю.'},{t:'🗺️ ПЛАН НА ПОХОД',d:'Новая неделя — новый рейд. Взгляни на свои квесты и выбери главный приоритет.'}]; let pick=msgs[d.getDate()%msgs.length]; el.className='sun-banner'; el.style.display='block'; el.innerHTML=`<button class="sun-banner-x" onclick="event.stopPropagation(); dismissSunday()">✕</button><div class="sun-banner-t">${pick.t}</div><div class="sun-banner-d">${pick.d}</div>`; el.onclick=()=>goTab('cal'); }
 function dismissSunday(){ state.sundayDismissed=todayStr(); save(); renderSundayBanner(); }
-function renderToday(){ $('#todayDate').textContent=fmtDateHuman(state.today.date); let streak=state.streak||0; $('#todayStreak').textContent=streak>0?`🔥 Серия: ${streak} ${streak===1?'день':'дня'}`:''; renderSundayBanner(); let tasks=state.today.tasks, earned=tasks.filter(t=>t.done).reduce((s,t)=>s+t.xp,0), max=tasks.reduce((s,t)=>s+t.xp,0); state.today.earnedXp=earned; $('#todayXP').textContent=earned; $('#todayMax').textContent=max; $('#todayBar').style.width=(max?Math.round(earned/max*100):0)+'%'; ['red','yellow','green'].forEach(cat=>{ let el=$('#'+(cat==='red'?'redList':cat==='yellow'?'yelList':'grnList')); let list=tasks.filter(t=>t.cat===cat); if(list.length===0){ el.innerHTML='<div class="empty-cat">Пусто. Нажми + чтобы добавить</div>'; return; } el.innerHTML=list.map(t=>renderTaskRow(t)).join(''); list.forEach(t=>{ let row=el.querySelector(`[data-tid="${t.id}"]`); if(!row) return; row.onclick=e=>{ if(e.target.closest('.tdel')) return; toggleTask(t.id,e); }; row.querySelector('.tdel').onclick=e=>{ e.stopPropagation(); deleteTask(t.id); }; }); }); $('#app_title').textContent=state.hero.name+(state.hero.class?' · '+state.hero.class:''); $('#app_subtitle').textContent=`Lvl ${currentLevel()} · ${state.totalXp} XP`; }
-function renderTaskRow(t){ let badge=''; if(t.sourceDailyId) badge=`<span class="tag" style="background:var(--gold)">⭐ ежедневное</span>`; if(t.sourceWeeklyId) badge=`<span class="tag" style="background:var(--cyan)">🏡 недельное</span>`; if(t.questId){ let q=state.quests.find(q=>q.id===t.questId); if(q) badge=`<span class="tag" style="background:${q.color}">🗺️ ${escapeHtml(q.name)}</span>`; } return `<div class="task ${t.done?'done':''}" data-tid="${t.id}"><div class="tck">${t.done?'✓':''}</div><div class="tn">${escapeHtml(t.name)} ${badge}</div><div class="tx">${t.done?'+':''}${t.xp}</div><button class="tdel" title="удалить">✕</button></div>`; }
+function renderToday(){ $('#todayDate').textContent=fmtDateHuman(state.today.date); let streak=state.streak||0; $('#todayStreak').textContent=streak>0?`🔥 Серия: ${streak} ${streak===1?'день':'дня'}`:''; renderSundayBanner(); let tasks=state.today.tasks, earned=tasks.filter(t=>t.done).reduce((s,t)=>s+t.xp,0), max=tasks.reduce((s,t)=>s+t.xp,0); state.today.earnedXp=earned; $('#todayXP').textContent=earned; $('#todayMax').textContent=max; $('#todayBar').style.width=(max?Math.round(earned/max*100):0)+'%'; ['red','yellow','green'].forEach(cat=>{ let el=$('#'+(cat==='red'?'redList':cat==='yellow'?'yelList':'grnList')); let list=tasks.filter(t=>t.cat===cat); if(list.length===0){ el.innerHTML='<div class="empty-cat">Пусто. Нажми + чтобы добавить</div>'; return; } el.innerHTML=list.map(t=>renderTaskRow(t)).join(''); list.forEach(t=>{ let row=el.querySelector(`[data-tid="${t.id}"]`); if(!row) return; row.onclick=e=>{ if(e.target.closest('.tdel') || e.target.closest('.tmenu')) return; toggleTask(t.id,e); }; row.querySelector('.tdel').onclick=e=>{ e.stopPropagation(); deleteTask(t.id); }; // attach category menu
+    let menuBtn = row.querySelector('.tmenu');
+    if(menuBtn){
+      menuBtn.onclick = (e) => { e.stopPropagation(); showCategoryMenu(t.id, t.cat); };
+    }
+    // long press on task row
+    let pressTimer = null;
+    row.addEventListener('touchstart', (e) => {
+      if(e.target.closest('.tdel') || e.target.closest('.tmenu')) return;
+      pressTimer = setTimeout(() => {
+        showCategoryMenu(t.id, t.cat);
+      }, 500);
+    });
+    row.addEventListener('touchend', () => { if(pressTimer) clearTimeout(pressTimer); });
+    row.addEventListener('touchmove', () => { if(pressTimer) clearTimeout(pressTimer); });
+    row.addEventListener('mousedown', (e) => {
+      if(e.target.closest('.tdel') || e.target.closest('.tmenu')) return;
+      pressTimer = setTimeout(() => {
+        showCategoryMenu(t.id, t.cat);
+      }, 500);
+    });
+    row.addEventListener('mouseup', () => { if(pressTimer) clearTimeout(pressTimer); });
+    row.addEventListener('mouseleave', () => { if(pressTimer) clearTimeout(pressTimer); });
+  }); });
+  $('#app_title').textContent=state.hero.name+(state.hero.class?' · '+state.hero.class:'');
+  $('#app_subtitle').textContent=`Lvl ${currentLevel()} · ${state.totalXp} XP`;
+}
+function renderTaskRow(t){
+  let badge='';
+  if(t.sourceDailyId) badge=`<span class="tag" style="background:var(--gold)">⭐ ежедневное</span>`;
+  if(t.sourceWeeklyId) badge=`<span class="tag" style="background:var(--cyan)">🏡 недельное</span>`;
+  if(t.questId){ let q=state.quests.find(q=>q.id===t.questId); if(q) badge=`<span class="tag" style="background:${q.color}">🗺️ ${escapeHtml(q.name)}</span>`; }
+  return `<div class="task ${t.done?'done':''}" data-tid="${t.id}"><div class="tck">${t.done?'✓':''}</div><div class="tn">${escapeHtml(t.name)} ${badge}</div><div class="tx">${t.done?'+':''}${t.xp}</div><button class="tmenu" title="изменить категорию"><i class="fas fa-ellipsis-v"></i></button><button class="tdel" title="удалить">✕</button></div>`;
+}
+function showCategoryMenu(taskId, currentCat){
+  const cats = [
+    { id: 'red', label: '🔴 Срочное' },
+    { id: 'yellow', label: '🟡 Важное' },
+    { id: 'green', label: '🟢 Бонус' }
+  ];
+  let buttons = '';
+  cats.forEach(cat => {
+    if(cat.id !== currentCat){
+      buttons += `<button class="btn btn-ghost" onclick="changeTaskCategory('${taskId}', '${cat.id}')">${cat.label}</button>`;
+    }
+  });
+  let html = `<div style="text-align:center;"><p style="margin-bottom:12px;">Выбери новую категорию:</p><div style="display:flex;flex-direction:column;gap:8px;">${buttons}</div></div>`;
+  showModal('Изменить категорию задачи', html);
+}
+function changeTaskCategory(taskId, newCat){
+  let task = state.today.tasks.find(t => t.id === taskId);
+  if(!task) return;
+  task.cat = newCat;
+  save();
+  renderToday();
+  toast(`Категория изменена на ${newCat === 'red' ? 'Срочное' : newCat === 'yellow' ? 'Важное' : 'Бонус'}`);
+  closeModal();
+}
 function toggleTask(tid,ev){ let t=state.today.tasks.find(x=>x.id===tid); if(!t) return; let wasDone=t.done; t.done=!t.done; let delta=(t.done?1:-1)*t.xp; state.totalXp=Math.max(0,state.totalXp+delta); if(t.sphereId){ let s=state.spheres.find(x=>x.id===t.sphereId); if(s){ s.xp=Math.max(0,s.xp+delta); s.level=Math.max(1,1+Math.floor(s.xp/100)); } } if(ev){ let x=ev.clientX||ev.touches?.[0]?.clientX||window.innerWidth/2, y=ev.clientY||ev.touches?.[0]?.clientY||window.innerHeight/2; xpFloat(delta,x,y); } if(!wasDone && t.questId){ let q=state.quests.find(q=>q.id===t.questId); if(q){ let arr=state.calendar[state.today.date]||(state.calendar[state.today.date]=[]); if(!arr.some(c=>c.questId===q.id)) arr.push({questId:q.id,color:q.color,name:q.name}); } } if(t.questId && t.questSubId){ let q=state.quests.find(x=>x.id===t.questId); if(q){ let s=q.subtasks.find(x=>x.id===t.questSubId); if(s) s.done=t.done; } } let prevLv=computeLevelFor(state.totalXp-delta); let newLv=currentLevel(); save(); renderToday(); renderMe(); if(!wasDone && newLv>prevLv) showLevelUp(newLv); }
 function deleteTask(tid){ let t=state.today.tasks.find(x=>x.id===tid); if(!t) return; if(!confirm(`Удалить «${t.name}»?`)) return; if(t.done){ state.totalXp=Math.max(0,state.totalXp-t.xp); if(t.sphereId){ let s=state.spheres.find(x=>x.id===t.sphereId); if(s){ s.xp=Math.max(0,s.xp-t.xp); s.level=Math.max(1,1+Math.floor(s.xp/100)); } } } state.today.tasks=state.today.tasks.filter(x=>x.id!==tid); save(); renderToday(); renderMe(); }
 function showLevelUp(N){ let lv=$('#levelup'); $('#luNum').textContent=N; let L=levelObj(N); $('#luTitle').textContent=(L&&L.title)?L.title:defaultTitleFor(N); if(L&&L.reward){ $('#luRew').style.display='block'; $('#luRewT').textContent=L.reward; $('#luRewNote').innerHTML=`✨ Ты обещала себе: ${escapeHtml(L.reward)} ✨`; }else{ $('#luRew').style.display='none'; } lv.classList.add('show'); save(); }
@@ -649,7 +720,6 @@ function renderHabitList(sel, list, kind) {
       </div>
     `;
   }).join('');
-  // Attach handlers for checkboxes
   c.querySelectorAll('.hcheck').forEach(ch => {
     ch.onclick = (e) => {
       e.stopPropagation();
@@ -661,15 +731,13 @@ function renderHabitList(sel, list, kind) {
       const completed = kind === 'daily' 
         ? (habitCompletedToday.daily[hid] === true)
         : (habitCompletedToday.weekly[hid] === true);
-      if (completed) return; // нельзя отменить выполнение привычки в тот же день
-      // Mark as completed
+      if (completed) return;
       if (kind === 'daily') {
         habitCompletedToday.daily[hid] = true;
       } else {
         habitCompletedToday.weekly[hid] = true;
       }
       saveHabitCompletions();
-      // Add XP and update state
       const delta = habit.xp;
       state.totalXp = Math.max(0, state.totalXp + delta);
       if (habit.sphereId) {
@@ -679,26 +747,22 @@ function renderHabitList(sel, list, kind) {
           s.level = Math.max(1, 1 + Math.floor(s.xp / 100));
         }
       }
-      // Record in calendar
       const today = todayStr();
       const arr = state.calendar[today] || (state.calendar[today] = []);
       if (!arr.some(c => c.habitId === habit.id && c.kind === kind)) {
         arr.push({ habitId: habit.id, kind: kind, name: habit.name, color: '#d4a948' });
       }
-      // Level up check
       const prevLv = computeLevelFor(state.totalXp - delta);
       const newLv = currentLevel();
       save();
       renderHabits();
       renderMe();
       if (newLv > prevLv) showLevelUp(newLv);
-      // Show XP float at checkbox position
       const rect = ch.getBoundingClientRect();
       xpFloat(delta, rect.left + rect.width/2, rect.top + rect.height/2);
       toast(`+${delta} XP!`);
     };
   });
-  // Edit/delete handlers
   c.querySelectorAll('.hrow').forEach(row => {
     const hid = row.dataset.hid;
     const kind = row.dataset.kind;
@@ -711,11 +775,7 @@ function openAddWeeklyHabit(){ openHabitEditor('weekly',null); }
 function openEditHabit(kind,hid){ openHabitEditor(kind,hid); }
 function openHabitEditor(kind,hid){ let list=kind==='daily'?state.daily:state.weekly; let h=hid?list.find(x=>x.id===hid):{name:'',xp:kind==='daily'?10:20,sphereId:''}; let sphereOpts=['<option value="">— без сферы —</option>'].concat(state.spheres.map(s=>`<option value="${s.id}"${s.id===h.sphereId?' selected':''}>${escapeHtml(s.name)}</option>`)).join(''); let html=`<div class="field"><label class="lab">Название</label><input id="m_h_name" type="text" value="${escapeHtml(h.name)}" placeholder="${kind==='daily'?'вода 1.5л / медитация':'уборка / планёрка'}" autofocus></div><div class="field"><label class="lab">XP</label><input id="m_h_xp" type="number" min="1" value="${h.xp}"></div><div class="field"><label class="lab">Сфера (опц.)</label><select id="m_h_sphere">${sphereOpts}</select></div><button class="btn btn-gold" onclick="confirmHabit('${kind}','${hid||''}')">${hid?'Сохранить':'Добавить'}</button>`; showModal((kind==='daily'?'⭐ Ежедневное':'🏡 Воскресное')+(hid?' — редактировать':' — новое'),html); }
 function confirmHabit(kind,hid){ let list=kind==='daily'?state.daily:state.weekly; let name=$('#m_h_name').value.trim(); if(!name){ toast('Пусто'); return; } let xp=Math.max(1,parseInt($('#m_h_xp').value)||10); let sphereId=$('#m_h_sphere').value||null; if(hid){ let h=list.find(x=>x.id===hid); if(!h) return; h.name=name; h.xp=xp; h.sphereId=sphereId; }else{ let h={id:uid(),name,xp,sphereId}; list.push(h); } save(); closeModal(); renderHabits(); renderToday(); }
-function deleteHabit(kind,hid){ let list=kind==='daily'?state.daily:state.weekly; let h=list.find(x=>x.id===hid); if(!h) return; if(!confirm(`Удалить «${h.name}»?`)) return; if(kind==='daily') state.daily=state.daily.filter(x=>x.id!==hid); else state.weekly=state.weekly.filter(x=>x.id!==hid); // Remove from completion tracking
-  if(kind==='daily') delete habitCompletedToday.daily[hid];
-  else delete habitCompletedToday.weekly[hid];
-  saveHabitCompletions();
-  save(); renderHabits(); renderToday(); }
+function deleteHabit(kind,hid){ let list=kind==='daily'?state.daily:state.weekly; let h=list.find(x=>x.id===hid); if(!h) return; if(!confirm(`Удалить «${h.name}»?`)) return; if(kind==='daily') state.daily=state.daily.filter(x=>x.id!==hid); else state.weekly=state.weekly.filter(x=>x.id!==hid); if(kind==='daily') delete habitCompletedToday.daily[hid]; else delete habitCompletedToday.weekly[hid]; saveHabitCompletions(); save(); renderHabits(); renderToday(); }
 
 // ========== SIMPLIFIED CALENDAR (no time blocks) ==========
 function renderCalendar(){ if(!state.calMonth){ let d=new Date(); state.calMonth={y:d.getFullYear(),m:d.getMonth()}; } let {y,m}=state.calMonth; $('#calMonth').textContent=`${MONTHS_RU[m]} ${y}`; let lg=$('#calLegend'); lg.innerHTML='<div style="color:var(--dim);font-size:.72rem">Нажми на день, чтобы увидеть детали.</div>'; $('#calDow').innerHTML=DOW_RU.map(d=>`<div class="dow">${d}</div>`).join(''); let first=new Date(y,m,1), offset=(first.getDay()+6)%7, daysIn=new Date(y,m+1,0).getDate(); let cells=[]; for(let i=0;i<offset;i++) cells.push({empty:true}); let tdy=todayStr(); for(let d=1;d<=daysIn;d++){ let ds=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; let blocks=state.calendar[ds]||[]; let hist=state.history.find(h=>h.date===ds); cells.push({d,ds,blocks,hist,today:ds===tdy,future:ds>tdy}); } let grid=$('#calGrid'); grid.innerHTML=cells.map(c=>{ if(c.empty) return `<div class="day empty"></div>`; let blkHtml=c.blocks.slice(0,2).map(b=>`<div class="blk" style="background:${b.color}">${escapeHtml(b.name)}</div>`).join(''); let more=c.blocks.length>2?`<div class="blk-more">+${c.blocks.length-2}</div>`:''; let xp=c.hist?`<div class="day-xp">+${c.hist.earnedXp}</div>`:''; return `<div class="day ${c.today?'today':''} ${c.future?'future':''}" data-ds="${c.ds}"><div class="day-n">${c.d}</div>${xp}${blkHtml}${more}</div>`; }).join(''); grid.querySelectorAll('.day[data-ds]').forEach(el=>{ el.onclick=()=>openCalDay(el.dataset.ds); }); }
@@ -723,7 +783,7 @@ function openCalDay(ds){ let blocks=state.calendar[ds]||[]; let hist=state.histo
 function calPrev(){ state.calMonth.m--; if(state.calMonth.m<0){state.calMonth.m=11; state.calMonth.y--;} save(); renderCalendar(); }
 function calNext(){ state.calMonth.m++; if(state.calMonth.m>11){state.calMonth.m=0; state.calMonth.y++;} save(); renderCalendar(); }
 
-// ========== QUESTS (unchanged, but ensure they work) ==========
+// ========== QUESTS (unchanged) ==========
 function renderQuests(){ let c=$('#questsList'); if(state.quests.length===0){ c.innerHTML='<div class="empty-state"><div class="es-i">🗺️</div><div class="es-t">Квестов пока нет</div><div class="es-d">Большие проекты — то, что тянется неделями</div></div>'; return; } c.innerHTML=state.quests.map(q=>{ let total=q.subtasks.length, done=q.subtasks.filter(s=>s.done).length, pct=total?Math.round(done/total*100):0; let sphereName=q.sphereId?state.spheres.find(s=>s.id===q.sphereId)?.name:''; let subs=q.subtasks.map(s=>`<div class="subt ${s.done?'done':''}" data-qid="${q.id}" data-sid="${s.id}"><div class="sck">${s.done?'✓':''}</div><div class="sn">${escapeHtml(s.name)}</div><button class="hact" data-act="sub-to-today" style="color:var(--green);margin-right:4px">→</button><button class="hact" data-act="del-sub">✕</button></div>`).join(''); let isOpen=_openQuests.has(q.id); let hasCoaching=(q.cost||q.belief||q.impact||q.possible); let coachingBadge=hasCoaching?`<span class="coaching-badge" data-qid="${q.id}" style="cursor:pointer;margin-left:8px;background:rgba(212,169,72,0.2);padding:4px 8px;border-radius:20px;font-size:0.7rem;font-weight:bold;">🧠 почему это важно</span>`:''; return `<div class="qgrp ${isOpen?'open':''}" data-qid="${q.id}" style="border-left-color:${q.color}"><div class="qgrp-head"><div class="qgrp-arr">▶</div><div class="qgrp-info"><div class="qgrp-n">${escapeHtml(q.name)} ${coachingBadge}</div>${q.identity?`<div class="qgrp-ident">🦋 <i>${escapeHtml(q.identity)}</i></div>`:''}<div class="qgrp-meta"><span class="q-color-dot" style="background:${q.color}"></span>${sphereName?`<span>${escapeHtml(sphereName)}</span>`:''}${q.description?`<span style="color:var(--text)">${escapeHtml(q.description)}</span>`:''}</div></div><div class="qgrp-prog">${done}/${total} · ${pct}%</div><button class="qgrp-act" data-act="edit-q">✏️</button><button class="qgrp-act" data-act="del-q">✕</button></div><div class="qgrp-subs">${subs}<button class="sub-add" data-act="add-sub">+ Под-задача</button><button class="sub-add" data-act="to-today" style="margin-top:4px;">+ Новая задача в «Сегодня»</button></div></div>`; }).join(''); attachQuestHandlers(c); }
 function attachQuestHandlers(container){ container.querySelectorAll('.qgrp').forEach(g=>{ let qid=g.dataset.qid; g.querySelector('.qgrp-head').onclick=e=>{ if(e.target.closest('.qgrp-act')) return; if(_openQuests.has(qid)) _openQuests.delete(qid); else _openQuests.add(qid); g.classList.toggle('open'); }; g.querySelector('[data-act="edit-q"]').onclick=e=>{ e.stopPropagation(); openEditQuest(qid); }; g.querySelector('[data-act="del-q"]').onclick=e=>{ e.stopPropagation(); deleteQuest(qid); }; g.querySelector('[data-act="add-sub"]').onclick=()=>addSubtask(qid); g.querySelector('[data-act="to-today"]').onclick=()=>questToToday(qid); g.querySelectorAll('.subt').forEach(row=>{ row.onclick=e=>{ if(e.target.closest('[data-act="del-sub"]')) return; if(e.target.closest('[data-act="sub-to-today"]')) return; toggleSubtask(row.dataset.qid,row.dataset.sid,row); }; row.querySelector('[data-act="del-sub"]').onclick=e=>{ e.stopPropagation(); deleteSubtask(row.dataset.qid,row.dataset.sid); }; row.querySelector('[data-act="sub-to-today"]').onclick=e=>{ e.stopPropagation(); subtaskToToday(row.dataset.qid,row.dataset.sid); }; }); }); container.querySelectorAll('.coaching-badge').forEach(b=>{ b.onclick=e=>{ e.stopPropagation(); let q=state.quests.find(x=>x.id===b.dataset.qid); if(q) showCoachingModal(q); }; }); }
 function showCoachingModal(q){ let html=`<div style="font-family:'Inter',sans-serif; text-align:left;">`; if(q.cost) html+=`<div style="margin-bottom:16px;"><strong style="color:var(--gold);">❓ Чего никогда не будет в моей жизни, если я этого не достигну?</strong><br>${escapeHtml(q.cost)}</div>`; if(q.belief) html+=`<div style="margin-bottom:16px;"><strong style="color:var(--gold);">📊 Насколько я верю, что смогу достичь? (1–10)</strong><br>${q.belief} / 10</div>`; if(q.impact) html+=`<div style="margin-bottom:16px;"><strong style="color:var(--gold);">👨‍👩‍👧 Как достижение повлияет на моих близких?</strong><br>${escapeHtml(q.impact)}</div>`; if(q.possible) html+=`<div style="margin-bottom:16px;"><strong style="color:var(--gold);">🚀 Что станет возможным благодаря этой цели?</strong><br>${escapeHtml(q.possible)}</div>`; if(!q.cost && !q.belief && !q.impact && !q.possible) html=`<div>Нет заполненных коучинговых вопросов. Нажми ✏️, чтобы добавить.</div>`; html+=`</div>`; showModal(`🧠 Рефлексия: ${escapeHtml(q.name)}`,html); }
@@ -751,20 +811,13 @@ function saveLevelReward(N){ let L=levelObj(N); if(!L) return; L.reward=$('#m_re
 function renderHistory(){ let totalDays=state.history.length, totalTasks=state.history.reduce((s,h)=>s+h.tasks.filter(t=>t.done).length,0), totalXp=state.totalXp; $('#histDays').textContent=totalDays; $('#histTasks').textContent=totalTasks; $('#histXp').textContent=totalXp; let c=$('#histList'); if(state.history.length===0){ c.innerHTML='<div class="empty-state"><div class="es-i">📜</div><div class="es-t">История пуста</div><div class="es-d">Заверши день кнопкой «⚔️ Завершить день»</div></div>'; return; } let sorted=[...state.history].sort((a,b)=>a.date<b.date?1:-1); c.innerHTML=sorted.map(h=>{ let doneCount=h.tasks.filter(t=>t.done).length; return `<div class="hist-day ${h.leveledUpTo?'up':''}"><div class="hd-top"><div class="hd-date">${fmtDateHuman(h.date)}</div><div class="hd-xp">+${h.earnedXp} XP</div></div><div class="hd-meta">${doneCount} из ${h.tasks.length} задач</div>${h.leveledUpTo?`<div class="hd-up">🏆 Level Up до ${h.leveledUpTo}!</div>`:''}<div class="hd-tasks">${h.tasks.map(t=>`<div>${t.done?'✓':'·'} ${escapeHtml(t.name)} <span style="color:var(--gold)">${t.done?'+':''}${t.xp}</span></div>`).join('')}</div></div>`; }).join(''); }
 
 // ========== FINISH DAY ==========
-function finishDay(){ let tasks=state.today.tasks; if(tasks.length===0){ toast('Сегодня пусто'); return; } // Check for unfinished green (bonus) tasks
-  let unfinishedGreen = tasks.filter(t=>!t.done && t.cat==='green');
-  if(unfinishedGreen.length > 0){
-    if(!confirm(`У тебя ${unfinishedGreen.length} незавершённая(ых) бонусная(ых) задача(и). Они будут сброшены (не перенесутся). Продолжить?`)){
-      return;
-    }
-  }
-  let earned=tasks.filter(t=>t.done).reduce((s,t)=>s+t.xp,0); let lvNow=currentLevel(); let startLv=computeLevelFor(state.totalXp-earned); let leveledUpTo=lvNow>startLv?lvNow:null; let yesterday=(()=>{ let d=new Date(state.today.date); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10); })(); if(state.lastFinishedDate===yesterday) state.streak=(state.streak||0)+1; else if(state.lastFinishedDate!==state.today.date) state.streak=1; state.lastFinishedDate=state.today.date; state.history.push({date:state.today.date,earnedXp:earned,tasks:tasks.map(t=>({name:t.name,xp:t.xp,done:t.done,cat:t.cat})),leveledUpTo,afterLevel:lvNow}); let carry=tasks.filter(t=>!t.done && t.cat!=='green' && !t.sourceDailyId && !t.sourceWeeklyId).map(t=>({...t,id:uid(),done:false})); let d=new Date(state.today.date); d.setDate(d.getDate()+1); state.today={date:d.toISOString().slice(0,10),tasks:[],earnedXp:0}; carry.forEach(t=>state.today.tasks.push(t)); saveNow(); renderAll(); goTab('hist'); toast(`🌙 Ход сделан! +${earned} XP${leveledUpTo?` · Lvl ${leveledUpTo}!`:''}`); }
+function finishDay(){ let tasks=state.today.tasks; if(tasks.length===0){ toast('Сегодня пусто'); return; } let unfinishedGreen = tasks.filter(t=>!t.done && t.cat==='green'); if(unfinishedGreen.length > 0){ if(!confirm(`У тебя ${unfinishedGreen.length} незавершённая(ых) бонусная(ых) задача(и). Они будут сброшены (не перенесутся). Продолжить?`)){ return; } } let earned=tasks.filter(t=>t.done).reduce((s,t)=>s+t.xp,0); let lvNow=currentLevel(); let startLv=computeLevelFor(state.totalXp-earned); let leveledUpTo=lvNow>startLv?lvNow:null; let yesterday=(()=>{ let d=new Date(state.today.date); d.setDate(d.getDate()-1); return d.toISOString().slice(0,10); })(); if(state.lastFinishedDate===yesterday) state.streak=(state.streak||0)+1; else if(state.lastFinishedDate!==state.today.date) state.streak=1; state.lastFinishedDate=state.today.date; state.history.push({date:state.today.date,earnedXp:earned,tasks:tasks.map(t=>({name:t.name,xp:t.xp,done:t.done,cat:t.cat})),leveledUpTo,afterLevel:lvNow}); let carry=tasks.filter(t=>!t.done && t.cat!=='green' && !t.sourceDailyId && !t.sourceWeeklyId).map(t=>({...t,id:uid(),done:false})); let d=new Date(state.today.date); d.setDate(d.getDate()+1); state.today={date:d.toISOString().slice(0,10),tasks:[],earnedXp:0}; carry.forEach(t=>state.today.tasks.push(t)); saveNow(); renderAll(); goTab('hist'); toast(`🌙 Ход сделан! +${earned} XP${leveledUpTo?` · Lvl ${leveledUpTo}!`:''}`); }
 
 // ========== MODALS, HELP, ADD TASK, SETTINGS, PROFILE ==========
 function showModal(title,bodyHtml){ $('#modalTitle').textContent=title; $('#modalBody').innerHTML=bodyHtml; $('#modal').classList.add('open'); }
 function closeModal(){ $('#modal').classList.remove('open'); }
 $('#modal').addEventListener('click',(e)=>{ if(e.target.id==='modal') closeModal(); });
-function openHelp(){ let html=`<h2 style="text-align:center;">📖 Как пользоваться LifeQuest</h2><div style="text-align:left;"><p><strong>🎯 Сегодня</strong><br>Добавляй разовые задачи. Красные = срочные, жёлтые = важные, зелёные = бонус. Можно добавлять задачи из квестов.</p><p><strong>⭐ Привычки</strong><br>Вещи, которые ты делаешь каждый день (Священный минимум) или только по воскресеньям (Воскресный ритуал). Нажми на квадратик, чтобы отметить выполнение.</p><p><strong>🗺️ Квесты</strong><br>Большие проекты. Добавляй подзадачи, отвечай на коучинговые вопросы.</p><p><strong>🏆 Уровни</strong><br>Зарабатывай XP, получай уровни, назначай себе реальные награды.</p><p><strong>📅 Календарь</strong><br>Смотри историю и активность по квестам и привычкам.</p><p><strong>⚙️ Настройки</strong><br>Экспорт/импорт данных, управление сферами, сброс всего.</p></div><button class="btn btn-gold" onclick="closeModal()" style="margin-top:16px;">Понятно</button>`; showModal('📖 Помощь',html); }
+function openHelp(){ let html=`<h2 style="text-align:center;">📖 Как пользоваться LifeQuest</h2><div style="text-align:left;"><p><strong>🎯 Сегодня</strong><br>Добавляй разовые задачи. Красные = срочные, жёлтые = важные, зелёные = бонус. Можно добавлять задачи из квестов. <strong>Долгое нажатие на задачу (или иконка ⋮)</strong> — измени её категорию (срочное, важное, бонус) без удаления.</p><p><strong>⭐ Привычки</strong><br>Вещи, которые ты делаешь каждый день (Священный минимум) или только по воскресеньям (Воскресный ритуал). Нажми на квадратик, чтобы отметить выполнение.</p><p><strong>🗺️ Квесты</strong><br>Большие проекты. Добавляй подзадачи, отвечай на коучинговые вопросы.</p><p><strong>🏆 Уровни</strong><br>Зарабатывай XP, получай уровни, назначай себе реальные награды.</p><p><strong>📅 Календарь</strong><br>Смотри историю и активность по квестам и привычкам.</p><p><strong>⚙️ Настройки</strong><br>Экспорт/импорт данных, управление сферами, сброс всего.</p></div><button class="btn btn-gold" onclick="closeModal()" style="margin-top:16px;">Понятно</button>`; showModal('📖 Помощь',html); }
 function openAddTask(cat){ let sphereOpts=['<option value="">— без сферы —</option>'].concat(state.spheres.map(s=>`<option value="${s.id}">${escapeHtml(s.name)}</option>`)).join(''); let questOpts=['<option value="">— не привязывать —</option>'].concat(state.quests.map(q=>`<option value="${q.id}">${escapeHtml(q.name)}</option>`)).join(''); let html=`<div class="field"><label class="lab">Название</label><input id="m_t_name" type="text" placeholder="Что сделать?" autofocus></div><div class="field"><label class="lab">XP</label><input id="m_t_xp" type="number" min="1" value="${cat==='red'?15:cat==='yellow'?10:5}"></div><div class="field"><label class="lab">Сфера (опц.)</label><select id="m_t_sphere">${sphereOpts}</select></div><div class="field"><label class="lab">Привязать к квесту (опц.)</label><select id="m_t_quest">${questOpts}</select></div><button class="btn btn-gold" onclick="confirmAddTask('${cat}')">Добавить</button>`; showModal((cat==='red'?'🔴 Срочное':cat==='yellow'?'🟡 Важное':'🟢 Бонус')+' — новая задача',html); setTimeout(()=>$('#m_t_name')?.focus(),50); }
 function confirmAddTask(cat){ let name=$('#m_t_name').value.trim(); if(!name){ toast('Пусто'); return; } let xp=Math.max(1,parseInt($('#m_t_xp').value)||10); let sphereId=$('#m_t_sphere').value||null; let questId=$('#m_t_quest').value||null; state.today.tasks.push({id:uid(),name,cat,xp,sphereId,questId,done:false}); save(); closeModal(); renderToday(); }
 function openEditProfile(){ let avGrid=AVATARS.map(a=>`<div class="av-it${a===state.hero.avatar?' on':''}" data-a="${a}">${a}</div>`).join(''); let html=`<div class="field"><label class="lab">Имя</label><input id="m_p_name" type="text" value="${escapeHtml(state.hero.name)}"></div><div class="field"><label class="lab">Класс</label><input id="m_p_class" type="text" value="${escapeHtml(state.hero.class)}" placeholder="например: Психолог-Воин"></div><div class="field"><label class="lab">Аватар</label><div class="av-grid" id="m_p_av">${avGrid}</div></div><button class="btn btn-gold" onclick="saveProfile()">Сохранить</button>`; showModal('✏️ Профиль',html); let chosen=state.hero.avatar; setTimeout(()=>{ document.querySelectorAll('#m_p_av .av-it').forEach(el=>{ el.onclick=()=>{ chosen=el.dataset.a; document.querySelectorAll('#m_p_av .av-it').forEach(x=>x.classList.remove('on')); el.classList.add('on'); }; }); },20); window._pChosenAv=()=>chosen; }
