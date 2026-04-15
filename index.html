@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>LifeQuest — Turn Anxiety Into Adventure | Gamified Task Tracker</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome 6 (for social icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
             --bg: #0a0e1a;
@@ -238,6 +240,32 @@
         .lang-switch button:hover:not(.active) {
             color: var(--gold);
         }
+        /* social icons row */
+        .social-icons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin: 24px 0 8px;
+        }
+        .social-icons a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            background: transparent;
+            border: 1.5px solid var(--gold);
+            border-radius: 40px;
+            color: var(--gold);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .social-icons a:hover {
+            background: rgba(212,169,72,0.1);
+            transform: scale(0.96);
+        }
         @media (max-width: 768px) {
             body { padding: 16px 12px 48px; font-size: 1rem; }
             .card { padding: 26px 20px; }
@@ -250,6 +278,7 @@
             .highlight { padding: 16px 18px; }
             .lang-switch { top: 12px; right: 12px; padding: 4px 12px; }
             .lang-switch button { padding: 4px 8px; font-size: 0.8rem; }
+            .social-icons a { padding: 6px 14px; font-size: 0.8rem; }
         }
         @media (min-width: 1200px) {
             .container { max-width: 1100px; }
@@ -265,7 +294,7 @@
 <div class="container" id="app-container"></div>
 
 <script>
-    // Тексты для двух языков
+    // Тексты для двух языков (включая новую коучинговую карточку)
     const texts = {
         en: {
             badge: "🎮 life coach designed · free · offline PWA",
@@ -306,6 +335,13 @@
                 { icon: "🏆", title: "Real Rewards", desc: "For each level, you set your own reward (ice cream, movie, new headphones)." },
                 { icon: "📅", title: "Time Blocking", desc: "Plan your day with colored blocks, save weekly templates, track history." }
             ],
+            // Coaching card content (new)
+            coachingTitle: "✨ So, you've made a plan, the app helps — that's great.",
+            coachingP1: "But if even with it you still feel stuck, something inside holds you back — I invite you to a session.",
+            coachingP2: "In one hour we can figure out what's stopping you. You'll see where to go next, and it will feel lighter. We can build a strategy that works for you, and find what truly matters and is valuable to you.",
+            coachingP3: "I believe that every person already has the necessary resources to achieve what they want. Sometimes the access is just blocked.",
+            coachingCta: "Book a session today — message me.",
+            // Support / PayPal card
             supportTitle: "☕ Keep the adventure alive",
             supportText: "If LifeQuest helps you feel calmer and more in control, please consider supporting my work. As a solo creator, every donation allows me to keep the app free, private, and constantly improved.",
             paypalText: "💛 SUPPORT VIA PayPal",
@@ -359,6 +395,13 @@
                 { icon: "🏆", title: "Реальные награды", desc: "За каждый новый уровень ты сам назначаешь себе подарок. Система не наказывает, а поощряет." },
                 { icon: "📅", title: "Тайм-блокинг", desc: "Планируй день цветными блоками, сохраняй шаблоны на неделю, смотри историю достижений." }
             ],
+            // Coaching card content (new)
+            coachingTitle: "✨ Итак, ты составил план, приложение помогает — это здорово.",
+            coachingP1: "Но если даже с ним ты всё равно чувствуешь, что топчешься на месте, что-то внутри останавливает — приглашаю тебя на сессию.",
+            coachingP2: "За час мы можем разобраться, что именно тебя тормозит. Возможно, ты увидишь, куда двигаться дальше, и тебе станет легче. Мы можем выстроить стратегию, которая подходит именно тебе, и найти то, что для тебя действительно важно и ценно.",
+            coachingP3: "Я верю, что у человека уже есть необходимые ресурсы, чтобы достичь того, чего он хочет. Иногда просто доступ к ним закрыт.",
+            coachingCta: "Запишись на сессию сегодня — напиши мне.",
+            // Support / PayPal card
             supportTitle: "☕ Помоги приключению жить",
             supportText: "Если LifeQuest реально делает твои дни легче — поддержи проект. Я верю в эту идею, она уже помогла мне и моим друзьям. А донаты позволяют не ставить рекламу, не продавать твои данные и постоянно добавлять новые фишки.",
             paypalText: "💛 ПОДДЕРЖАТЬ ЧЕРЕЗ PAYPAL",
@@ -382,8 +425,9 @@
         const container = document.getElementById('app-container');
         if (!container) return;
 
-        // Генерация HTML
+        // HTML сборка
         let html = `
+            <!-- Hero card -->
             <div class="card">
                 <div class="badge">${t.badge}</div>
                 <h1>${t.title1}</h1>
@@ -394,12 +438,14 @@
                 </div>
             </div>
 
+            <!-- Story / coach intro -->
             <div class="card">
                 <h2>${t.storyTitle}</h2>
                 <p>${t.storyText}</p>
                 <div class="highlight solution-point">${t.solutionPoint}</div>
             </div>
 
+            <!-- Change after one month -->
             <div class="card">
                 <h2>${t.changeTitle}</h2>
                 <div class="feature-grid">
@@ -414,6 +460,7 @@
                 <div class="highlight" style="background: rgba(212,169,72,0.08);">${t.changeHighlight}</div>
             </div>
 
+            <!-- Why different -->
             <div class="card">
                 <h2>${t.whyTitle}</h2>
                 <p style="font-size: 1rem; margin-bottom: 16px;">${t.whyText}</p>
@@ -437,6 +484,7 @@
                 </div>
             </div>
 
+            <!-- Mechanics -->
             <div class="card">
                 <h2>${t.mechanicsTitle}</h2>
                 <div class="feature-grid">
@@ -450,6 +498,22 @@
                 </div>
             </div>
 
+            <!-- NEW COACHING CARD (before PayPal) -->
+            <div class="card">
+                <h2>${t.coachingTitle}</h2>
+                <p>${t.coachingP1}</p>
+                <p>${t.coachingP2}</p>
+                <p>${t.coachingP3}</p>
+                <p><strong>${t.coachingCta}</strong></p>
+                <div class="social-icons">
+                    <a href="https://www.instagram.com/anchorpoint_wellbeing/" target="_blank"><i class="fab fa-instagram"></i> Instagram</a>
+                    <a href="https://www.facebook.com/svetlana.krilova.71" target="_blank"><i class="fab fa-facebook"></i> Facebook</a>
+                    <a href="https://t.me/krilovaorg" target="_blank"><i class="fab fa-telegram"></i> Telegram</a>
+                    <a href="mailto:svetlana@krilova.org"><i class="fas fa-envelope"></i> Email</a>
+                </div>
+            </div>
+
+            <!-- Support / PayPal card -->
             <div class="card" style="text-align: center;">
                 <h2>${t.supportTitle}</h2>
                 <p>${t.supportText}</p>
@@ -474,6 +538,7 @@
                 <p style="font-size: 0.85rem; margin-top: 8px; color: var(--dim);">${t.paypalNote}</p>
             </div>
 
+            <!-- Install card -->
             <div class="card">
                 <h2>${t.installTitle}</h2>
                 <div class="install-steps">
@@ -497,7 +562,7 @@
             <div class="footer">${t.footer}</div>
         `;
         container.innerHTML = html;
-        // Обновить активную кнопку
+        // Обновить активную кнопку языка
         document.querySelectorAll('.lang-switch button').forEach(btn => {
             if (btn.dataset.lang === lang) btn.classList.add('active');
             else btn.classList.remove('active');
@@ -519,7 +584,7 @@
     }
     setLanguage(defaultLang);
 
-    // Назначить обработчики кнопкам после загрузки DOM
+    // Назначить обработчики кнопкам
     document.getElementById('btn-en').addEventListener('click', () => setLanguage('en'));
     document.getElementById('btn-ru').addEventListener('click', () => setLanguage('ru'));
 </script>
